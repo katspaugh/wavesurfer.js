@@ -5,9 +5,10 @@ import * as dom from './dom.js'
 import EventEmitter from './event-emitter.js'
 import Fetcher from './fetcher.js'
 import { FrameScheduler } from './frame-scheduler.js'
+import MediaElementPlayer from './media-element-player.js'
 import Player from './player.js'
 import Renderer from './renderer.js'
-import { effect } from './reactive/store.js'
+import { effect, signal, type Signal, type WritableSignal } from './reactive/store.js'
 import { Scope } from './scope.js'
 import WebAudioPlayer from './webaudio.js'
 import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
@@ -160,23 +161,38 @@ export type WaveSurferEvents = {
 
 class WaveSurfer extends EventEmitter<WaveSurferEvents> {
   public options: WaveSurferOptions & typeof defaultOptions
-  // The playback engine. WaveSurfer owns it by composition (not inheritance)
-  // and delegates the public playback API to it below.
+  // The playback engine: one of the Player implementations
+  // (MediaElementPlayer or WebAudioPlayer). WaveSurfer owns it by composition
+  // (not inheritance) and delegates the public playback API to it below --
+  // all behavior differences between the backends live inside them.
   private player: Player
+  // True when the player object itself is user-owned (a user-supplied
+  // WebAudioPlayer passed as `media`): destroy() must then release only what
+  // WaveSurfer created (player.detach()) instead of tearing the player down.
+  // A user-supplied HTMLMediaElement is different: WaveSurfer creates (and
+  // owns) the MediaElementPlayer wrapper, which itself knows to leave the
+  // external element alone on destroy.
+  private playerIsExternal = false
   private renderer: Renderer
   private plugins: GenericPlugin[] = []
   private decodedData: AudioBuffer | null = null
-  private stopAtPosition: number | null = null
   // The WebAudioPlayer this instance created for backend: 'WebAudio', if any.
-  // Owned here (not by Player, which sees it as external media) so destroy()
-  // can tear it down -- stopping playback and closing its AudioContext.
+  // Kept separately from `player` so destroy() still tears it down (closing
+  // its AudioContext) even if setMediaElement() swapped it out.
   private internalWebAudioPlayer: WebAudioPlayer | null = null
-  // The WebAudioPlayer currently acting as the media, if any -- the internal
-  // one, or a user-supplied one. Classified once at construction and updated
-  // in setMediaElement() (the only two instanceof checks); everywhere else
-  // this field replaces what used to be scattered instanceof branches.
-  // Invariant: non-null iff the player's current media IS a WebAudioPlayer.
-  private webAudioPlayer: WebAudioPlayer | null = null
+  // WaveSurfer's own stable playback signals, mirrored from the current
+  // player's signals (see bindPlayerSignals). The indirection keeps the
+  // composed WaveSurferState valid across setMediaElement() swaps that
+  // replace the player instance (and with it, its signal objects).
+  private readonly playbackSignals = {
+    isPlaying: signal(false),
+    currentTime: signal(0),
+    duration: signal(0),
+    volume: signal(1),
+    muted: signal(false),
+    playbackRate: signal(1),
+    isSeeking: signal(false),
+  }
   protected scope: Scope = new Scope()
   private mediaEventScope = this.scope.child()
   private frameScheduler: FrameScheduler = new FrameScheduler(this.scope)
@@ -220,47 +236,52 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
   constructor(options: WaveSurferOptions) {
     super()
 
-    // A WebAudioPlayer created here (backend: 'WebAudio' with no user-supplied
-    // media) is owned by this instance. It is handed to Player as `media`, so
-    // Player classifies it as *external* and skips its teardown in destroy()
-    // -- WaveSurfer must therefore destroy it itself (see destroy() below).
+    // Pick the Player implementation (the classification point for the whole
+    // instance -- everywhere else the two backends are used polymorphically):
+    // - a user-supplied WebAudioPlayer (passed as `media`) IS the player, but
+    //   stays user-owned;
+    // - backend: 'WebAudio' creates a WebAudioPlayer owned by this instance;
+    // - otherwise a MediaElementPlayer, wrapping the user-supplied element or
+    //   creating its own <audio>.
     const internalWebAudioPlayer = !options.media && options.backend === 'WebAudio' ? new WebAudioPlayer() : null
-    const media = options.media ?? internalWebAudioPlayer ?? undefined
-
-    this.player = new Player({
-      media,
-      mediaControls: options.mediaControls,
-      autoplay: options.autoplay,
-      playbackRate: options.audioRate,
-    })
-
+    if (options.media instanceof WebAudioPlayer) {
+      this.player = options.media
+      this.playerIsExternal = true
+    } else if (internalWebAudioPlayer) {
+      this.player = internalWebAudioPlayer
+    } else {
+      this.player = new MediaElementPlayer({
+        media: options.media,
+        mediaControls: options.mediaControls,
+        autoplay: options.autoplay,
+        playbackRate: options.audioRate,
+      })
+    }
     this.internalWebAudioPlayer = internalWebAudioPlayer
-    // The single classification point (with setMediaElement) for the media
-    // being a WebAudioPlayer -- a user may pass their own via options.media.
-    this.webAudioPlayer = internalWebAudioPlayer ?? (options.media instanceof WebAudioPlayer ? options.media : null)
+
+    // MediaElementPlayer applies these via its constructor options above; a
+    // WebAudioPlayer keeps its public constructor signature, so apply them
+    // here. mediaControls has no meaning without a media element.
+    if (this.player instanceof WebAudioPlayer) {
+      if (options.autoplay) this.player.autoplay = true
+      if (options.audioRate != null) this.player.playbackRate = options.audioRate
+    }
 
     this.options = Object.assign({}, defaultOptions, options)
 
-    // Initialize reactive state
-    // Pass Player signals to compose them into WaveSurferState
-    const { state, actions, dispose } = createWaveSurferState({
-      isPlaying: this.player.isPlayingSignal,
-      currentTime: this.player.currentTimeSignal,
-      duration: this.player.durationSignal,
-      volume: this.player.volumeSignal,
-      muted: this.player.mutedSignal,
-      playbackRate: this.player.playbackRateSignal,
-      isSeeking: this.player.seekingSignal,
-    })
+    // Initialize reactive state, composing WaveSurfer's stable playback
+    // signals (kept in sync with the current player by bindPlayerSignals)
+    const { state, actions, dispose } = createWaveSurferState(this.playbackSignals)
     this.wavesurferState = state
     this.wavesurferActions = actions
     // destroy() is terminal, so the state's computed graph is released with
     // everything else owned by this.scope.
     this.scope.add(dispose)
 
-    // When no media was supplied, Player created its own <audio> element --
-    // hand that raw element to the renderer so it can be mounted in the DOM.
-    const audioElement = media ? undefined : this.player.getMediaElement()
+    // When no media was supplied, MediaElementPlayer created its own <audio>
+    // element -- hand that raw element to the renderer so it can be mounted
+    // in the DOM. (Under the WebAudio backend there is no element: null.)
+    const audioElement = options.media ? undefined : (this.player.getMediaElement() ?? undefined)
     this.renderer = new Renderer(this.options, audioElement)
 
     this.initPlayerEvents()
@@ -297,24 +318,36 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
   }
 
   // The frame scheduler ticks every animation frame for a smooth progress
-  // animation while playing.
+  // animation while playing. (A stop scheduled via play(start, end) is
+  // enforced inside the player -- see Player.stopAt.)
   private onTick = () => {
     if (!this.isSeeking()) {
       const currentTime = this.updateProgress()
       this.emit('timeupdate', currentTime)
       this.emit('audioprocess', currentTime)
-
-      // Pause audio when it reaches the stopAtPosition
-      if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
-        // The scheduler may overshoot the stop position, so clamp the time back to it
-        const stopAt = this.stopAtPosition
-        this.pause()
-        this.setTime(stopAt)
-      }
     }
   }
 
+  // Mirror the current player's signals into WaveSurfer's stable playback
+  // signals. Registered on mediaEventScope so a setMediaElement() swap
+  // re-binds against the new player, and destroy() severs the mirror.
+  private bindPlayerSignals() {
+    const bind = <T>(source: Signal<T>, target: WritableSignal<T>) => {
+      target.set(source.value)
+      this.mediaEventScope.add(source.subscribe((value) => target.set(value)))
+    }
+    bind(this.player.isPlayingSignal, this.playbackSignals.isPlaying)
+    bind(this.player.currentTimeSignal, this.playbackSignals.currentTime)
+    bind(this.player.durationSignal, this.playbackSignals.duration)
+    bind(this.player.volumeSignal, this.playbackSignals.volume)
+    bind(this.player.mutedSignal, this.playbackSignals.muted)
+    bind(this.player.playbackRateSignal, this.playbackSignals.playbackRate)
+    bind(this.player.seekingSignal, this.playbackSignals.isSeeking)
+  }
+
   private initPlayerEvents() {
+    this.bindPlayerSignals()
+
     if (this.isPlaying()) {
       this.emit('play')
       this.frameScheduler.start(this.onTick)
@@ -324,15 +357,6 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
       this.player.onMediaEvent('timeupdate', () => {
         const currentTime = this.updateProgress()
         this.emit('timeupdate', currentTime)
-        // onTick (rAF-driven) normally enforces stopAtPosition, but rAF is
-        // suspended in hidden tabs while media 'timeupdate' keeps firing --
-        // without this check, play(start, end) overshoots arbitrarily in a
-        // background tab.
-        if (this.stopAtPosition != null && this.isPlaying() && currentTime >= this.stopAtPosition) {
-          const stopAt = this.stopAtPosition
-          this.pause()
-          this.setTime(stopAt)
-        }
       }),
     )
 
@@ -347,14 +371,12 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
       this.player.onMediaEvent('pause', () => {
         this.emit('pause')
         this.frameScheduler.stop()
-        this.stopAtPosition = null
       }),
     )
 
     this.mediaEventScope.add(
       this.player.onMediaEvent('emptied', () => {
         this.frameScheduler.stop()
-        this.stopAtPosition = null
       }),
     )
 
@@ -362,7 +384,6 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
       this.player.onMediaEvent('ended', () => {
         this.emit('timeupdate', this.getDuration())
         this.emit('finish')
-        this.stopAtPosition = null
       }),
     )
 
@@ -374,23 +395,10 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
     this.mediaEventScope.add(
       this.player.onMediaEvent('error', () => {
-        // Deliberately the raw media (never null): under the WebAudio backend
-        // the error lives on the WebAudioPlayer's media surface (and is
-        // already a real Error there). An HTMLMediaElement reports a
-        // MediaError, which is NOT an Error -- normalize it so the public
-        // 'error' event typing is honest, preserving the MediaError's
-        // message and code.
-        const mediaError = this.player.getMediaElement().error
-        let error: Error
-        if (mediaError instanceof Error) {
-          error = mediaError
-        } else if (mediaError) {
-          error = new Error(mediaError.message || `Media error ${mediaError.code}`)
-        } else {
-          error = new Error('Media error')
-        }
-        this.emit('error', error)
-        this.stopAtPosition = null
+        // Each player normalizes its own error to a real Error (an
+        // HTMLMediaElement reports a MediaError, which is NOT an Error), so
+        // the public 'error' event typing stays honest.
+        this.emit('error', this.player.getError() ?? new Error('Media error'))
       }),
     )
   }
@@ -538,9 +546,11 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
       this.setPlaybackRate(options.audioRate)
     }
     if (options.mediaControls != null) {
-      // Deliberately the raw media (never null): writing `controls` on a
-      // WebAudioPlayer is a harmless no-op, exactly as before.
-      this.player.getMediaElement().controls = options.mediaControls
+      // No-op under the WebAudio backend, which has no media element
+      const mediaElement = this.player.getMediaElement()
+      if (mediaElement) {
+        mediaElement.controls = options.mediaControls
+      }
     }
   }
 
@@ -686,7 +696,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
       this.decodedData = null
       this.wavesurferActions.setAudioBuffer(null)
-      this.stopAtPosition = null
+      this.player.clearStopAt()
 
       // Fetch the entire audio as a blob if pre-decoded data is not provided
       if (!blob && !channelData) {
@@ -749,9 +759,10 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
       // Guard: bail if a newer load started or the instance was destroyed
       if (loadScope.disposed) return this.bailedLoadOutcome(loadScope)
 
-      // Set the duration if the player is a WebAudioPlayer without a URL
-      if (!url && !blob && this.webAudioPlayer) {
-        this.webAudioPlayer.duration = audioDuration
+      // Back-patch the duration when there was no URL to derive it from
+      // (a no-op except on the WebAudio backend -- see Player.setDuration)
+      if (!url && !blob) {
+        this.player.setDuration(audioDuration)
       }
 
       if (!loadScope.disposed) {
@@ -923,7 +934,6 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
   /** Jump to a specific time in the audio (in seconds) */
   public setTime(time: number) {
     if (this.isDestroyed) return
-    this.stopAtPosition = null
     this.player.setTime(time)
     this.updateProgress(time)
     this.emit('timeupdate', time)
@@ -1005,9 +1015,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
    * HTMLMediaElement.
    */
   public getMediaElement(): HTMLMediaElement | null {
-    // Invariant (see the webAudioPlayer field): non-null iff it IS the
-    // player's current media.
-    return this.webAudioPlayer ? null : this.player.getMediaElement()
+    return this.player.getMediaElement()
   }
 
   /** Start playing the audio */
@@ -1022,11 +1030,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
 
     const playResult = await this.player.play()
     if (end != null) {
-      if (this.webAudioPlayer) {
-        this.webAudioPlayer.stopAt(end)
-      } else {
-        this.stopAtPosition = end
-      }
+      this.player.stopAt(end)
     }
 
     return playResult
@@ -1058,9 +1062,28 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
   public setMediaElement(element: HTMLMediaElement) {
     if (this.isDestroyed) return
     this.unsubscribePlayerEvents()
-    this.player.setMediaElement(element)
-    // Re-classify: the new media may be (or replace) a WebAudioPlayer
-    this.webAudioPlayer = element instanceof WebAudioPlayer ? element : null
+
+    // A WebAudioPlayer may also be passed here (cast to HTMLMediaElement),
+    // mirroring the `media` option. Swapping between an element and a
+    // WebAudioPlayer replaces the player instance; the old one is detached
+    // (its wavesurfer-created resources released, the media itself left
+    // alive, matching the previous swap semantics). An internally-created
+    // WebAudioPlayer swapped out here is still fully torn down on destroy()
+    // via internalWebAudioPlayer.
+    if (element instanceof WebAudioPlayer) {
+      if (this.player !== element) {
+        this.player.detach()
+        this.player = element
+        this.playerIsExternal = element !== this.internalWebAudioPlayer
+      }
+    } else if (this.player instanceof MediaElementPlayer) {
+      this.player.setMediaElement(element)
+    } else {
+      this.player.detach()
+      this.player = new MediaElementPlayer({ media: element })
+      this.playerIsExternal = false
+    }
+
     this.initPlayerEvents()
   }
 
@@ -1103,15 +1126,21 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
     this.decodedData = null
     this.wavesurferActions.setAudioBuffer(null)
     this.renderer.destroy()
-    this.player.destroy()
+    // A user-owned player (a user-supplied WebAudioPlayer) must survive
+    // wavesurfer.destroy(): release only what WaveSurfer created on it.
+    // Owned players get the full teardown -- MediaElementPlayer itself knows
+    // to leave a user-supplied *element* alone.
+    if (this.playerIsExternal) {
+      this.player.detach()
+    } else {
+      this.player.destroy()
+    }
     // Clear all event emitter listeners (previously done inside
     // Player.destroy() when WaveSurfer and Player shared one emitter)
     this.unAll()
-    // Player.destroy() skips media teardown for external media -- which
-    // includes the WebAudioPlayer this instance created itself for
-    // backend: 'WebAudio' (it was passed in via the media option). Without
-    // this, destroy() leaves WebAudio playback running and the AudioContext
-    // open forever. WebAudioPlayer.destroy() is idempotent.
+    // Tear down the internally-created WebAudio backend even if
+    // setMediaElement() swapped it out of `player`; destroy() is idempotent,
+    // so double-destroying the current player is safe.
     this.internalWebAudioPlayer?.destroy()
   }
 }

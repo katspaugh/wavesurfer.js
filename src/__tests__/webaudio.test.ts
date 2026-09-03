@@ -238,7 +238,7 @@ describe('WebAudioPlayer', () => {
       ;(player as any).buffer = createMockBuffer(10)
 
       // Set playback rate to 2x
-      ;(player as any)._playbackRate = 2
+      ;(player as any).rate = 2
 
       // Play
       audioContext.currentTime = 100
@@ -256,7 +256,7 @@ describe('WebAudioPlayer', () => {
       const { audioContext, bufferSource } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       ;(player as any).buffer = createMockBuffer(10)
-      ;(player as any)._playbackRate = 2
+      ;(player as any).rate = 2
 
       audioContext.currentTime = 100
       player.play()

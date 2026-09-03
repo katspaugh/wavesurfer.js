@@ -1,4 +1,5 @@
 import EventEmitter from './event-emitter.js'
+import Player, { type PlayerMediaEvent } from './player.js'
 import { Scope } from './scope.js'
 
 type WebAudioPlayerEvents = {
@@ -9,10 +10,25 @@ type WebAudioPlayerEvents = {
   seeking: []
   seeked: []
   timeupdate: []
+  durationchange: []
   volumechange: []
+  ratechange: []
   emptied: []
   ended: []
   error: [error: Error]
+}
+
+// WebAudioPlayer emulates the HTMLMediaElement event surface -- a media
+// boundary consumed like a media element, not an internal bus. It composes
+// the emitter (it extends Player now), and EventEmitter.emit is protected,
+// so this thin subclass makes emit callable from the composing class.
+class MediaEventEmitter extends EventEmitter<WebAudioPlayerEvents> {
+  public emit<EventName extends keyof WebAudioPlayerEvents>(
+    event: EventName,
+    ...args: WebAudioPlayerEvents[EventName]
+  ): void {
+    super.emit(event, ...args)
+  }
 }
 
 function setWebAudioSessionPlayback() {
@@ -27,21 +43,20 @@ function setWebAudioSessionPlayback() {
 }
 
 /**
- * A Web Audio buffer player emulating the behavior of an HTML5 Audio element.
- *
- * Note: This class does not manage blob: URLs. If you pass a blob: URL to setSrc(),
- * you are responsible for revoking it when done. The Player class (player.ts) handles
- * blob URL lifecycle management automatically.
+ * The Web Audio implementation of Player: plays decoded AudioBuffers via an
+ * AudioContext + AudioBufferSourceNode while emulating the behavior (and
+ * event surface) of an HTML5 Audio element.
  */
-class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
+class WebAudioPlayer extends Player {
   private audioContext: AudioContext
   private gainNode: GainNode
   private bufferNode: AudioBufferSourceNode | null = null
+  private emitter = new MediaEventEmitter()
   private playStartTime = 0
   private playbackPosition = 0
-  private _muted = false
-  private _playbackRate = 1
-  private _duration: number | undefined = undefined
+  private mutedState = false
+  private rate = 1
+  private explicitDuration: number | undefined = undefined
   private buffer: AudioBuffer | null = null
   public currentSrc = ''
   public paused = true
@@ -64,10 +79,55 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   /** Subscribe to an event. Returns an unsubscribe function. */
-  addEventListener = this.on
+  public on<EventName extends keyof WebAudioPlayerEvents>(
+    event: EventName,
+    listener: (...args: WebAudioPlayerEvents[EventName]) => void,
+    options?: { once?: boolean },
+  ): () => void {
+    return this.emitter.on(event, listener, options)
+  }
 
   /** Unsubscribe from an event */
+  public un<EventName extends keyof WebAudioPlayerEvents>(
+    event: EventName,
+    listener: (...args: WebAudioPlayerEvents[EventName]) => void,
+  ): void {
+    this.emitter.un(event, listener)
+  }
+
+  /** Subscribe to an event only once */
+  public once<EventName extends keyof WebAudioPlayerEvents>(
+    event: EventName,
+    listener: (...args: WebAudioPlayerEvents[EventName]) => void,
+  ): () => void {
+    return this.emitter.on(event, listener, { once: true })
+  }
+
+  /** Clear all event listeners */
+  public unAll(): void {
+    this.emitter.unAll()
+  }
+
+  /** Subscribe to an event, for compatibility with HTMLMediaElement. Returns an unsubscribe function. */
+  addEventListener = this.on
+
+  /** Unsubscribe from an event, for compatibility with HTMLMediaElement. */
   removeEventListener = this.un
+
+  private emit<EventName extends keyof WebAudioPlayerEvents>(
+    event: EventName,
+    ...args: WebAudioPlayerEvents[EventName]
+  ): void {
+    this.emitter.emit(event, ...args)
+  }
+
+  /**
+   * Subscribe to a media event. Returns an unsubscribe function.
+   * @internal
+   */
+  public onMediaEvent(event: PlayerMediaEvent, callback: () => void, options?: { once?: boolean }): () => void {
+    return this.emitter.on(event, callback, options)
+  }
 
   async load() {
     return
@@ -98,6 +158,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.srcFetchAbort?.abort()
     this.srcFetchAbort = null
     this.currentSrc = ''
+
+    // Revoke any blob URL created via setSrc()
+    this.revokeSrc()
 
     // Stop and disconnect buffer node
     if (this.bufferNode) {
@@ -133,7 +196,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
   set src(value: string) {
     this.currentSrc = value
-    this._duration = undefined
+    this.explicitDuration = undefined
     // A new load starts with a clean slate, like HTMLMediaElement.error
     this.error = null
 
@@ -147,6 +210,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
     if (!value) {
       this.buffer = null
+      this.signals.duration.set(this.duration)
       this.emit('emptied')
       return
     }
@@ -169,6 +233,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
         if (generation !== this.srcGeneration) return
 
         this.buffer = audioBuffer
+        this.signals.duration.set(this.duration)
 
         this.emit('loadedmetadata')
         this.emit('canplay')
@@ -198,7 +263,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     if (this.buffer) {
       this.bufferNode.buffer = this.buffer
     }
-    this.bufferNode.playbackRate.value = this._playbackRate
+    this.bufferNode.playbackRate.value = this.rate
     this.bufferNode.connect(this.gainNode)
 
     let currentPos = this.playbackPosition
@@ -242,19 +307,26 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
       this.audioContext.resume().catch(() => undefined)
     }
     this._play()
+    this.signals.isPlaying.set(true)
     this.emit('play')
   }
 
   pause() {
     if (this.paused) return
     this._pause()
+    this.signals.isPlaying.set(false)
     this.emit('pause')
   }
 
+  /**
+   * Schedule playback to stop at the given time, sample-accurately on the
+   * AudioContext clock.
+   * @internal
+   */
   stopAt(timeSeconds: number) {
     // The stop is scheduled on the AudioContext clock, so convert the remaining
     // media time to real time via the playback rate
-    const delay = (timeSeconds - this.currentTime) / this._playbackRate
+    const delay = (timeSeconds - this.currentTime) / this.rate
     const currentBufferNode = this.bufferNode
     // A stop time already in the past would make AudioScheduledSourceNode.stop()
     // throw a RangeError -- clamp to "now" (stop immediately) instead.
@@ -278,6 +350,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
             // The 'ended' event fires with some latency, so clamp the reported
             // position to the exact stop time
             this.playbackPosition = Math.min(timeSeconds, this.duration)
+            this.signals.currentTime.set(this.playbackPosition)
             this.emit('timeupdate')
           }
         },
@@ -292,23 +365,26 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   get playbackRate() {
-    return this._playbackRate
+    return this.rate
   }
   set playbackRate(value) {
     const wasPlaying = !this.paused
     if (wasPlaying) this._pause()
-    this._playbackRate = value
+    this.rate = value
     if (wasPlaying) this._play()
 
     if (this.bufferNode) {
       this.bufferNode.playbackRate.value = value
     }
+
+    this.signals.playbackRate.set(value)
+    this.emit('ratechange')
   }
 
   get currentTime() {
     return this.paused
       ? this.playbackPosition
-      : this.playbackPosition + (this.audioContext.currentTime - this.playStartTime) * this._playbackRate
+      : this.playbackPosition + (this.audioContext.currentTime - this.playStartTime) * this.rate
   }
   set currentTime(value) {
     const wasPlaying = !this.paused
@@ -317,19 +393,25 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.playbackPosition = value
     if (wasPlaying) this._play()
 
+    this.signals.currentTime.set(value)
+
     // Seeks in a buffer player are instantaneous, so 'seeked' follows
-    // 'seeking' immediately. Without it, Player's seeking-state bridge
-    // (set true on 'seeking', cleared only on 'seeked') sticks forever.
+    // 'seeking' immediately. Without it, the seeking state (set on 'seeking',
+    // cleared only on 'seeked') would stick forever.
+    this.signals.seeking.set(true)
     this.emit('seeking')
+    this.signals.seeking.set(false)
     this.emit('seeked')
     this.emit('timeupdate')
   }
 
   get duration() {
-    return this._duration ?? (this.buffer?.duration || 0)
+    return this.explicitDuration ?? (this.buffer?.duration || 0)
   }
   set duration(value: number) {
-    this._duration = value
+    this.explicitDuration = value
+    this.signals.duration.set(this.duration)
+    this.emit('durationchange')
   }
 
   get volume() {
@@ -337,21 +419,25 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
   set volume(value) {
     this.gainNode.gain.value = value
+    this.signals.volume.set(value)
     this.emit('volumechange')
   }
 
   get muted() {
-    return this._muted
+    return this.mutedState
   }
   set muted(value: boolean) {
-    if (this._muted === value) return
-    this._muted = value
+    if (this.mutedState === value) return
+    this.mutedState = value
 
-    if (this._muted) {
+    if (this.mutedState) {
       this.gainNode.disconnect()
     } else {
       this.gainNode.connect(this.audioContext.destination)
     }
+
+    this.signals.muted.set(value)
+    this.emit('volumechange')
   }
 
   public canPlayType(mimeType: string) {
@@ -375,7 +461,8 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   /**
-   * Imitate `HTMLElement.removeAttribute` for compatibility with `Player`.
+   * Imitate `HTMLElement.removeAttribute` for compatibility with the media
+   * element API.
    */
   public removeAttribute(attrName: string) {
     switch (attrName) {
@@ -398,6 +485,117 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
         this.muted = false
         break
     }
+  }
+
+  // The Player playback API, implemented over the media-element-like
+  // accessors above.
+
+  /** Check if the audio is playing */
+  public isPlaying(): boolean {
+    return !this.paused
+  }
+
+  /** Check if the audio is seeking */
+  public isSeeking(): boolean {
+    return this.seeking
+  }
+
+  /** Jump to a specific time in the audio (in seconds) */
+  public setTime(time: number) {
+    this.currentTime = this.clampTime(time, this.duration)
+  }
+
+  /** Get the duration of the audio in seconds */
+  public getDuration(): number {
+    return this.duration
+  }
+
+  /** Get the current audio position in seconds */
+  public getCurrentTime(): number {
+    return this.currentTime
+  }
+
+  /** Get the audio volume */
+  public getVolume(): number {
+    return this.volume
+  }
+
+  /** Set the audio volume */
+  public setVolume(volume: number) {
+    this.volume = volume
+  }
+
+  /** Get the audio muted state */
+  public getMuted(): boolean {
+    return this.muted
+  }
+
+  /** Mute or unmute the audio */
+  public setMuted(muted: boolean) {
+    this.muted = muted
+  }
+
+  /** Get the playback speed */
+  public getPlaybackRate(): number {
+    return this.playbackRate
+  }
+
+  /** Set the playback speed. An AudioBufferSourceNode's playbackRate never preserves pitch, so preservePitch is ignored. */
+  public setPlaybackRate(rate: number, preservePitch?: boolean) {
+    void preservePitch
+    this.playbackRate = rate
+  }
+
+  /**
+   * Get the current media source URL.
+   * @internal
+   */
+  public getSrc(): string {
+    return this.currentSrc
+  }
+
+  /**
+   * Set the media source, preferring a blob URL when the blob is playable.
+   * @internal
+   */
+  public setSrc(url: string, blob?: Blob) {
+    const prevSrc = this.getSrc()
+    if (url && prevSrc === url) return // no need to change the source
+
+    const newSrc = this.resolveSrc(url, blob)
+
+    // Reset the player first, otherwise it keeps the previous source
+    if (prevSrc) {
+      this.src = ''
+    }
+
+    if (newSrc || url) {
+      this.src = newSrc
+    }
+  }
+
+  /**
+   * Overwrite the reported duration -- used when there is no URL to decode.
+   * @internal
+   */
+  public setDuration(duration: number): void {
+    this.duration = duration
+  }
+
+  /**
+   * There is no HTML media element under the WebAudio backend.
+   * @internal
+   */
+  public getMediaElement(): HTMLMediaElement | null {
+    return null
+  }
+
+  /**
+   * The current playback error, if any.
+   * @internal
+   */
+  public getError(): Error | null {
+    return this.error
   }
 }
 

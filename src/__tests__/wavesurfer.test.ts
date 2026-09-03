@@ -239,7 +239,8 @@ describe('WaveSurfer public methods', () => {
     const spy = jest.spyOn(ws, 'setTime')
     await ws.play(2, 4)
     expect(spy).toHaveBeenCalledWith(2)
-    expect((ws as any).stopAtPosition).toBe(4)
+    // The stop is scheduled inside the media-element player
+    expect((ws as any).player.stopAtPosition).toBe(4)
   })
 
   test('pauses and clamps time to the exact stop position when playback overshoots it', async () => {
@@ -248,12 +249,11 @@ describe('WaveSurfer public methods', () => {
     Object.defineProperty(media, 'paused', { configurable: true, value: false })
     await ws.play(1, 2)
 
-    // Simulate the clock overshooting the stop position between scheduler ticks.
-    // ws.play() resolves media.play() (mocked) but jsdom never dispatches a real
-    // 'play' event, so the scheduler is never actually started here -- invoke
-    // the tick body (a private field on the instance) directly instead.
+    // Simulate the clock overshooting the stop position between watcher ticks.
+    // The FrameScheduler module is mocked in this file (start() never ticks),
+    // so invoke the player's stop-at check (a private method) directly.
     media.currentTime = 2.013
-    ;(ws as any).onTick()
+    ;(ws as any).player.checkStopAt()
 
     expect(media.pause).toHaveBeenCalled()
     expect(ws.getCurrentTime()).toBe(2)
@@ -943,8 +943,8 @@ describe('WebAudio backend teardown', () => {
     try {
       const ws = WaveSurfer.create({ container: document.createElement('div'), backend: 'WebAudio' })
       ws.destroy()
-      // Player.destroy() classifies the internally-created WebAudioPlayer as
-      // external media and skips it; WaveSurfer.destroy() must tear it down.
+      // The internally-created WebAudioPlayer IS the player and is owned by
+      // WaveSurfer, so destroy() tears it down fully.
       expect(gainNode.disconnect).toHaveBeenCalled()
       expect(close).toHaveBeenCalled()
     } finally {
@@ -975,8 +975,9 @@ describe('WebAudio backend composition', () => {
       // v8 breaking change: no HTML media element exists under the WebAudio
       // backend, so getMediaElement() is honest and returns null
       expect(webAudioWs.getMediaElement()).toBeNull()
-      // The raw media (the WebAudioPlayer) is still reachable internally
-      expect((webAudioWs as any).player.getMediaElement()).toBe((webAudioWs as any).webAudioPlayer)
+      // The WebAudioPlayer IS the player under this backend
+      expect((webAudioWs as any).player).toBe((webAudioWs as any).internalWebAudioPlayer)
+      expect((webAudioWs as any).player.getMediaElement()).toBeNull()
       webAudioWs.destroy()
 
       const mediaWs = createWs()
@@ -993,17 +994,16 @@ describe('WebAudio backend composition', () => {
     ;(globalThis as any).AudioContext = MockAudioContext
     try {
       const ws = WaveSurfer.create({ container: document.createElement('div'), backend: 'WebAudio' })
-      const webAudioPlayer = (ws as any).webAudioPlayer
-      expect(webAudioPlayer).toBeTruthy()
+      const webAudioPlayer = (ws as any).player
+      expect(webAudioPlayer).toBe((ws as any).internalWebAudioPlayer)
       jest.spyOn(webAudioPlayer, 'play').mockResolvedValue(undefined)
       const stopAtSpy = jest.spyOn(webAudioPlayer, 'stopAt').mockImplementation(() => undefined)
 
       await ws.play(10, 15)
 
+      // The stop is scheduled sample-accurately on the WebAudioPlayer itself,
+      // not via the rAF watcher the media-element player uses
       expect(stopAtSpy).toHaveBeenCalledWith(15)
-      // The stop is delegated to the WebAudioPlayer, not the rAF-based
-      // stopAtPosition fallback used by the media-element backend
-      expect((ws as any).stopAtPosition).toBeNull()
       ws.destroy()
     } finally {
       ;(globalThis as any).AudioContext = originalAudioContext

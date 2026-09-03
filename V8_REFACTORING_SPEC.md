@@ -504,6 +504,16 @@ sequential commits on `claude/v8-architecture-code-review-lputno` (per-stage, no
 6. **Stage 5 — R2** ✅ (`a0aa1e0`): WaveSurfer owns Player by composition; the
    `as unknown as HTMLAudioElement` lie and scattered `instanceof` branches are gone;
    `getMediaElement(): HTMLMediaElement | null` (null under WebAudio).
+   **Amended (post-beta.5):** the first cut kept a concrete `Player` wrapping the
+   WebAudioPlayer duck-typed as an HTMLMediaElement ("the ONE acknowledged
+   duck-typing boundary"). The intended shape landed as an abstract class rather
+   than the `PlaybackBackend` interface sketched above: abstract `Player`
+   (signals + blob-URL bookkeeping + the API contract) with `MediaElementPlayer`
+   (HTML media element, pending-seek workaround, rAF stop-at watcher) and
+   `WebAudioPlayer` (AudioContext/AudioBufferSourceNode, composed media-event
+   emitter) as its two implementations. `stopAt`/`setDuration`/`getError` are
+   polymorphic, so the duck-typing boundary and the remaining backend branches
+   in WaveSurfer are gone.
 7. **Stage 6 — R3** ✅ (`868ab00`, `3bc655d`): Renderer exposes signals instead of an
    event bus, `initRendererEvents` is the one signals→public-events bridge, public
    `dist/wavesurfer.d.ts` byte-identical; eslint bans `extends EventEmitter` across

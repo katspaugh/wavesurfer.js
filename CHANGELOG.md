@@ -69,6 +69,22 @@ and a couple of narrow, intentionally-fixed behaviors.
 
 ### Changed
 
+- **The playback engine is now a proper class hierarchy: an abstract `Player`
+  (`dist/player.js`) with two implementations — `MediaElementPlayer`
+  (`dist/media-element-player.js`, the HTML media element backend) and
+  `WebAudioPlayer` (`dist/webaudio.js`, the AudioContext/AudioBufferSourceNode
+  backend).** Previously the concrete `Player` wrapped a `WebAudioPlayer`
+  duck-typed as an `HTMLMediaElement`; now `WaveSurfer` composes whichever
+  implementation applies and every backend difference (scheduled stops,
+  duration back-patching, error normalization, `getMediaElement()`
+  nullability) is polymorphic. `WebAudioPlayer`'s public media-element-like
+  surface (`src`, `currentTime`, `play()`/`pause()`, `addEventListener`,
+  `getGainNode()`, `getChannelData()`, …) is unchanged, but it now `extends
+  Player` instead of `EventEmitter` (its emitter is composed internally), so
+  code relying on `webAudioPlayer instanceof EventEmitter` breaks; `on`/`un`/
+  `once`/`unAll` still exist. A deep-importing consumer of `dist/player.js`
+  (never a documented entry point) must switch to
+  `dist/media-element-player.js` for the concrete media-element player.
 - **`package.json`#`exports`' `"./dist/*"` deep-import wildcard is narrowed to
   `"./dist/*.js"`** (`types`/`import` only — no `require` condition, since
   there's no per-module `.cjs` build for internal `dist/` modules under

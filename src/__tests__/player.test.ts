@@ -1,6 +1,6 @@
-import Player from '../player.js'
+import MediaElementPlayer from '../media-element-player.js'
 
-class TestPlayer extends Player {
+class TestPlayer extends MediaElementPlayer {
   public setSource(url: string) {
     this.setSrc(url)
   }
@@ -14,7 +14,7 @@ class TestPlayer extends Player {
   }
 }
 
-describe('Player', () => {
+describe('MediaElementPlayer', () => {
   const createMedia = () => {
     const media = document.createElement('audio') as HTMLMediaElement & {
       play: jest.Mock
@@ -29,7 +29,7 @@ describe('Player', () => {
 
   test('play and pause', async () => {
     const media = createMedia()
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     await player.play()
     expect(media.play).toHaveBeenCalled()
     player.pause()
@@ -46,7 +46,7 @@ describe('Player', () => {
           rejectPlay = reject
         }),
     )
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     const promise = player.play()
     player.pause()
     rejectPlay(abort)
@@ -55,7 +55,7 @@ describe('Player', () => {
 
   test('volume and muted', () => {
     const media = createMedia()
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     player.setVolume(0.5)
     expect(player.getVolume()).toBe(0.5)
     player.setMuted(true)
@@ -65,7 +65,7 @@ describe('Player', () => {
   test('setTime clamps to duration', () => {
     const media = createMedia()
     Object.defineProperty(media, 'duration', { configurable: true, value: 10 })
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     player.setTime(-1)
     expect(player.getCurrentTime()).toBe(0)
     player.setTime(11)
@@ -88,7 +88,7 @@ describe('Player', () => {
       },
     })
 
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     player.setTime(10)
     expect(assignedTimes).toEqual([])
     expect(player.getCurrentTime()).toBe(10)
@@ -116,7 +116,7 @@ describe('Player', () => {
       },
     })
 
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     player.setTime(10)
     player.setTime(20)
     readyState = 3
@@ -139,7 +139,7 @@ describe('Player', () => {
       },
     })
 
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     player.setTime(10)
     currentTime = 20
     media.dispatchEvent(new Event('seeking'))
@@ -166,7 +166,7 @@ describe('Player', () => {
       expect(currentTime).toBe(10)
     })
 
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     player.setTime(10)
     readyState = 3
 
@@ -194,7 +194,7 @@ describe('Player', () => {
       expect(currentTime).toBe(10)
     })
 
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     player.setTime(10)
 
     await player.play()
@@ -207,7 +207,7 @@ describe('Player', () => {
     Object.defineProperty(media, 'readyState', { configurable: true, value: 3 })
     Object.defineProperty(media, 'currentTime', { configurable: true, value: 0, writable: true })
 
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     player.setTime(10)
 
     expect(media.currentTime).toBe(10)
@@ -290,7 +290,7 @@ describe('Player', () => {
       },
     })
 
-    const player = new Player({ media, playbackRate: 2 })
+    const player = new MediaElementPlayer({ media, playbackRate: 2 })
     player.destroy()
 
     // The external media element outlives the player; the one-shot 'canplay'
@@ -301,7 +301,7 @@ describe('Player', () => {
 
   test('setSinkId uses media method', async () => {
     const media = createMedia()
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
     await player.setSinkId('id')
     expect(media.setSinkId).toHaveBeenCalledWith('id')
   })
@@ -309,56 +309,56 @@ describe('Player', () => {
   describe('reactive signals', () => {
     test('exposes isPlayingSignal', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       expect(player.isPlayingSignal).toBeDefined()
       expect(player.isPlayingSignal.value).toBe(false)
     })
 
     test('exposes currentTimeSignal', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       expect(player.currentTimeSignal).toBeDefined()
       expect(player.currentTimeSignal.value).toBe(0)
     })
 
     test('exposes durationSignal', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       expect(player.durationSignal).toBeDefined()
       expect(typeof player.durationSignal.value).toBe('number')
     })
 
     test('exposes volumeSignal', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       expect(player.volumeSignal).toBeDefined()
       expect(typeof player.volumeSignal.value).toBe('number')
     })
 
     test('exposes mutedSignal', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       expect(player.mutedSignal).toBeDefined()
       expect(typeof player.mutedSignal.value).toBe('boolean')
     })
 
     test('exposes playbackRateSignal', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       expect(player.playbackRateSignal).toBeDefined()
       expect(typeof player.playbackRateSignal.value).toBe('number')
     })
 
     test('exposes seekingSignal', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       expect(player.seekingSignal).toBeDefined()
       expect(player.seekingSignal.value).toBe(false)
     })
 
     test('isPlayingSignal updates on play event', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       expect(player.isPlayingSignal.value).toBe(false)
       media.dispatchEvent(new Event('play'))
       expect(player.isPlayingSignal.value).toBe(true)
@@ -366,7 +366,7 @@ describe('Player', () => {
 
     test('isPlayingSignal updates on pause event', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       media.dispatchEvent(new Event('play'))
       expect(player.isPlayingSignal.value).toBe(true)
       media.dispatchEvent(new Event('pause'))
@@ -375,7 +375,7 @@ describe('Player', () => {
 
     test('isPlayingSignal updates on ended event', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       media.dispatchEvent(new Event('play'))
       expect(player.isPlayingSignal.value).toBe(true)
       media.dispatchEvent(new Event('ended'))
@@ -385,7 +385,7 @@ describe('Player', () => {
     test('currentTimeSignal updates on timeupdate event', () => {
       const media = createMedia()
       Object.defineProperty(media, 'currentTime', { configurable: true, value: 5.5, writable: true })
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       expect(player.currentTimeSignal.value).toBe(0)
       media.dispatchEvent(new Event('timeupdate'))
       expect(player.currentTimeSignal.value).toBe(5.5)
@@ -394,14 +394,14 @@ describe('Player', () => {
     test('durationSignal updates on durationchange event', () => {
       const media = createMedia()
       Object.defineProperty(media, 'duration', { configurable: true, value: 120.5, writable: true })
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       media.dispatchEvent(new Event('durationchange'))
       expect(player.durationSignal.value).toBe(120.5)
     })
 
     test('seekingSignal updates on seeking and seeked events', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       expect(player.seekingSignal.value).toBe(false)
       media.dispatchEvent(new Event('seeking'))
       expect(player.seekingSignal.value).toBe(true)
@@ -411,7 +411,7 @@ describe('Player', () => {
 
     test('volumeSignal and mutedSignal update on volumechange event', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       Object.defineProperty(media, 'volume', { configurable: true, value: 0.7, writable: true })
       Object.defineProperty(media, 'muted', { configurable: true, value: true, writable: true })
       media.dispatchEvent(new Event('volumechange'))
@@ -421,11 +421,115 @@ describe('Player', () => {
 
     test('playbackRateSignal updates on ratechange event', () => {
       const media = createMedia()
-      const player = new Player({ media })
+      const player = new MediaElementPlayer({ media })
       Object.defineProperty(media, 'playbackRate', { configurable: true, value: 1.5, writable: true })
       media.dispatchEvent(new Event('ratechange'))
       expect(player.playbackRateSignal.value).toBe(1.5)
     })
+  })
+})
+
+describe('stopAt', () => {
+  beforeEach(() => {
+    // Deterministic rAF so the stop-at watcher's frames can be flushed by hand
+    let id = 0
+    const pending = new Map<number, FrameRequestCallback>()
+    ;(global as any).requestAnimationFrame = (cb: FrameRequestCallback) => {
+      pending.set(++id, cb)
+      return id
+    }
+    ;(global as any).cancelAnimationFrame = (i: number) => pending.delete(i)
+    ;(global as any).__flushFrames = (n = 1) => {
+      for (let k = 0; k < n; k++) {
+        const cbs = [...pending.values()]
+        pending.clear()
+        cbs.forEach((cb) => cb(performance.now()))
+      }
+    }
+  })
+
+  const createPlayingMedia = () => {
+    const media = document.createElement('audio') as HTMLMediaElement & { play: jest.Mock; pause: jest.Mock }
+    media.play = jest.fn().mockResolvedValue(undefined)
+    media.pause = jest.fn()
+    let currentTime = 0
+    Object.defineProperty(media, 'duration', { configurable: true, value: 10 })
+    Object.defineProperty(media, 'readyState', { configurable: true, value: 3 })
+    Object.defineProperty(media, 'paused', { configurable: true, value: false })
+    Object.defineProperty(media, 'currentTime', {
+      configurable: true,
+      get: () => currentTime,
+      set: (value: number) => {
+        currentTime = value
+      },
+    })
+    return media
+  }
+
+  test('the rAF watcher pauses and clamps to the stop position when playback overshoots it', () => {
+    const media = createPlayingMedia()
+    const player = new MediaElementPlayer({ media })
+
+    player.stopAt(5)
+    media.currentTime = 5.02
+    ;(global as any).__flushFrames(1)
+
+    expect(media.pause).toHaveBeenCalled()
+    expect(media.currentTime).toBe(5)
+    player.destroy()
+  })
+
+  test("the 'timeupdate' bridge enforces the stop too (rAF is suspended in hidden tabs)", () => {
+    const media = createPlayingMedia()
+    const player = new MediaElementPlayer({ media })
+
+    player.stopAt(5)
+    media.currentTime = 6
+    media.dispatchEvent(new Event('timeupdate'))
+
+    expect(media.pause).toHaveBeenCalled()
+    expect(media.currentTime).toBe(5)
+    player.destroy()
+  })
+
+  test('a pause cancels the scheduled stop', () => {
+    const media = createPlayingMedia()
+    const player = new MediaElementPlayer({ media })
+
+    player.stopAt(5)
+    media.dispatchEvent(new Event('pause'))
+    media.currentTime = 6
+    media.dispatchEvent(new Event('timeupdate'))
+
+    expect(media.pause).not.toHaveBeenCalled()
+    expect(media.currentTime).toBe(6)
+    player.destroy()
+  })
+
+  test('an explicit seek cancels the scheduled stop', () => {
+    const media = createPlayingMedia()
+    const player = new MediaElementPlayer({ media })
+
+    player.stopAt(5)
+    player.setTime(1)
+    media.currentTime = 6
+    media.dispatchEvent(new Event('timeupdate'))
+
+    expect(media.pause).not.toHaveBeenCalled()
+    player.destroy()
+  })
+
+  test('setting a new source cancels the scheduled stop', () => {
+    const media = createPlayingMedia()
+    const player = new MediaElementPlayer({ media })
+
+    player.stopAt(5)
+    player.setSrc('https://example.com/next.mp3')
+    media.currentTime = 6
+    media.dispatchEvent(new Event('timeupdate'))
+
+    expect(media.pause).not.toHaveBeenCalled()
+    player.destroy()
   })
 })
 
@@ -434,7 +538,7 @@ describe('setTime before metadata', () => {
     const media = document.createElement('audio')
     // No src: readyState 0, duration NaN -- the pre-metadata state
     expect(Number.isNaN(media.duration)).toBe(true)
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
 
     player.setTime(10)
 
@@ -450,7 +554,7 @@ describe('setTime before metadata', () => {
     const media = document.createElement('audio')
     Object.defineProperty(media, 'duration', { configurable: true, value: 5 })
     Object.defineProperty(media, 'readyState', { configurable: true, value: 4 })
-    const player = new Player({ media })
+    const player = new MediaElementPlayer({ media })
 
     player.setTime(10)
     expect(player.getCurrentTime()).toBe(5)

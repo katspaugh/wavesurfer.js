@@ -185,8 +185,10 @@ export function createWaveSurferState(playerSignals?: PlayerSignals): {
   // (marked @internal on WaveSurferActions above) have no caller in
   // WaveSurfer's own wiring: when playerSignals are supplied, WaveSurfer
   // writes to the composed currentTime/duration/isPlaying/isSeeking/volume
-  // signals exclusively through Player (media events -> Player's own
-  // signals, which ARE these signals by reference -- see PlayerSignals).
+  // signals exclusively through the Player pipeline (media events/mutations
+  // -> the Player's own signals -> WaveSurfer's mirrored playbackSignals,
+  // which ARE these signals by reference -- see bindPlayerSignals in
+  // wavesurfer.ts).
   // They're kept, not deleted, because they're part of this module's
   // standalone/direct-use public contract (see the dedicated test coverage
   // in wavesurfer-state.test.ts) independent of the WaveSurfer integration.

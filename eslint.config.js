@@ -106,8 +106,9 @@ export default compat.config({
         // The plugin chassis: plugins' public per-plugin events (ctx.emit)
         // ride on BasePlugin's emitter.
         'src/base-plugin.ts',
-        // WebAudioPlayer emulates the HTMLMediaElement event surface -- a
-        // media boundary consumed like a media element, not an internal bus.
+        // WebAudioPlayer's composed MediaEventEmitter emulates the
+        // HTMLMediaElement event surface -- a media boundary consumed like a
+        // media element, not an internal bus.
         'src/webaudio.ts',
         // Regions' SingleRegion: each region object is a public per-region
         // event surface (users call region.on('update', ...)).
@@ -151,11 +152,11 @@ export default compat.config({
         // propagates -- so the listener cannot outlive the fetch regardless
         // of how/when destroy() runs elsewhere.
         'src/fetcher.ts',
-        // Player.onMediaEvent() is allowlisted at the call site (a
-        // line-level eslint-disable-next-line), not here -- see that method
-        // in player.ts. It's the file's only raw-acquisition call, so a
-        // file-wide entry isn't needed and would hide any new one added
-        // later in this (357-line) file.
+        // MediaElementPlayer.onMediaEvent() is allowlisted at the call site
+        // (a line-level eslint-disable-next-line), not here -- see that
+        // method in media-element-player.ts. It's the file's only
+        // raw-acquisition call, so a file-wide entry isn't needed and would
+        // hide any new one added later in the file.
       ],
       rules: {
         'no-restricted-syntax': 'off',
