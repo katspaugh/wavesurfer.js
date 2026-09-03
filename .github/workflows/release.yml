@@ -28,6 +28,16 @@ jobs:
           if [ -z "$PUBLISHED_VERSION" ]; then
             echo "New version $NEW_VERSION detected"
             echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            # Publish prereleases (e.g. 8.0.0-beta.4) under their prerelease
+            # dist-tag (beta) so they don't overwrite "latest" on npm
+            PRERELEASE_ID=$(echo "$NEW_VERSION" | sed -nE 's/^[0-9.]+-([A-Za-z]+).*/\1/p')
+            if [ -n "$PRERELEASE_ID" ]; then
+              echo "tag=$PRERELEASE_ID" >> $GITHUB_OUTPUT
+              echo "prerelease=true" >> $GITHUB_OUTPUT
+            else
+              echo "tag=latest" >> $GITHUB_OUTPUT
+              echo "prerelease=false" >> $GITHUB_OUTPUT
+            fi
             LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
             git log "$LAST_TAG"..HEAD --pretty=format:"* %s by %ae" | sed -E 's/by [0-9]+\+(.+)@users.noreply.github.com/by @\1/g' | sed -E 's/ by @?katspaugh.*//g' > TEMP_CHANGELOG.md
             echo -e "\n\n---\n[![npm](https://img.shields.io/npm/v/wavesurfer.js)](https://www.npmjs.com/package/wavesurfer.js/v/$NEW_VERSION)" >> TEMP_CHANGELOG.md
@@ -48,7 +58,7 @@ jobs:
         if: ${{ steps.version.outputs.version }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
-        run: npm publish
+        run: npm publish --tag ${{ steps.version.outputs.tag }}
 
       - name: Create a git tag
         if: ${{ steps.version.outputs.version }}
@@ -62,7 +72,7 @@ jobs:
         id: create_release
         with:
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
           name: ${{ steps.version.outputs.version }}
           tag_name: ${{ steps.version.outputs.version }}
           body_path: TEMP_CHANGELOG.md
