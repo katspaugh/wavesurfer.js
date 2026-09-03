@@ -30,9 +30,9 @@ jobs:
             echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
             # Publish prereleases (e.g. 8.0.0-beta.4) under their prerelease
             # dist-tag (beta) so they don't overwrite "latest" on npm
-            PRERELEASE_ID=$(echo "$NEW_VERSION" | sed -nE 's/^[0-9.]+-([A-Za-z]+).*/\1/p')
-            if [ -n "$PRERELEASE_ID" ]; then
-              echo "tag=$PRERELEASE_ID" >> $GITHUB_OUTPUT
+            if [[ "$NEW_VERSION" == *-* ]]; then
+              PRERELEASE_ID=$(echo "$NEW_VERSION" | sed -nE 's/^[^-]+-[^A-Za-z]*([A-Za-z]+).*/\1/p' | tr '[:upper:]' '[:lower:]')
+              echo "tag=${PRERELEASE_ID:-next}" >> $GITHUB_OUTPUT
               echo "prerelease=true" >> $GITHUB_OUTPUT
             else
               echo "tag=latest" >> $GITHUB_OUTPUT
