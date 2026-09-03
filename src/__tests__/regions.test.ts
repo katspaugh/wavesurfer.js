@@ -336,6 +336,188 @@ describe('RegionsPlugin post-destroy API', () => {
   })
 })
 
+describe('Region in/out detection on timeupdate', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    installMatchMediaStub()
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    document.body.innerHTML = ''
+    jest.clearAllMocks()
+  })
+
+  // #3631 / #3658 / #3781 / #3866: region.play() seeks to region.start, but
+  // media elements clamp/round currentTime, so the first 'timeupdate' can tick
+  // slightly BEFORE region.start (especially with many decimals). With an
+  // exact comparison the active region was considered "left" and a spurious
+  // 'region-out' fired within milliseconds of play().
+  test('does not fire region-out right after an in-tolerance seek to region.start', () => {
+    const wavesurfer = createWaveSurfer(20)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const start = 9.16454684654654
+    const region = plugin.addRegion({ start, end: 12 })
+
+    const regionIn = jest.fn()
+    const regionOut = jest.fn()
+    plugin.on('region-in', regionIn)
+    plugin.on('region-out', regionOut)
+
+    // Playback is inside the region, then the media element reports a tick
+    // that landed a hair before the high-precision start (clamped seek).
+    wavesurfer.emit('timeupdate', 10)
+    expect(regionIn).toHaveBeenCalledTimes(1)
+    expect(regionIn).toHaveBeenCalledWith(region)
+
+    wavesurfer.emit('timeupdate', 9.164546)
+
+    expect(regionOut).not.toHaveBeenCalled()
+    expect(regionIn).toHaveBeenCalledTimes(1) // still active, no re-entry either
+  })
+
+  test('fires region-in when currentTime is within tolerance before region.start', () => {
+    const wavesurfer = createWaveSurfer(20)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const region = plugin.addRegion({ start: 5, end: 7 })
+
+    const regionIn = jest.fn()
+    const regionOut = jest.fn()
+    plugin.on('region-in', regionIn)
+    plugin.on('region-out', regionOut)
+
+    // A seek to region.start that settled just before it counts as inside
+    wavesurfer.emit('timeupdate', 5 - 0.01)
+    expect(regionIn).toHaveBeenCalledTimes(1)
+    expect(regionIn).toHaveBeenCalledWith(region)
+
+    // Well before the tolerance window it must NOT count as inside
+    regionIn.mockClear()
+    wavesurfer.emit('timeupdate', 3)
+    expect(regionOut).toHaveBeenCalledTimes(1)
+    expect(regionOut).toHaveBeenCalledWith(region)
+    expect(regionIn).not.toHaveBeenCalled()
+  })
+
+  test('region-out still fires promptly past the region end', () => {
+    const wavesurfer = createWaveSurfer(20)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const region = plugin.addRegion({ start: 5, end: 7 })
+    const regionOut = jest.fn()
+    plugin.on('region-out', regionOut)
+
+    wavesurfer.emit('timeupdate', 6)
+    wavesurfer.emit('timeupdate', 7.001)
+
+    expect(regionOut).toHaveBeenCalledTimes(1)
+    expect(regionOut).toHaveBeenCalledWith(region)
+  })
+
+  test('keeps the 0.05s window for zero-length (marker) regions', () => {
+    const wavesurfer = createWaveSurfer(20)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const marker = plugin.addRegion({ start: 2 })
+
+    const regionIn = jest.fn()
+    const regionOut = jest.fn()
+    plugin.on('region-in', regionIn)
+    plugin.on('region-out', regionOut)
+
+    wavesurfer.emit('timeupdate', 2.03) // inside the marker's start + 0.05 window
+    expect(regionIn).toHaveBeenCalledTimes(1)
+    expect(regionIn).toHaveBeenCalledWith(marker)
+
+    wavesurfer.emit('timeupdate', 2.06) // past the window
+    expect(regionOut).toHaveBeenCalledTimes(1)
+    expect(regionOut).toHaveBeenCalledWith(marker)
+  })
+})
+
+describe('Region double-tap (touch) double-click', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    installMatchMediaStub()
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    document.body.innerHTML = ''
+    jest.clearAllMocks()
+  })
+
+  // #3927: 'dblclick' never fires for touch input on many mobile browsers, so
+  // two taps within 300ms must emit 'region-double-clicked' themselves.
+  test('double-tap emits region-double-clicked once', () => {
+    const wavesurfer = createWaveSurfer(10)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const region = plugin.addRegion({ start: 1, end: 2 })
+    const doubleClicked = jest.fn()
+    plugin.on('region-double-clicked', doubleClicked)
+
+    const element = region.element!
+    element.dispatchEvent(new Event('touchend'))
+    jest.advanceTimersByTime(100)
+    element.dispatchEvent(new Event('touchend'))
+
+    expect(doubleClicked).toHaveBeenCalledTimes(1)
+    const [regionArg, eventArg] = doubleClicked.mock.calls[0]
+    expect(regionArg).toBe(region)
+    expect(eventArg).toBeInstanceOf(MouseEvent)
+    expect(eventArg.type).toBe('dblclick')
+
+    // A native dblclick the browser fires right after the double tap
+    // (desktop-emulation) must be deduped, not emitted a second time.
+    jest.advanceTimersByTime(50)
+    element.dispatchEvent(new MouseEvent('dblclick'))
+    expect(doubleClicked).toHaveBeenCalledTimes(1)
+  })
+
+  test('two taps outside the 300ms window do not emit region-double-clicked', () => {
+    const wavesurfer = createWaveSurfer(10)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const region = plugin.addRegion({ start: 1, end: 2 })
+    const doubleClicked = jest.fn()
+    plugin.on('region-double-clicked', doubleClicked)
+
+    const element = region.element!
+    element.dispatchEvent(new Event('touchend'))
+    jest.advanceTimersByTime(400)
+    element.dispatchEvent(new Event('touchend'))
+
+    expect(doubleClicked).not.toHaveBeenCalled()
+  })
+
+  test('a plain desktop dblclick still emits region-double-clicked', () => {
+    const wavesurfer = createWaveSurfer(10)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const region = plugin.addRegion({ start: 1, end: 2 })
+    const doubleClicked = jest.fn()
+    plugin.on('region-double-clicked', doubleClicked)
+
+    const nativeEvent = new MouseEvent('dblclick')
+    region.element!.dispatchEvent(nativeEvent)
+
+    expect(doubleClicked).toHaveBeenCalledTimes(1)
+    expect(doubleClicked).toHaveBeenCalledWith(region, nativeEvent)
+  })
+})
+
 describe('Region drag against the waveform edges', () => {
   beforeEach(() => {
     jest.useFakeTimers()

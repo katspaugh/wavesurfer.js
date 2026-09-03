@@ -37,6 +37,13 @@ export type RecordPluginEvents = BasePluginEvents & {
   'record-resume': []
   /* When the recording stops, either by calling stopRecording or when the media recorder stops */
   'record-end': [blob: Blob]
+  /**
+   * Fires when an active recording (or paused recording) is stopped because the
+   * capture device ended on its own — e.g. a Bluetooth headset powered off or a
+   * dock was unplugged — rather than by a stopRecording()/destroy() call.
+   * A final 'record-end' with the recorded blob still follows.
+   */
+  'record-ended-externally': []
   /** Fires continuously while recording */
   'record-progress': [duration: number]
   /** On every new recorded chunk */
@@ -67,6 +74,11 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
   private duration = 0
   private micStream: MicStream | null = null
   private unsubscribeRecordEnd?: () => void
+  // Early-removal handles for the per-track 'ended' listeners registered in
+  // startMic(). Registered via this.scope.listen(), so a full destroy()
+  // (scope disposal) removes them even if stopMic() never ran; stopMic()
+  // calls these to remove them on a normal stop.
+  private unsubscribeTrackEnded: (() => void)[] = []
   private recordedBlobUrl: string | null = null
   // Snapshot of 'record-end' listeners taken at destroy() time when a recording is
   // still active. MediaRecorder.stop() fires 'onstop' via a queued task (async), so
@@ -306,7 +318,39 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     this.unsubscribeRecordEnd = this.once('record-end', micStream.onEnd)
     this.stream = stream
 
+    // Detect the capture device disappearing mid-session (e.g. a Bluetooth
+    // headset powering off, a dock being unplugged): the track then fires
+    // 'ended' on its own. Note that our own track.stop() calls (stopMic)
+    // do NOT fire 'ended', so this only catches external loss. Registered
+    // on the live scope so destroy() removes the listeners as a backstop;
+    // stopMic() removes them early on a normal stop.
+    this.unsubscribeTrackEnded = stream
+      .getTracks()
+      .map((track) => this.scope.listen(track, 'ended', () => this.handleTrackEnded()))
+
     return stream
+  }
+
+  /**
+   * A capture track ended on its own (device lost) rather than via our own
+   * track.stop() calls. Stop gracefully: the recorder's onstop still delivers
+   * the final blob through 'record-end', and 'record-ended-externally' lets
+   * the app tell this apart from a user-initiated stop.
+   */
+  private handleTrackEnded() {
+    if (this.isActive()) {
+      // Covers both recording and paused states. Emit before stopping so the
+      // app can update its UI knowing the 'record-end' that follows (async,
+      // from the recorder's queued onstop) was not user-initiated.
+      this.emit('record-ended-externally')
+      this.stopRecording()
+      // stopMic() (mic teardown, track-listener removal, option restore)
+      // runs via the once('record-end') subscription when onstop fires.
+    } else {
+      // Preview-only mic session (startMic without a recording): the device
+      // is gone, so tear down the monitoring instead of freezing silently.
+      this.stopMic()
+    }
   }
 
   /** Stop monitoring incoming audio */
@@ -315,6 +359,11 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     this.unsubscribeRecordEnd?.()
     this.micStream = null
     this.unsubscribeRecordEnd = undefined
+    // Remove the per-track 'ended' listeners before stopping the tracks.
+    // track.stop() doesn't fire 'ended', so this is about not leaking
+    // listeners across mic sessions, not about suppressing a spurious event.
+    this.unsubscribeTrackEnded.forEach((unsubscribe) => unsubscribe())
+    this.unsubscribeTrackEnded = []
     // renderMicStream() hijacked the host's options (interact, and in
     // scrolling mode cursorWidth/normalize/maxPeak); restore them when the
     // mic session ends. The record-end render path also restores (whichever

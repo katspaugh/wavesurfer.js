@@ -111,9 +111,31 @@ class MockAudioContext {
   }
 }
 
-function createFakeMicStream(): MediaStream {
+// Event-capable track mock: real MediaStreamTracks are EventTargets that fire
+// 'ended' when the capture device disappears (but NOT on our own stop() calls).
+class MockMediaStreamTrack {
+  stop = jest.fn()
+  addEventListener = jest.fn((type: string, listener: () => void) => {
+    if (type === 'ended') this.endedListeners.add(listener)
+  })
+  removeEventListener = jest.fn((type: string, listener: () => void) => {
+    if (type === 'ended') this.endedListeners.delete(listener)
+  })
+  private endedListeners = new Set<() => void>()
+
+  /** Simulate the device disappearing (dispatches 'ended' to listeners) */
+  end() {
+    this.endedListeners.forEach((listener) => listener())
+  }
+
+  get hasEndedListeners() {
+    return this.endedListeners.size > 0
+  }
+}
+
+function createFakeMicStream(tracks: MockMediaStreamTrack[] = [new MockMediaStreamTrack()]): MediaStream {
   return {
-    getTracks: () => [{ stop: jest.fn() }],
+    getTracks: () => tracks,
   } as unknown as MediaStream
 }
 
@@ -327,6 +349,146 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
       await flushMicrotasks()
       nowSpy.mockRestore()
     }
+  })
+})
+
+describe('RecordPlugin capture device loss (track "ended")', () => {
+  const originalAudioContext = global.AudioContext
+  const originalMediaRecorder = global.MediaRecorder
+  const originalMediaDevices = navigator.mediaDevices
+  const originalCreateObjectURL = URL.createObjectURL
+  const originalRevokeObjectURL = URL.revokeObjectURL
+
+  let track: MockMediaStreamTrack
+
+  beforeEach(() => {
+    global.AudioContext = MockAudioContext as unknown as typeof AudioContext
+    global.MediaRecorder = MockMediaRecorder as unknown as typeof MediaRecorder
+    track = new MockMediaStreamTrack()
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      writable: true,
+      value: { getUserMedia: jest.fn().mockResolvedValue(createFakeMicStream([track])) },
+    })
+    URL.createObjectURL = jest.fn(() => 'blob:mock-url')
+    URL.revokeObjectURL = jest.fn()
+  })
+
+  afterEach(() => {
+    global.AudioContext = originalAudioContext
+    global.MediaRecorder = originalMediaRecorder
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      writable: true,
+      value: originalMediaDevices,
+    })
+    URL.createObjectURL = originalCreateObjectURL
+    URL.revokeObjectURL = originalRevokeObjectURL
+  })
+
+  it('stops an active recording gracefully and emits record-ended-externally, then record-end with the blob', async () => {
+    const plugin = RecordPlugin.create()
+    const onEnd = jest.fn()
+    const onEndedExternally = jest.fn()
+    const callOrder: string[] = []
+    plugin.on('record-end', () => callOrder.push('record-end'))
+    plugin.on('record-ended-externally', () => callOrder.push('record-ended-externally'))
+    plugin.on('record-end', onEnd)
+    plugin.on('record-ended-externally', onEndedExternally)
+
+    await plugin.startRecording()
+    expect(plugin.isRecording()).toBe(true)
+    expect(track.hasEndedListeners).toBe(true)
+
+    // The device disappears (e.g. Bluetooth headset powers off)
+    track.end()
+
+    expect(onEndedExternally).toHaveBeenCalledTimes(1)
+    expect(plugin.isRecording()).toBe(false)
+    expect(plugin.isActive()).toBe(false)
+
+    // The recorder's queued onstop still delivers the final blob
+    await flushMicrotasks()
+    expect(onEnd).toHaveBeenCalledTimes(1)
+    expect(onEnd.mock.calls[0][0]).toBeInstanceOf(Blob)
+    expect(callOrder).toEqual(['record-ended-externally', 'record-end'])
+
+    // The mic session is fully torn down and listeners removed
+    expect(track.hasEndedListeners).toBe(false)
+    plugin.destroy()
+  })
+
+  it('handles device loss while the recording is paused', async () => {
+    const plugin = RecordPlugin.create()
+    const onEnd = jest.fn()
+    const onEndedExternally = jest.fn()
+    plugin.on('record-end', onEnd)
+    plugin.on('record-ended-externally', onEndedExternally)
+
+    await plugin.startRecording()
+    plugin.pauseRecording()
+    expect(plugin.isPaused()).toBe(true)
+
+    track.end()
+
+    expect(onEndedExternally).toHaveBeenCalledTimes(1)
+    expect(plugin.isActive()).toBe(false)
+    expect(plugin.isPaused()).toBe(false)
+
+    await flushMicrotasks()
+    expect(onEnd).toHaveBeenCalledTimes(1)
+    plugin.destroy()
+  })
+
+  it('does not emit record-ended-externally on a user-initiated stop', async () => {
+    const plugin = RecordPlugin.create()
+    const onEndedExternally = jest.fn()
+    plugin.on('record-ended-externally', onEndedExternally)
+
+    await plugin.startRecording()
+    plugin.stopRecording()
+    await flushMicrotasks()
+
+    expect(onEndedExternally).not.toHaveBeenCalled()
+    // Normal stop removed the track listeners along with the mic teardown
+    expect(track.hasEndedListeners).toBe(false)
+    plugin.destroy()
+  })
+
+  it('tears down a preview-only mic session on device loss without emitting recording events', async () => {
+    const plugin = RecordPlugin.create()
+    const onEnd = jest.fn()
+    const onEndedExternally = jest.fn()
+    plugin.on('record-end', onEnd)
+    plugin.on('record-ended-externally', onEndedExternally)
+
+    await plugin.startMic()
+    expect(track.hasEndedListeners).toBe(true)
+
+    track.end()
+
+    // No recording was active: nothing to end, just clean up the monitoring
+    expect(onEnd).not.toHaveBeenCalled()
+    expect(onEndedExternally).not.toHaveBeenCalled()
+    expect(track.hasEndedListeners).toBe(false)
+    expect((plugin as unknown as { stream: MediaStream | null }).stream).toBeNull()
+    plugin.destroy()
+  })
+
+  it('removes track listeners on destroy, and a late "ended" does nothing', async () => {
+    const plugin = RecordPlugin.create()
+    const onEndedExternally = jest.fn()
+    plugin.on('record-ended-externally', onEndedExternally)
+
+    await plugin.startRecording()
+    expect(track.hasEndedListeners).toBe(true)
+
+    plugin.destroy()
+    await flushMicrotasks()
+
+    expect(track.hasEndedListeners).toBe(false)
+    expect(() => track.end()).not.toThrow()
+    expect(onEndedExternally).not.toHaveBeenCalled()
   })
 })
 
