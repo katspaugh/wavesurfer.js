@@ -12,6 +12,7 @@ import { Scope } from '../scope.js'
 import { createDragStream } from '../reactive/drag-stream.js'
 import { effect } from '../reactive/store.js'
 import { fromEvent, cleanup as cleanupStream } from '../reactive/event-streams.js'
+import type WaveSurfer from '../wavesurfer.js'
 
 // The pre-port class took no options at all (`constructor(options?: undefined)`).
 // Kept as `undefined` here (the public alias) rather than widened, since
@@ -52,11 +53,14 @@ export type RegionsPluginEvents = BasePluginEvents & {
   'region-content-changed': [region: Region]
 }
 
+/** Which direction may be auto-scrolled when a region update overflows the scroll container */
+export type AutoScrollDirection = 'left' | 'right' | 'both' | 'none'
+
 export type RegionEvents = {
   /** Before the region is removed */
   remove: []
   /** When the region's parameters are being updated */
-  update: [side?: UpdateSide]
+  update: [side?: UpdateSide, autoScrollDirection?: AutoScrollDirection]
   /** When dragging or resizing is finished */
   'update-end': [side?: UpdateSide]
   /** When the region needs to be re-rendered */
@@ -104,6 +108,50 @@ export type RegionParams = {
   contentEditable?: boolean
 }
 
+/** How far each side of a region's element sticks out of the scroll container, in pixels */
+function getRegionSideOverflow(
+  element: HTMLElement | null,
+  scrollContainer: HTMLElement | null | undefined,
+): { overflowLeft: number; overflowRight: number } | undefined {
+  if (!element || !scrollContainer) return
+
+  const { clientWidth, scrollWidth } = scrollContainer
+  if (scrollWidth <= clientWidth) return
+
+  const scrollBbox = scrollContainer.getBoundingClientRect()
+  const bbox = element.getBoundingClientRect()
+  const left = bbox.left - scrollBbox.left
+  const right = bbox.right - scrollBbox.left
+
+  const boxOverflowsLeft = left < 0
+  const boxOverflowsRight = right > clientWidth
+
+  if (boxOverflowsLeft && boxOverflowsRight) {
+    return { overflowLeft: -left, overflowRight: right - clientWidth }
+  } else if (boxOverflowsRight) {
+    return { overflowLeft: 0, overflowRight: right - clientWidth }
+  } else if (boxOverflowsLeft) {
+    return { overflowLeft: -left, overflowRight: 0 }
+  }
+  return { overflowLeft: 0, overflowRight: 0 }
+}
+
+// Mutable holder shared between a gesture's pointer-move handler and its
+// 'scroll' handler, so each scroll delta is counted exactly once by whichever
+// of the two observes it first.
+type ScrollState = {
+  scrollLeft: number
+}
+
+/** Wrap a wavesurfer 'scroll' listener that reports the scroll delta since the last call */
+function createScrollHandler(scrollState: ScrollState, callback: (scrollDiff: number) => void) {
+  return (_start: number, _end: number, scrollLeft: number) => {
+    const scrollDiff = scrollLeft - scrollState.scrollLeft
+    scrollState.scrollLeft = scrollLeft
+    callback(scrollDiff)
+  }
+}
+
 class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public element: HTMLElement | null = null // Element is created on init
   public id: string
@@ -121,6 +169,9 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public contentEditable = false
   public updatingSide?: UpdateSide = undefined
   public isRemoved = false
+  /** True while the region body is being dragged; guards virtualization from detaching it mid-drag */
+  public isDragging = false
+  private autoScrollDirection: AutoScrollDirection = 'none'
   private resizeHandleCleanup: (() => void) | null = null
   private contentListenersCleanup: (() => void) | null = null
   /** True once initMouseEvents has run; controls whether setContent must (re)attach listeners itself */
@@ -137,6 +188,12 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
      */
     private scope: Scope,
     private numberOfChannels = 0,
+    /**
+     * The wavesurfer instance this region is rendered into, used to follow and
+     * drive the container's horizontal scroll while dragging or resizing.
+     * Null for inert regions created after the plugin was destroyed.
+     */
+    private wavesurfer: WaveSurfer | null = null,
   ) {
     super()
 
@@ -213,13 +270,30 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const leftDragStream = createDragStream(leftHandle, { threshold: resizeThreshold })
     const rightDragStream = createDragStream(rightHandle, { threshold: resizeThreshold })
 
+    // While a handle is being dragged, container scroll (from adjustScroll's
+    // auto-scrolling, or any other source) keeps resizing the region: each
+    // scroll delta is replayed as a resize delta, which re-triggers the
+    // 'update' -> adjustScroll loop until the handle leaves the edge.
+    const scrollState: ScrollState = { scrollLeft: 0 }
+    const leftScrollHandler = createScrollHandler(scrollState, (scrollDiff) => this.onResize(scrollDiff, 'start'))
+    const rightScrollHandler = createScrollHandler(scrollState, (scrollDiff) => this.onResize(scrollDiff, 'end'))
+    let unsubscribeLeftScroll: (() => void) | null = null
+    let unsubscribeRightScroll: (() => void) | null = null
+
     const removeLeftEffect = this.scope.add(
       effect(() => {
         const drag = leftDragStream.signal.value
         if (!drag) return
-        if (drag.type === 'move' && drag.deltaX !== undefined) {
+        if (drag.type === 'start') {
+          scrollState.scrollLeft = this.wavesurfer?.getScroll() ?? 0
+          if (this.wavesurfer) {
+            unsubscribeLeftScroll = this.scope.add(this.wavesurfer.on('scroll', leftScrollHandler))
+          }
+        } else if (drag.type === 'move' && drag.deltaX !== undefined) {
           this.onResize(drag.deltaX, 'start')
         } else if (drag.type === 'end') {
+          unsubscribeLeftScroll?.()
+          unsubscribeLeftScroll = null
           this.onEndResizing('start')
         }
       }, [leftDragStream.signal]),
@@ -229,9 +303,16 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       effect(() => {
         const drag = rightDragStream.signal.value
         if (!drag) return
-        if (drag.type === 'move' && drag.deltaX !== undefined) {
+        if (drag.type === 'start') {
+          scrollState.scrollLeft = this.wavesurfer?.getScroll() ?? 0
+          if (this.wavesurfer) {
+            unsubscribeRightScroll = this.scope.add(this.wavesurfer.on('scroll', rightScrollHandler))
+          }
+        } else if (drag.type === 'move' && drag.deltaX !== undefined) {
           this.onResize(drag.deltaX, 'end')
         } else if (drag.type === 'end') {
+          unsubscribeRightScroll?.()
+          unsubscribeRightScroll = null
           this.onEndResizing('end')
         }
       }, [rightDragStream.signal]),
@@ -249,6 +330,10 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       removeLeftEffect()
       removeRightEffect()
       removeStreamCleanup()
+      unsubscribeLeftScroll?.()
+      unsubscribeLeftScroll = null
+      unsubscribeRightScroll?.()
+      unsubscribeRightScroll = null
     }
   }
 
@@ -421,6 +506,10 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     // Drag
     const dragStream = createDragStream(element)
 
+    const scrollState: ScrollState = { scrollLeft: 0 }
+    const onScroll = createScrollHandler(scrollState, (scrollDiff) => this.onMove(scrollDiff))
+    let unsubscribeScroll: (() => void) | null = null
+
     this.scope.add(
       effect(() => {
         const drag = dragStream.signal.value
@@ -428,10 +517,30 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
 
         if (drag.type === 'start') {
           this.toggleCursor(true)
+          this.isDragging = true
+          this.autoScrollDirection = this.getAutoScrollDirection()
+          scrollState.scrollLeft = this.wavesurfer?.getScroll() ?? 0
+          if (this.wavesurfer) {
+            // While dragging, container scroll keeps moving the region: each
+            // scroll delta is replayed as a move delta, which re-triggers the
+            // 'update' -> adjustScroll loop while the region hugs an edge.
+            unsubscribeScroll = this.scope.add(this.wavesurfer.on('scroll', onScroll))
+          }
         } else if (drag.type === 'move' && drag.deltaX !== undefined) {
-          this.onMove(drag.deltaX)
+          // deltaX is in client coordinates and doesn't account for the
+          // container auto-scrolling under the pointer -- add any scroll
+          // delta not yet seen by the scroll handler (shared scrollState
+          // guarantees each delta is only counted once).
+          const scrollLeft = this.wavesurfer?.getScroll() ?? scrollState.scrollLeft
+          const scrollDiff = scrollLeft - scrollState.scrollLeft
+          scrollState.scrollLeft = scrollLeft
+          this.onMove(drag.deltaX + scrollDiff)
         } else if (drag.type === 'end') {
           this.toggleCursor(false)
+          this.isDragging = false
+          this.autoScrollDirection = 'none'
+          unsubscribeScroll?.()
+          unsubscribeScroll = null
           if (this.drag) this.emit('update-end')
         }
       }, [dragStream.signal]),
@@ -442,7 +551,25 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this.mouseEventsInitialized = true
   }
 
-  public _onUpdate(dx: number, side?: UpdateSide, startTime?: number) {
+  /**
+   * Which direction the container may auto-scroll for the drag that is
+   * starting: if a side of the region already overflows the container, only
+   * allow scrolling toward the opposite side (so a region parked against an
+   * edge doesn't immediately start scrolling further in that direction).
+   */
+  private getAutoScrollDirection(): AutoScrollDirection {
+    const scrollContainer = this.wavesurfer?.getWrapper()?.parentElement
+    const sideOverflow = getRegionSideOverflow(this.element, scrollContainer)
+    if (!sideOverflow) return 'none'
+
+    const { overflowLeft, overflowRight } = sideOverflow
+    if (overflowLeft > 0 && overflowRight > 0) return 'none'
+    if (overflowLeft > 0) return 'right'
+    if (overflowRight > 0) return 'left'
+    return 'both'
+  }
+
+  public _onUpdate(dx: number, side?: UpdateSide, startTime?: number, autoScrollDirection?: AutoScrollDirection) {
     if (!this.element?.parentElement) return
     const { width } = this.element.parentElement.getBoundingClientRect()
     const deltaSeconds = (dx / width) * this.totalDuration
@@ -484,20 +611,21 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       this.end = newEnd
 
       this.renderPosition()
-      this.emit('update', side)
+      this.emit('update', side, autoScrollDirection)
     }
   }
 
   private onMove(dx: number) {
     if (!this.drag) return
-    this._onUpdate(dx)
+    this._onUpdate(dx, undefined, undefined, this.autoScrollDirection)
   }
 
   private onResize(dx: number, side: UpdateSide) {
     if (!this.resize) return
     if (!this.resizeStart && side === 'start') return
     if (!this.resizeEnd && side === 'end') return
-    this._onUpdate(dx, side)
+    // Resizing may only auto-scroll toward the handle being dragged
+    this._onUpdate(dx, side, undefined, side === 'start' ? 'left' : 'right')
   }
 
   private onEndResizing(side: UpdateSide) {
@@ -847,20 +975,30 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       regions.forEach((region) => avoidOverlapping(region))
     }
 
-    function adjustScroll(region: Region) {
-      if (!region.element) return
+    function adjustScroll(region: Region, direction?: AutoScrollDirection) {
+      if (!direction || direction === 'none') return
       const scrollContainer = ctx.wavesurfer?.getWrapper()?.parentElement
-      if (!scrollContainer) return
-      const { clientWidth, scrollWidth } = scrollContainer
-      if (scrollWidth <= clientWidth) return
-      const scrollBbox = scrollContainer.getBoundingClientRect()
-      const bbox = region.element.getBoundingClientRect()
-      const left = bbox.left - scrollBbox.left
-      const right = bbox.right - scrollBbox.left
-      if (left < 0) {
-        scrollContainer.scrollLeft += left
-      } else if (right > clientWidth) {
-        scrollContainer.scrollLeft += right - clientWidth
+      const sideOverflow = getRegionSideOverflow(region.element, scrollContainer)
+      if (!scrollContainer || !sideOverflow) return
+
+      const { overflowLeft, overflowRight } = sideOverflow
+
+      // If both sides overflow (region wider than the viewport), only scroll
+      // in the single direction the gesture is headed
+      if (overflowLeft > 0 && overflowRight > 0) {
+        if (direction === 'left') {
+          scrollContainer.scrollLeft -= overflowLeft
+        } else if (direction === 'right') {
+          scrollContainer.scrollLeft += overflowRight
+        }
+        return
+      }
+
+      if (direction === 'left' || direction === 'both') {
+        scrollContainer.scrollLeft -= overflowLeft
+      }
+      if (direction === 'right' || direction === 'both') {
+        scrollContainer.scrollLeft += overflowRight
       }
     }
 
@@ -885,7 +1023,9 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
 
         if (isVisible && !element.parentElement) {
           container.appendChild(element)
-        } else if (!isVisible && element.parentElement) {
+        } else if (!isVisible && element.parentElement && !region.isDragging) {
+          // Never detach a region mid-drag: auto-scrolling can briefly push it
+          // out of view, and removing it would end the gesture
           element.remove()
         }
       }
@@ -912,11 +1052,8 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       regions.push(region)
 
       regionScope.add(
-        region.on('update', (side) => {
-          // Undefined side indicates that we are dragging not resizing
-          if (!side) {
-            adjustScroll(region)
-          }
+        region.on('update', (side, autoScrollDirection) => {
+          adjustScroll(region, autoScrollDirection)
           ctx.emit('region-update', region, side)
         }),
       )
@@ -980,7 +1117,7 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       const duration = ctx.wavesurfer.getDuration()
       const numberOfChannels = ctx.wavesurfer.getDecodedData()?.numberOfChannels
       const regionScope = ctx.scope.child()
-      const region = new SingleRegion(options, duration, regionScope, numberOfChannels)
+      const region = new SingleRegion(options, duration, regionScope, numberOfChannels, ctx.wavesurfer)
       ctx.emit('region-initialized', region)
 
       if (!duration) {
@@ -1017,6 +1154,22 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
 
       const dragStream = createDragStream(wrapper, { threshold })
 
+      // While creating a region, container scroll keeps growing it: each
+      // scroll delta is replayed as an update to the edge being dragged, and
+      // the container is kept scrolled to that edge.
+      const scrollState: ScrollState = { scrollLeft: 0 }
+      const onScroll = createScrollHandler(scrollState, (scrollDiff) => {
+        if (region && scrollDiff !== 0) {
+          region._onUpdate(scrollDiff, scrollDiff > 0 ? 'end' : 'start', startTime)
+          // Keep scrolling toward the edge being grown. A concrete direction
+          // (not 'both') so the loop keeps going even once the drag-created
+          // region has grown wider than the viewport (adjustScroll ignores
+          // 'both' when both sides overflow).
+          adjustScroll(region, scrollDiff > 0 ? 'right' : 'left')
+        }
+      })
+      let unsubscribeScroll: (() => void) | null = null
+
       const unsubscribe = effect(() => {
         const drag = dragStream.signal.value
         if (!drag) return
@@ -1029,9 +1182,13 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
           // Dispose it now rather than leaving it retained until the plugin
           // itself is destroyed.
           regionScope?.dispose()
+          unsubscribeScroll?.()
+          unsubscribeScroll = null
 
           startX = drag.x
           if (!ctx.wavesurfer) return
+          scrollState.scrollLeft = ctx.wavesurfer.getScroll()
+          unsubscribeScroll = ctx.scope.add(ctx.wavesurfer.on('scroll', onScroll))
           const duration = ctx.wavesurfer.getDuration()
           const numberOfChannels = ctx.wavesurfer?.getDecodedData()?.numberOfChannels
           const { width } = ctx.wavesurfer.getWrapper().getBoundingClientRect()
@@ -1053,6 +1210,7 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
             duration,
             regionScope,
             numberOfChannels,
+            ctx.wavesurfer,
           )
 
           ctx.emit('region-initialized', region)
@@ -1067,9 +1225,13 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
             // Update the end position of the region
             // If we're dragging to the left, we need to update the start instead
             region._onUpdate(drag.deltaX, drag.x > startX ? 'end' : 'start', startTime)
+            // Auto-scroll toward the edge being dragged
+            adjustScroll(region, drag.x > startX ? 'right' : 'left')
           }
         } else if (drag.type === 'end') {
           // On drag end
+          unsubscribeScroll?.()
+          unsubscribeScroll = null
           if (region && regionScope) {
             // Enforce minLength on the just-created region: mid-drag it
             // necessarily passes through sub-minLength sizes (see _onUpdate),
@@ -1094,6 +1256,11 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       return ctx.scope.add(() => {
         unsubscribe()
         dragStream.cleanup()
+        // A creation gesture may be mid-flight when drag selection is
+        // disabled: drop its scroll listener too, or waveform scrolls would
+        // keep mutating the abandoned region until the plugin is destroyed.
+        unsubscribeScroll?.()
+        unsubscribeScroll = null
       })
     }
 

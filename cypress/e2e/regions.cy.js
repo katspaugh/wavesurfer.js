@@ -92,8 +92,8 @@ describe('WaveSurfer Regions plugin tests', () => {
           clientY: 10,
         })
         region.element.dispatchEvent(pointerDownEvent)
-        win.document.dispatchEvent(pointerMoveEvent)
-        win.document.dispatchEvent(pointerUpEvent)
+        win.dispatchEvent(pointerMoveEvent)
+        win.dispatchEvent(pointerUpEvent)
 
         expect(region.start).to.be.greaterThan(3)
       })
@@ -195,9 +195,9 @@ describe('WaveSurfer Regions plugin tests', () => {
         clientY: 10,
       })
       win.wavesurfer.getWrapper().dispatchEvent(pointerDownEvent)
-      win.document.dispatchEvent(pointerMoveEvent)
+      win.dispatchEvent(pointerMoveEvent)
       expect(regionInitializedEventCalled).to.be.true
-      win.document.dispatchEvent(pointerUpEvent)
+      win.dispatchEvent(pointerUpEvent)
 
       // It shouldn't trigger a click
       expect(win.wavesurfer.getCurrentTime()).to.equal(0)
@@ -211,8 +211,8 @@ describe('WaveSurfer Regions plugin tests', () => {
       disableDragSelection()
 
       win.wavesurfer.getWrapper().querySelector('div').dispatchEvent(pointerDownEvent)
-      win.document.dispatchEvent(pointerMoveEvent)
-      win.document.dispatchEvent(pointerUpEvent)
+      win.dispatchEvent(pointerMoveEvent)
+      win.dispatchEvent(pointerUpEvent)
 
       // It should not create any regions because drag selection is disabled
       expect(regions.getRegions().length).to.equal(0)

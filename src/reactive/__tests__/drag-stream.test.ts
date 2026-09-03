@@ -82,7 +82,7 @@ describe('createDragStream', () => {
     element.dispatchEvent(pointerDown)
 
     const pointerMove = new PointerEvent('pointermove', { clientX: 20, clientY: 20 })
-    document.dispatchEvent(pointerMove)
+    window.dispatchEvent(pointerMove)
 
     expect(events.length).toBeGreaterThan(0)
     expect(events[0]?.type).toBe('start')
@@ -102,7 +102,7 @@ describe('createDragStream', () => {
     element.dispatchEvent(pointerDown)
 
     const pointerMove = new PointerEvent('pointermove', { clientX: 20, clientY: 30 })
-    document.dispatchEvent(pointerMove)
+    window.dispatchEvent(pointerMove)
 
     const moveEvent = events.find((e) => e.type === 'move')
     expect(moveEvent).toBeDefined()
@@ -124,10 +124,10 @@ describe('createDragStream', () => {
     element.dispatchEvent(pointerDown)
 
     const pointerMove = new PointerEvent('pointermove', { clientX: 20, clientY: 20 })
-    document.dispatchEvent(pointerMove)
+    window.dispatchEvent(pointerMove)
 
     const pointerUp = new PointerEvent('pointerup', { clientX: 20, clientY: 20 })
-    document.dispatchEvent(pointerUp)
+    window.dispatchEvent(pointerUp)
 
     expect(events.some((e) => e.type === 'end')).toBe(true)
 
@@ -146,14 +146,14 @@ describe('createDragStream', () => {
     element.dispatchEvent(pointerDown)
 
     const pointerMove = new PointerEvent('pointermove', { clientX: 15, clientY: 15 })
-    document.dispatchEvent(pointerMove)
+    window.dispatchEvent(pointerMove)
 
     // Should not emit events yet
     expect(events.length).toBe(0)
 
     // Simulate larger drag (above threshold)
     const pointerMove2 = new PointerEvent('pointermove', { clientX: 25, clientY: 25 })
-    document.dispatchEvent(pointerMove2)
+    window.dispatchEvent(pointerMove2)
 
     // Should now emit events
     expect(events.length).toBeGreaterThan(0)
@@ -193,7 +193,7 @@ describe('createDragStream', () => {
     element.dispatchEvent(pointerDown)
 
     const pointerMove = new PointerEvent('pointermove', { clientX: 20, clientY: 20 })
-    document.dispatchEvent(pointerMove)
+    window.dispatchEvent(pointerMove)
 
     // Should not emit any events
     expect(events.length).toBe(0)
@@ -214,11 +214,11 @@ describe('createDragStream', () => {
 
     // Move - should prevent click
     const pointerMove = new PointerEvent('pointermove', { clientX: 20, clientY: 20 })
-    document.dispatchEvent(pointerMove)
+    window.dispatchEvent(pointerMove)
 
     // End drag
     const pointerUp = new PointerEvent('pointerup', { clientX: 20, clientY: 20 })
-    document.dispatchEvent(pointerUp)
+    window.dispatchEvent(pointerUp)
 
     // Simulate click after drag
     const clickHandler = jest.fn()
@@ -233,7 +233,7 @@ describe('createDragStream', () => {
     cleanup()
   })
 
-  it('should handle pointer leave events', () => {
+  it('does not end the drag when the pointer leaves the document (e.g. during auto-scroll)', () => {
     const { signal, cleanup } = createDragStream(element, { threshold: 0 })
 
     signal.subscribe((event: DragEvent | null) => {
@@ -246,9 +246,10 @@ describe('createDragStream', () => {
 
     // Move to start dragging
     const pointerMove = new PointerEvent('pointermove', { clientX: 20, clientY: 20, pointerId: 1 })
-    document.dispatchEvent(pointerMove)
+    window.dispatchEvent(pointerMove)
 
-    // Pointer leaves document
+    // Pointer leaves the document (also fired when the container scrolls
+    // under a stationary pointer) -- the drag must survive it
     const pointerOut = new PointerEvent('pointerout', {
       clientX: 20,
       clientY: 20,
@@ -257,7 +258,26 @@ describe('createDragStream', () => {
     })
     document.dispatchEvent(pointerOut)
 
-    // Should emit end event
+    expect(events.some((e) => e.type === 'end')).toBe(false)
+
+    // The drag still ends normally on pointerup
+    window.dispatchEvent(new PointerEvent('pointerup', { clientX: 20, clientY: 20, pointerId: 1 }))
+    expect(events.some((e) => e.type === 'end')).toBe(true)
+
+    cleanup()
+  })
+
+  it('ends the drag on pointercancel', () => {
+    const { signal, cleanup } = createDragStream(element, { threshold: 0 })
+
+    signal.subscribe((event: DragEvent | null) => {
+      if (event) events.push(event)
+    })
+
+    element.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0, pointerId: 1 }))
+    window.dispatchEvent(pointerEvent('pointermove', { clientX: 20, clientY: 20, pointerId: 1 }))
+    window.dispatchEvent(pointerEvent('pointercancel', { clientX: 20, clientY: 20, pointerId: 1 }))
+
     expect(events.some((e) => e.type === 'end')).toBe(true)
 
     cleanup()
@@ -273,13 +293,13 @@ describe('createDragStream', () => {
     // Two-finger tap: the second finger lifts before the first
     element.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0, pointerId: 1 }))
     element.dispatchEvent(pointerEvent('pointerdown', { clientX: 50, clientY: 10, button: 0, pointerId: 2 }))
-    document.dispatchEvent(pointerEvent('pointerup', { clientX: 50, clientY: 10, pointerId: 2 }))
-    document.dispatchEvent(pointerEvent('pointerup', { clientX: 10, clientY: 10, pointerId: 1 }))
+    window.dispatchEvent(pointerEvent('pointerup', { clientX: 50, clientY: 10, pointerId: 2 }))
+    window.dispatchEvent(pointerEvent('pointerup', { clientX: 10, clientY: 10, pointerId: 1 }))
 
     // A subsequent single-finger drag should work
     element.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0, pointerId: 3 }))
-    document.dispatchEvent(pointerEvent('pointermove', { clientX: 30, clientY: 10, pointerId: 3 }))
-    document.dispatchEvent(pointerEvent('pointerup', { clientX: 30, clientY: 10, pointerId: 3 }))
+    window.dispatchEvent(pointerEvent('pointermove', { clientX: 30, clientY: 10, pointerId: 3 }))
+    window.dispatchEvent(pointerEvent('pointerup', { clientX: 30, clientY: 10, pointerId: 3 }))
 
     expect(events.map((e) => e.type)).toEqual(['start', 'move', 'end'])
 
@@ -294,15 +314,15 @@ describe('createDragStream', () => {
     })
 
     element.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0, pointerId: 1 }))
-    document.dispatchEvent(pointerEvent('pointermove', { clientX: 20, clientY: 10, pointerId: 1 }))
+    window.dispatchEvent(pointerEvent('pointermove', { clientX: 20, clientY: 10, pointerId: 1 }))
 
     // A second finger touches and lifts mid-drag
     element.dispatchEvent(pointerEvent('pointerdown', { clientX: 50, clientY: 10, button: 0, pointerId: 2 }))
-    document.dispatchEvent(pointerEvent('pointerup', { clientX: 50, clientY: 10, pointerId: 2 }))
+    window.dispatchEvent(pointerEvent('pointerup', { clientX: 50, clientY: 10, pointerId: 2 }))
 
     // The first finger continues dragging and lifts
-    document.dispatchEvent(pointerEvent('pointermove', { clientX: 30, clientY: 10, pointerId: 1 }))
-    document.dispatchEvent(pointerEvent('pointerup', { clientX: 30, clientY: 10, pointerId: 1 }))
+    window.dispatchEvent(pointerEvent('pointermove', { clientX: 30, clientY: 10, pointerId: 1 }))
+    window.dispatchEvent(pointerEvent('pointerup', { clientX: 30, clientY: 10, pointerId: 1 }))
 
     expect(events.map((e) => e.type)).toEqual(['start', 'move', 'move', 'end'])
 
@@ -317,11 +337,11 @@ describe('createDragStream', () => {
     })
 
     element.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10, button: 0, pointerId: 1 }))
-    document.dispatchEvent(pointerEvent('pointermove', { clientX: 20, clientY: 10, pointerId: 1 }))
+    window.dispatchEvent(pointerEvent('pointermove', { clientX: 20, clientY: 10, pointerId: 1 }))
 
     // Moves from an untracked pointer are ignored
-    document.dispatchEvent(pointerEvent('pointermove', { clientX: 90, clientY: 90, pointerId: 7 }))
-    document.dispatchEvent(pointerEvent('pointerup', { clientX: 30, clientY: 10, pointerId: 1 }))
+    window.dispatchEvent(pointerEvent('pointermove', { clientX: 90, clientY: 90, pointerId: 7 }))
+    window.dispatchEvent(pointerEvent('pointerup', { clientX: 30, clientY: 10, pointerId: 1 }))
 
     expect(events.map((e) => e.type)).toEqual(['start', 'move', 'end'])
     expect(events[1]?.x).toBe(20)
