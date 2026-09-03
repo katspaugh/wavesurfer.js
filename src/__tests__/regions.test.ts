@@ -396,3 +396,184 @@ describe('Region drag against the waveform edges', () => {
     expect(region.start).toBeCloseTo(8) // length preserved
   })
 })
+
+describe('Auto-scroll while dragging, resizing, or creating a region', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    installMatchMediaStub()
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    document.body.innerHTML = ''
+    jest.clearAllMocks()
+  })
+
+  // Wrap the wavesurfer wrapper in a scrollable container (clientWidth 100,
+  // scrollWidth 1000) so adjustScroll sees a horizontal scrollbar.
+  const setup = () => {
+    const wavesurfer = createWaveSurfer(10)
+    const wrapper = wavesurfer.getWrapper()
+    const scrollContainer = document.createElement('div')
+    document.body.appendChild(scrollContainer)
+    scrollContainer.appendChild(wrapper)
+    Object.defineProperty(scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+    Object.defineProperty(scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
+    mockRect(scrollContainer, { left: 0, top: 0, width: 100, height: 100 })
+    mockRect(wrapper, { left: 0, top: 0, width: 100, height: 100 })
+
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+
+    const regionsContainer = wrapper.querySelector<HTMLElement>('[part="regions-container"]')!
+    mockRect(regionsContainer, { left: 0, top: 0, width: 100, height: 100 })
+    Object.defineProperty(regionsContainer, 'clientWidth', { configurable: true, value: 1000 })
+
+    return { wavesurfer, plugin, wrapper, scrollContainer, regionsContainer }
+  }
+
+  const startDrag = (target: HTMLElement, fromX = 50, toX = 60) => {
+    target.dispatchEvent(new MouseEvent('pointerdown', { clientX: fromX, clientY: 10, bubbles: true }))
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: toX, clientY: 10 }))
+  }
+
+  const endDrag = (x = 60) => {
+    window.dispatchEvent(new MouseEvent('pointerup', { clientX: x, clientY: 10 }))
+  }
+
+  test('dragging a region past the right edge scrolls the container to keep it in view', () => {
+    const { plugin, scrollContainer, regionsContainer } = setup()
+    const region = plugin.addRegion({ start: 0.3, end: 0.8 })
+    jest.runOnlyPendingTimers()
+    expect(region.element?.parentElement).toBe(regionsContainer)
+
+    // Fully visible at drag start, so auto-scroll is allowed in both directions
+    mockRect(region.element!, { left: 20, top: 0, width: 40, height: 100 })
+    startDrag(region.element!)
+
+    // The drag pushed the region 20px past the right edge of the container
+    mockRect(region.element!, { left: 80, top: 0, width: 40, height: 100 })
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 70, clientY: 10 }))
+
+    expect(scrollContainer.scrollLeft).toBe(20)
+    endDrag(70)
+  })
+
+  test('a region already overflowing a side at drag start does not scroll further toward it', () => {
+    const { plugin, scrollContainer, regionsContainer } = setup()
+    const region = plugin.addRegion({ start: 0.3, end: 0.8 })
+    jest.runOnlyPendingTimers()
+    expect(region.element?.parentElement).toBe(regionsContainer)
+
+    // Already sticking out 20px past the right edge when the drag starts
+    mockRect(region.element!, { left: 80, top: 0, width: 40, height: 100 })
+    startDrag(region.element!)
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 70, clientY: 10 }))
+
+    expect(scrollContainer.scrollLeft).toBe(0)
+    endDrag(70)
+  })
+
+  test('resizing scrolls only toward the dragged handle', () => {
+    const { plugin, scrollContainer, regionsContainer } = setup()
+    const region = plugin.addRegion({ start: 0.3, end: 0.8 })
+    jest.runOnlyPendingTimers()
+    expect(region.element?.parentElement).toBe(regionsContainer)
+
+    scrollContainer.scrollLeft = 50
+
+    // The region overflows the left edge by 10px; dragging the left handle
+    // (side 'start' -> direction 'left') scrolls the container left by that much
+    mockRect(region.element!, { left: -10, top: 0, width: 40, height: 100 })
+    const leftHandle = region.element!.querySelector<HTMLElement>('[part*="region-handle-left"]')!
+    startDrag(leftHandle, 50, 45)
+
+    expect(scrollContainer.scrollLeft).toBe(40)
+    endDrag(45)
+
+    // Dragging the right handle (direction 'right') must NOT scroll left,
+    // even though the region still overflows on the left
+    const rightHandle = region.element!.querySelector<HTMLElement>('[part*="region-handle-right"]')!
+    startDrag(rightHandle, 30, 35)
+
+    expect(scrollContainer.scrollLeft).toBe(40)
+    endDrag(35)
+  })
+
+  test('container scroll during a drag keeps moving the region', () => {
+    const { wavesurfer, plugin, regionsContainer } = setup()
+    const region = plugin.addRegion({ start: 0.3, end: 0.8 })
+    jest.runOnlyPendingTimers()
+    expect(region.element?.parentElement).toBe(regionsContainer)
+
+    mockRect(region.element!, { left: 20, top: 0, width: 20, height: 100 })
+    startDrag(region.element!, 30, 40)
+    const startAfterPointerMove = region.start
+    const length = region.end - region.start
+
+    // The container scrolls 10px to the right mid-drag (e.g. from
+    // auto-scrolling); the region must follow (+10px = +1s at width 100)
+    wavesurfer.emit('scroll', 0, 0, 10, 110)
+    expect(region.start).toBeCloseTo(startAfterPointerMove + 1)
+    expect(region.end).toBeCloseTo(startAfterPointerMove + 1 + length)
+
+    endDrag(40)
+
+    // After the drag ends, scrolling no longer moves the region
+    const startAfterDrag = region.start
+    wavesurfer.emit('scroll', 0, 0, 20, 120)
+    expect(region.start).toBeCloseTo(startAfterDrag)
+  })
+
+  test('virtualization does not detach a region mid-drag', () => {
+    const { wavesurfer, plugin, regionsContainer } = setup()
+    const region = plugin.addRegion({ start: 0.5, end: 1.5 })
+    jest.runOnlyPendingTimers()
+    expect(region.element?.parentElement).toBe(regionsContainer)
+
+    mockRect(region.element!, { left: 50, top: 0, width: 10, height: 100 })
+    startDrag(region.element!)
+    const element = region.element!
+
+    // Scroll the viewport far away from the region: normally it would be
+    // detached by virtualization, but not while it is being dragged
+    wavesurfer.getScroll.mockReturnValue(800)
+    wavesurfer.emit('scroll', 8, 9, 800, 900)
+    expect(element.parentElement).toBe(regionsContainer)
+
+    endDrag()
+
+    // Once the drag is over, virtualization applies again
+    wavesurfer.emit('scroll', 8, 9, 800, 900)
+    expect(element.parentElement).toBeNull()
+  })
+
+  test('container scroll during drag-creation keeps growing the region', () => {
+    const { wavesurfer, plugin, wrapper } = setup()
+    const created: Array<{ start: number; end: number }> = []
+    plugin.on('region-created', (region) => created.push(region))
+
+    plugin.enableDragSelection({})
+
+    // Drag from x=10 to x=20: creates a region from 1s, end dragged to ~2.5s
+    wrapper.dispatchEvent(new MouseEvent('pointerdown', { clientX: 10, clientY: 10, bubbles: true }))
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 20, clientY: 10 }))
+
+    expect(created).toHaveLength(0) // not saved until the drag ends
+    // The container auto-scrolls 10px to the right; the region's end must
+    // keep growing by the equivalent 1s
+    wavesurfer.emit('scroll', 0, 0, 10, 110)
+
+    window.dispatchEvent(new MouseEvent('pointerup', { clientX: 20, clientY: 10 }))
+
+    expect(created).toHaveLength(1)
+    expect(created[0].start).toBeCloseTo(1)
+    expect(created[0].end).toBeCloseTo(3.5)
+
+    // After creation, scrolling no longer updates the region
+    const end = created[0].end
+    wavesurfer.emit('scroll', 0, 0, 30, 130)
+    expect(created[0].end).toBeCloseTo(end)
+  })
+})
