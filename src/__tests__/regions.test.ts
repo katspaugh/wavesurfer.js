@@ -247,8 +247,8 @@ describe('Region length constraints during drag-creation', () => {
     // Drag from x=10 to x=14 (0.4s worth of drag at width 100 / duration 10):
     // far below minLength: 2.
     wrapper.dispatchEvent(new MouseEvent('pointerdown', { clientX: 10, clientY: 10, bubbles: true }))
-    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 14, clientY: 10 }))
-    document.dispatchEvent(new MouseEvent('pointerup', { clientX: 14, clientY: 10 }))
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 14, clientY: 10 }))
+    window.dispatchEvent(new MouseEvent('pointerup', { clientX: 14, clientY: 10 }))
 
     expect(created).toHaveLength(1)
     const region = created[0]

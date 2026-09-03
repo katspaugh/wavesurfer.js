@@ -492,8 +492,8 @@ describe('Renderer', () => {
     // reactive/drag-stream.test.ts's pattern.
     const simulateDrag = (wrapper: HTMLElement) => {
       wrapper.dispatchEvent(new PointerEvent('pointerdown', { clientX: 0, clientY: 0, button: 0 }))
-      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 20, clientY: 0 }))
-      document.dispatchEvent(new PointerEvent('pointerup', { clientX: 20, clientY: 0 }))
+      window.dispatchEvent(new PointerEvent('pointermove', { clientX: 20, clientY: 0 }))
+      window.dispatchEvent(new PointerEvent('pointerup', { clientX: 20, clientY: 0 }))
     }
 
     test('enabling dragToSeek with the object form via setOptions makes drag work', () => {

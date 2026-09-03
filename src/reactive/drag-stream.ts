@@ -144,12 +144,6 @@ export function createDragStream(
       }
     }
 
-    const onPointerLeave = (e: PointerEvent) => {
-      if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
-        onPointerUp(e)
-      }
-    }
-
     const onClick = (event: MouseEvent) => {
       if (isDragging) {
         event.stopPropagation()
@@ -166,18 +160,23 @@ export function createDragStream(
       }
     }
 
-    document.addEventListener('pointermove', onPointerMove)
-    document.addEventListener('pointerup', onPointerUp)
-    document.addEventListener('pointerout', onPointerLeave)
-    document.addEventListener('pointercancel', onPointerLeave)
+    // Listen on window (not document) so a drag survives the pointer leaving
+    // the document, and don't end the drag on 'pointerout': when the container
+    // auto-scrolls under a stationary pointer (e.g. dragging a region to the
+    // edge of a scrolling waveform), the element moves out from under the
+    // pointer and a spurious pointerout would otherwise kill the drag.
+    // 'pointercancel' is still honored -- the browser fires no pointerup after
+    // it, so ignoring it would leave the drag stuck until the next pointerup.
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointercancel', onPointerUp)
     document.addEventListener('touchmove', onTouchMove, { passive: false })
     document.addEventListener('click', onClick, { capture: true })
 
     unsubscribeDocument = () => {
-      document.removeEventListener('pointermove', onPointerMove)
-      document.removeEventListener('pointerup', onPointerUp)
-      document.removeEventListener('pointerout', onPointerLeave)
-      document.removeEventListener('pointercancel', onPointerLeave)
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointercancel', onPointerUp)
       document.removeEventListener('touchmove', onTouchMove)
       setTimeout(() => {
         document.removeEventListener('click', onClick, { capture: true })
