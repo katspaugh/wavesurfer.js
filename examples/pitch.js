@@ -45,7 +45,7 @@ pitchWorker.onmessage = (e) => {
   })
 
   // Add the canvas to the waveform container
-  wavesurfer.renderer.getWrapper().appendChild(canvas)
+  wavesurfer.getWrapper().appendChild(canvas)
   // Remove the canvas when a new audio is loaded
   wavesurfer.once('load', () => canvas.remove())
 }
