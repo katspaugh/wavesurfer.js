@@ -79,6 +79,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   private _destroyed = false
+  // Guards the src setter's async fetch/decode chain: each src assignment (and
+  // destroy()) bumps the generation, so a stale chain can never apply its
+  // decoded buffer -- even when the same URL is assigned again later.
+  private srcGeneration = 0
+  private srcFetchAbort: AbortController | null = null
 
   /** Clean up all resources. Idempotent — safe to call multiple times. */
   destroy() {
@@ -88,8 +93,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     // Tear down the stopAt() 'ended' listener, if any is pending
     this.scope.dispose()
 
-    // Clear currentSrc so any in-flight fetch/decode chains bail out
-    // via their existing `this.currentSrc !== value` guards
+    // Invalidate and abort any in-flight fetch/decode chain
+    this.srcGeneration++
+    this.srcFetchAbort?.abort()
+    this.srcFetchAbort = null
     this.currentSrc = ''
 
     // Stop and disconnect buffer node
@@ -130,13 +137,24 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     // A new load starts with a clean slate, like HTMLMediaElement.error
     this.error = null
 
+    // Invalidate any in-flight fetch/decode chain for a previous assignment.
+    // A generation check (not a URL comparison) so that re-setting the SAME
+    // URL (A -> B -> A) can't let the stale first chain apply its result, and
+    // abort the previous network request outright instead of just ignoring it.
+    const generation = ++this.srcGeneration
+    this.srcFetchAbort?.abort()
+    this.srcFetchAbort = null
+
     if (!value) {
       this.buffer = null
       this.emit('emptied')
       return
     }
 
-    fetch(value)
+    const abortController = new AbortController()
+    this.srcFetchAbort = abortController
+
+    fetch(value, { signal: abortController.signal })
       .then((response) => {
         if (response.status >= 400) {
           throw new Error(`Failed to fetch ${value}: ${response.status} (${response.statusText})`)
@@ -144,11 +162,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
         return response.arrayBuffer()
       })
       .then((arrayBuffer) => {
-        if (this.currentSrc !== value) return null
+        if (generation !== this.srcGeneration) return null
         return this.audioContext.decodeAudioData(arrayBuffer)
       })
       .then((audioBuffer) => {
-        if (this.currentSrc !== value) return
+        if (generation !== this.srcGeneration) return
 
         this.buffer = audioBuffer
 
@@ -158,7 +176,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
         if (this.autoplay) this.play()
       })
       .catch((err) => {
-        if (this.currentSrc !== value) return // stale request lost the race
+        if (generation !== this.srcGeneration) return // stale request lost the race
         // Emit error for proper error handling
         console.error('WebAudioPlayer load error:', err)
         this.error = err instanceof Error ? err : new Error(String(err))
@@ -216,6 +234,13 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
   async play() {
     if (!this.paused) return
+    // An AudioContext created without a user gesture starts suspended
+    // (autoplay policy); starting a buffer node on it "plays" silently.
+    // Not awaited: the context clock doesn't advance while suspended, so the
+    // node start below is queued correctly, and 'play' stays synchronous.
+    if (this.audioContext.state === 'suspended' && typeof this.audioContext.resume === 'function') {
+      this.audioContext.resume().catch(() => undefined)
+    }
     this._play()
     this.emit('play')
   }
@@ -231,7 +256,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     // media time to real time via the playback rate
     const delay = (timeSeconds - this.currentTime) / this._playbackRate
     const currentBufferNode = this.bufferNode
-    currentBufferNode?.stop(this.audioContext.currentTime + delay)
+    // A stop time already in the past would make AudioScheduledSourceNode.stop()
+    // throw a RangeError -- clamp to "now" (stop immediately) instead.
+    currentBufferNode?.stop(this.audioContext.currentTime + Math.max(0, delay))
 
     if (currentBufferNode) {
       // Each stopAt() call adds one more disposer to this.scope, even though the `{ once: true }`

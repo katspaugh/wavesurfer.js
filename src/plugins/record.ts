@@ -229,6 +229,9 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
             }
           })
           .catch((err) => {
+            // Rapid re-renders supersede each other; a superseded load()
+            // rejects with AbortError by design -- not an error here.
+            if (err instanceof DOMException && err.name === 'AbortError') return
             console.error('Error rendering real-time recording data:', err)
           })
       }

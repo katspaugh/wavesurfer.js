@@ -77,6 +77,43 @@ describe('FrameScheduler', () => {
     expect(() => scheduler.stop()).not.toThrow()
   })
 
+  it('a throwing callback does not kill the loop: the next frame is scheduled before the callback runs', () => {
+    const scope = new Scope()
+    const scheduler = new FrameScheduler(scope)
+    let calls = 0
+    const tick = jest.fn(() => {
+      calls++
+      if (calls === 2) throw new Error('subscriber boom')
+    })
+
+    scheduler.start(tick) // synchronous first tick: calls = 1
+
+    // The second tick throws. The error must still surface (not be swallowed)...
+    expect(() => (global as any).__flushFrames(1)).toThrow('subscriber boom')
+    expect(calls).toBe(2)
+
+    // ...but the loop must survive: the next frame was scheduled before the
+    // callback ran, so ticking continues and the scheduler is still running.
+    ;(global as any).__flushFrames(2)
+    expect(calls).toBe(4)
+    expect(scheduler.running).toBe(true)
+
+    scheduler.stop()
+    ;(global as any).__flushFrames(1)
+    expect(calls).toBe(4)
+  })
+
+  it('stop() called from inside the callback cancels the frame scheduled for that tick', () => {
+    const scope = new Scope()
+    const scheduler = new FrameScheduler(scope)
+    const tick = jest.fn(() => scheduler.stop())
+
+    scheduler.start(tick) // synchronous first tick calls stop()
+    expect(scheduler.running).toBe(false)
+    ;(global as any).__flushFrames(2)
+    expect(tick).toHaveBeenCalledTimes(1)
+  })
+
   it('restarts cleanly after stop: a fresh synchronous first tick, then RAF ticks resume', () => {
     const scope = new Scope()
     const scheduler = new FrameScheduler(scope)

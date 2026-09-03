@@ -11,23 +11,30 @@ async function decode(audioData: ArrayBuffer, sampleRate: number): Promise<Audio
   }
 }
 
-/** Normalize peaks to -1..1 */
-function normalize<T extends Array<Float32Array | number[]>>(channelData: T): T {
-  const firstChannel = channelData[0]
-  if (firstChannel.some((n) => n > 1 || n < -1)) {
-    const length = firstChannel.length
-    let max = 0
-    for (let i = 0; i < length; i++) {
-      const absN = Math.abs(firstChannel[i])
+/**
+ * Normalize peaks to -1..1.
+ * Decides from and scales by the GLOBAL max across all channels (scaling by
+ * channel 0's max alone could leave other channels outside -1..1), and never
+ * mutates the caller-owned input arrays: when scaling is needed, scaled copies
+ * are returned instead.
+ */
+function normalize(channelData: Array<Float32Array | number[]>): Array<Float32Array | number[]> {
+  let max = 0
+  for (const channel of channelData) {
+    for (let i = 0; i < channel.length; i++) {
+      const absN = Math.abs(channel[i])
       if (absN > max) max = absN
     }
-    for (const channel of channelData) {
-      for (let i = 0; i < length; i++) {
-        channel[i] /= max
-      }
-    }
   }
-  return channelData
+  if (max <= 1) return channelData
+
+  return channelData.map((channel) => {
+    const scaled = new Float32Array(channel.length)
+    for (let i = 0; i < channel.length; i++) {
+      scaled[i] = channel[i] / max
+    }
+    return scaled
+  })
 }
 
 /** Create an audio buffer from pre-decoded audio data */
@@ -48,28 +55,44 @@ function createBuffer(channelData: Array<Float32Array | number[]>, duration: num
     throw new Error('channelData must contain non-empty channel arrays')
   }
 
-  // Normalize to -1..1
-  normalize(channelData)
+  // Normalize to -1..1 (returns scaled copies when scaling is needed --
+  // the caller-owned arrays are never mutated)
+  const normalizedChannels = normalize(channelData)
 
   // Convert to Float32Array for consistency
-  const float32Channels = channelData.map((channel) =>
+  const float32Channels = normalizedChannels.map((channel) =>
     channel instanceof Float32Array ? channel : Float32Array.from(channel),
   )
+
+  const getChannelData = (i: number) => {
+    const channel = float32Channels[i]
+    if (!channel) {
+      throw new Error(`Channel ${i} not found`)
+    }
+    return channel
+  }
 
   return {
     duration,
     length: float32Channels[0].length,
     sampleRate: float32Channels[0].length / duration,
     numberOfChannels: float32Channels.length,
-    getChannelData: (i: number) => {
-      const channel = float32Channels[i]
-      if (!channel) {
-        throw new Error(`Channel ${i} not found`)
-      }
-      return channel
+    getChannelData,
+    // Real implementations per AudioBuffer semantics (the previous borrowed
+    // AudioBuffer.prototype methods threw "Illegal invocation" on this plain
+    // object): copy min(available, requested) frames, honoring the offset.
+    copyFromChannel: (destination: Float32Array, channelNumber: number, bufferOffset = 0) => {
+      const channel = getChannelData(channelNumber)
+      const start = Math.max(0, bufferOffset)
+      const frameCount = Math.max(0, Math.min(destination.length, channel.length - start))
+      destination.set(channel.subarray(start, start + frameCount))
     },
-    copyFromChannel: AudioBuffer.prototype.copyFromChannel,
-    copyToChannel: AudioBuffer.prototype.copyToChannel,
+    copyToChannel: (source: Float32Array, channelNumber: number, bufferOffset = 0) => {
+      const channel = getChannelData(channelNumber)
+      const start = Math.max(0, bufferOffset)
+      const frameCount = Math.max(0, Math.min(source.length, channel.length - start))
+      channel.set(source.subarray(0, frameCount), start)
+    },
   } as AudioBuffer
 }
 

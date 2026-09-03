@@ -9,7 +9,7 @@ import { createFakeWaveSurfer } from './helpers/fake-wavesurfer.js'
 //
 // __windowedInternals() below is the private-poke adaptation for this file: every direct
 // instance-field poke the pre-unification version of this test used
-// ((plugin as any).segments, .maxRetainedSegments, .buffer, .evictDistantSegments(), etc.) is
+// ((plugin as any).segments, .maxRetainedBytes, .buffer, .evictDistantSegments(), etc.) is
 // replaced with the equivalent read through __spectrogramInternalsForTests().windowed, whose
 // segmentManager is a real SegmentManager class instance - its own methods call each other via
 // `this.foo()`, so jest.spyOn(internals.segmentManager, 'foo') still correctly intercepts
@@ -40,37 +40,48 @@ describe('WindowedSpectrogramPlugin destroy', () => {
   })
 
   describe('segment eviction', () => {
-    it('caps retained segments', () => {
+    // Each 100x100 canvas backing store costs 100 * 100 * 4 bytes against the manager's
+    // byte budget (maxRetainedBytes) - the cap counts canvas memory, not segments.
+    const CANVAS_BYTES = 100 * 100 * 4
+    function makeSizedCanvas(): HTMLCanvasElement {
+      const canvas = document.createElement('canvas')
+      canvas.width = 100
+      canvas.height = 100
+      return canvas
+    }
+
+    it('caps retained segment canvas memory', () => {
       const plugin: any = WindowedSpectrogramPlugin.create({})
       const internals = initPlugin(plugin)
       const manager = internals.segmentManager
-      const cap = manager.maxRetainedSegments
-      expect(typeof cap).toBe('number')
-      for (let i = 0; i < cap + 10; i++) {
+      expect(typeof manager.maxRetainedBytes).toBe('number')
+      manager.maxRetainedBytes = 3 * CANVAS_BYTES
+      for (let i = 0; i < 13; i++) {
         manager.segments.set(i, {
           startTime: i * 30,
           endTime: (i + 1) * 30,
           startPixel: i * 30,
           endPixel: (i + 1) * 30,
-          canvas: document.createElement('canvas'),
+          canvas: makeSizedCanvas(),
           frequencies: [],
         })
       }
       manager.evictDistantSegments(0) // current view at t=0
-      expect(manager.segments.size).toBeLessThanOrEqual(cap)
+      expect(manager.segments.size).toBeLessThanOrEqual(3)
     })
 
     it('evicts segments farthest from the current time and removes their canvases from the DOM', () => {
       const plugin: any = WindowedSpectrogramPlugin.create({})
       const internals = initPlugin(plugin)
       const manager = internals.segmentManager
-      const cap = manager.maxRetainedSegments
+      const retained = 4
+      manager.maxRetainedBytes = retained * CANVAS_BYTES
       const container = document.createElement('div')
       document.body.appendChild(container)
 
-      const total = cap + 10
+      const total = retained + 10
       for (let i = 0; i < total; i++) {
-        const canvas = document.createElement('canvas')
+        const canvas = makeSizedCanvas()
         container.appendChild(canvas)
         manager.segments.set(i, {
           startTime: i * 30,
@@ -86,27 +97,27 @@ describe('WindowedSpectrogramPlugin destroy', () => {
       // indices (farthest midpoints) should be the ones evicted.
       manager.evictDistantSegments(0)
 
-      expect(manager.segments.size).toBe(cap)
+      expect(manager.segments.size).toBe(retained)
       // Every remaining segment's canvas should still be attached to the DOM.
       for (const segment of manager.segments.values()) {
         expect(segment.canvas.isConnected).toBe(true)
       }
       // The DOM should have exactly as many canvases left as retained segments -
       // the evicted ones were actually removed, not just dropped from the map.
-      expect(container.children.length).toBe(cap)
+      expect(container.children.length).toBe(retained)
       // The segments closest to t=0 (lowest indices) must have survived.
       expect(manager.segments.has(0)).toBe(true)
       expect(manager.segments.has(total - 1)).toBe(false)
     })
 
-    it('enforces the segment cap during progressive loading even with no renderVisibleWindow calls', async () => {
+    it('enforces the byte budget during progressive loading even with no renderVisibleWindow calls', async () => {
       jest.useFakeTimers()
       try {
         const plugin: any = WindowedSpectrogramPlugin.create({ progressiveLoading: true })
         const internals = initPlugin(plugin)
         const manager = internals.segmentManager
-        manager.maxRetainedSegments = 3
-        // Long enough for far more than maxRetainedSegments 30s segments.
+        manager.maxRetainedBytes = 3 * CANVAS_BYTES
+        // Long enough for far more 30s segments than the budget retains.
         plugin.__spectrogramInternalsForTests().buffer = { duration: 30 * 20 }
         manager.isProgressiveLoading = true
 
@@ -120,7 +131,7 @@ describe('WindowedSpectrogramPlugin destroy', () => {
             endTime: end,
             startPixel: 0,
             endPixel: 0,
-            canvas: document.createElement('canvas'),
+            canvas: makeSizedCanvas(),
             frequencies: [],
           })
         })

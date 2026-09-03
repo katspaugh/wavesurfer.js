@@ -18,6 +18,7 @@ import {
   resolveBarYPosition,
   resolveChannelHeight,
   resolveColorValue,
+  roundToHalfAwayFromZero,
   shouldClearCanvases,
   shouldRenderBars,
   sliceChannelData,
@@ -31,6 +32,12 @@ describe('renderer-utils', () => {
       expect(clampToUnit(-0.5)).toBe(0)
       expect(clampToUnit(0.3)).toBe(0.3)
       expect(clampToUnit(1.8)).toBe(1)
+    })
+
+    it('maps NaN to 0 instead of passing it through', () => {
+      // NaN reaches clampToUnit when pointer math divides by a zero-size
+      // rect (hidden container) -- it must not propagate into seeks.
+      expect(clampToUnit(NaN)).toBe(0)
     })
   })
 
@@ -220,6 +227,16 @@ describe('renderer-utils', () => {
       } as DOMRect
       expect(getRelativePointerPosition(rect, 110, 70)).toEqual([0.5, 0.5])
     })
+
+    it('returns finite coordinates for a zero-size rect (hidden container)', () => {
+      const rect = {
+        left: 10,
+        top: 20,
+        width: 0,
+        height: 0,
+      } as DOMRect
+      expect(getRelativePointerPosition(rect, 110, 70)).toEqual([0, 0])
+    })
   })
 
   describe('resolveChannelHeight', () => {
@@ -280,18 +297,18 @@ describe('renderer-utils', () => {
   })
 
   describe('resolveColorValue', () => {
-    const canvas = document.createElement('canvas')
-
     let createLinearGradient: jest.Mock
     let addColorStop: jest.Mock
 
+    // Mock getContext at the prototype level (not on one specific canvas):
+    // resolveColorValue reuses a single module-level scratch canvas across
+    // calls, so a per-instance spy on a freshly created element would never
+    // be hit again after the first call cached the scratch canvas.
     beforeEach(() => {
-      createLinearGradient = jest.fn(() => ({ addColorStop }))
       addColorStop = jest.fn()
-
-      jest.spyOn(document, 'createElement').mockImplementation(() => canvas)
+      createLinearGradient = jest.fn(() => ({ addColorStop }))
       jest
-        .spyOn(canvas, 'getContext')
+        .spyOn(window.HTMLCanvasElement.prototype, 'getContext')
         .mockImplementation(() => ({ createLinearGradient }) as unknown as CanvasRenderingContext2D)
     })
 
@@ -318,6 +335,24 @@ describe('renderer-utils', () => {
       expect(addColorStop).toHaveBeenNthCalledWith(1, 0, '#000')
       expect(addColorStop).toHaveBeenNthCalledWith(2, 1, '#fff')
       expect(gradient.addColorStop).toBe(addColorStop)
+    })
+
+    it('reuses a single scratch canvas instead of creating one per call', () => {
+      // Gradient resolution runs on every draw, including scroll-time lazy
+      // draws -- a throwaway <canvas> per call caused GC churn.
+      const realCreateElement = document.createElement.bind(document)
+      const createElementSpy = jest
+        .spyOn(document, 'createElement')
+        .mockImplementation((tagName: string) => realCreateElement(tagName))
+
+      resolveColorValue(['#000', '#fff'], 1)
+      resolveColorValue(['#111', '#eee'], 1)
+      resolveColorValue(['#222', '#ddd'], 1)
+
+      const canvasCreations = createElementSpy.mock.calls.filter(([tag]) => tag === 'canvas').length
+      // At most one creation across all calls (zero if an earlier test in
+      // this file already warmed the module-level scratch canvas).
+      expect(canvasCreations).toBeLessThanOrEqual(1)
     })
   })
 
@@ -356,6 +391,38 @@ describe('renderer-utils', () => {
 
     it('clamps width down to align with bar grid spacing', () => {
       expect(clampWidthToBarGrid(10, options)).toBe(9)
+    })
+
+    it('uses the same barWidth/barGap defaults as the bar-drawing site', () => {
+      // Bars enabled via barGap only: the draw site defaults barWidth to 1
+      // (device px at dpr=1), not 0.5 -- grid = 1 + 2 = 3.
+      const container = document.createElement('div')
+      expect(clampWidthToBarGrid(10, { container, barGap: 2 })).toBe(9)
+      // Bars enabled via barAlign only: draw defaults are barWidth 1, gap 0
+      // (no gap when barWidth is unset) -- grid = 1.
+      expect(clampWidthToBarGrid(10.5, { container, barAlign: 'top' })).toBe(10)
+    })
+
+    it('agrees with calculateBarRenderConfig barSpacing at pixelRatio 1', () => {
+      const container = document.createElement('div')
+      const cases: Partial<WaveSurferOptions>[] = [
+        { barWidth: 2, barGap: 1 },
+        { barWidth: 3 },
+        { barGap: 2 },
+        { barAlign: 'top' },
+      ]
+      for (const partial of cases) {
+        const opts = { container, ...partial } as WaveSurferOptions
+        const { barSpacing } = calculateBarRenderConfig({
+          width: 100,
+          height: 50,
+          length: 10,
+          options: opts,
+          pixelRatio: 1,
+        })
+        // A width already aligned to the drawn spacing must survive the clamp
+        expect(clampWidthToBarGrid(barSpacing * 7, opts)).toBe(barSpacing * 7)
+      }
     })
   })
 
@@ -396,18 +463,37 @@ describe('renderer-utils', () => {
   })
 
   describe('getLazyRenderRange', () => {
-    it('returns surrounding canvas indices', () => {
-      expect(
-        getLazyRenderRange({
-          scrollLeft: 50,
-          totalWidth: 200,
-          numCanvases: 5,
-        }),
-      ).toEqual([0, 1, 2])
+    // Args are built as variables (with the legacy `totalWidth` key kept as a
+    // harmless excess property) so the same tests compile against both the
+    // old average-width signature and the fixed exact-width one.
+    it('returns the viewport-covering canvas indices plus one prefetch on each side', () => {
+      // Viewport [50, 90) with 40px canvases covers indices 1-2; prefetch 0 and 3.
+      const args = { scrollLeft: 50, clientWidth: 40, singleCanvasWidth: 40, numCanvases: 5, totalWidth: 200 }
+      expect(getLazyRenderRange(args)).toEqual([0, 1, 2, 3])
     })
 
-    it('defaults to the first canvas when width is zero', () => {
-      expect(getLazyRenderRange({ scrollLeft: 0, totalWidth: 0, numCanvases: 3 })).toEqual([0])
+    it('covers the viewport edges exactly instead of using the average canvas width', () => {
+      // 10 canvases of 400px over totalWidth 4000; a bar-grid-clamped canvas
+      // is slightly narrower than the 402px viewport. At scrollLeft 799 the
+      // viewport spans [799, 1201) -- canvases 1, 2 AND 3. The old
+      // average-width math (floor(scrollLeft / totalWidth * numCanvases) ± 1)
+      // returned [0, 1, 2], leaving an undrawn strip at the right edge.
+      const args = { scrollLeft: 799, clientWidth: 402, singleCanvasWidth: 400, numCanvases: 10, totalWidth: 4000 }
+      expect(getLazyRenderRange(args)).toEqual(expect.arrayContaining([1, 2, 3]))
+    })
+
+    it('clamps the range to existing canvases at the far end', () => {
+      const args = { scrollLeft: 10_000, clientWidth: 400, singleCanvasWidth: 400, numCanvases: 5, totalWidth: 2000 }
+      const range = getLazyRenderRange(args)
+      expect(range).toContain(4) // the last canvas
+      expect(Math.max(...range)).toBe(5) // at most one prefetch past the end
+    })
+
+    it('defaults to the first canvas when there is nothing to window', () => {
+      const zeroWidth = { scrollLeft: 0, clientWidth: 0, singleCanvasWidth: 0, numCanvases: 3, totalWidth: 0 }
+      expect(getLazyRenderRange(zeroWidth)).toEqual([0])
+      const zeroCanvases = { scrollLeft: 0, clientWidth: 100, singleCanvasWidth: 100, numCanvases: 0, totalWidth: 300 }
+      expect(getLazyRenderRange(zeroCanvases)).toEqual([0])
     })
   })
 
@@ -460,6 +546,31 @@ describe('renderer-utils', () => {
         { x: 4, y: 7 },
         { x: 6, y: 4 },
       ])
+    })
+  })
+
+  describe('roundToHalfAwayFromZero', () => {
+    it('rounds to the nearest integer, not outward (the old version ceiled)', () => {
+      // The old implementation ceiled the magnitude to the next half, biasing
+      // every reRender scroll compensation outward -- cursor drift on
+      // repeated wheel-zoom.
+      expect(roundToHalfAwayFromZero(1.2)).toBe(1)
+      expect(roundToHalfAwayFromZero(-1.2)).toBe(-1)
+      expect(roundToHalfAwayFromZero(2.4)).toBe(2)
+      expect(roundToHalfAwayFromZero(1.6)).toBe(2)
+    })
+
+    it('rounds exact halves away from zero', () => {
+      expect(roundToHalfAwayFromZero(0.5)).toBe(1)
+      expect(roundToHalfAwayFromZero(-0.5)).toBe(-1)
+      expect(roundToHalfAwayFromZero(1.5)).toBe(2)
+      expect(roundToHalfAwayFromZero(-1.5)).toBe(-2)
+    })
+
+    it('leaves integers and zero unchanged', () => {
+      expect(roundToHalfAwayFromZero(3)).toBe(3)
+      expect(roundToHalfAwayFromZero(-3)).toBe(-3)
+      expect(roundToHalfAwayFromZero(0)).toBe(0)
     })
   })
 

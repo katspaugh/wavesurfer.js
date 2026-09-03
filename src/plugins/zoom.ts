@@ -99,6 +99,7 @@ const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('Zo
   let accumulatedDelta = 0
   let pointerTime = 0
   let oldX = 0
+  let lastScrollX = 0
   let startZoom = 0
 
   // State for proportional pinch-to-zoom
@@ -109,10 +110,11 @@ const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('Zo
   const calculateNewZoom = (oldZoom: number, delta: number) => {
     let newZoom
     if (opts.exponentialZooming) {
-      const zoomFactor =
-        delta > 0
-          ? Math.pow(endZoom / startZoom, 1 / (opts.iterations - 1))
-          : Math.pow(startZoom / endZoom, 1 / (opts.iterations - 1))
+      // `iterations: 1` means "reach the target in a single step" — clamp the
+      // divisor to 1 instead of dividing by zero (which collapsed the factor
+      // to 0/Infinity/NaN).
+      const exponent = 1 / Math.max(1, opts.iterations - 1)
+      const zoomFactor = delta > 0 ? Math.pow(endZoom / startZoom, exponent) : Math.pow(startZoom / endZoom, exponent)
       newZoom = Math.max(0, oldZoom * zoomFactor)
     } else {
       // Default linear zooming
@@ -125,6 +127,14 @@ const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('Zo
     if (Math.abs(e.deltaX) >= Math.abs(e.deltaY)) {
       return
     }
+
+    const duration = ctx.wavesurfer.getDuration()
+    // Nothing to zoom before the audio is decoded — bail out WITHOUT
+    // preventDefault so the page can still scroll.
+    if (!duration) {
+      return
+    }
+
     // prevent scrolling the sidebar while zooming
     e.preventDefault()
 
@@ -132,12 +142,11 @@ const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('Zo
     accumulatedDelta += -e.deltaY
 
     if (startZoom === 0 && opts.exponentialZooming) {
-      startZoom = ctx.wavesurfer.getWrapper().clientWidth / ctx.wavesurfer.getDuration()
+      startZoom = ctx.wavesurfer.getWrapper().clientWidth / duration
     }
 
     // ...and only scroll once we've hit our threshold
     if (opts.deltaThreshold === 0 || Math.abs(accumulatedDelta) >= opts.deltaThreshold) {
-      const duration = ctx.wavesurfer.getDuration()
       const oldMinPxPerSec =
         ctx.wavesurfer.options.minPxPerSec === 0
           ? ctx.wavesurfer.getWrapper().scrollWidth / duration
@@ -146,8 +155,11 @@ const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('Zo
       const width = container.clientWidth
       const scrollX = ctx.wavesurfer.getScroll()
 
-      // Update pointerTime only if the pointer position has changed. This prevents the waveform from drifting during fixed zooming.
-      if (x !== oldX || oldX === 0) {
+      // Update pointerTime only if the pointer position has changed (this prevents
+      // the waveform from drifting during fixed zooming) or if the container was
+      // scrolled since the last wheel step (e.g. by the user) — reusing the cached
+      // anchor with a different scroll would zoom around a stale time.
+      if (x !== oldX || oldX === 0 || scrollX !== lastScrollX) {
         pointerTime = (scrollX + x) / oldMinPxPerSec
       }
       oldX = x
@@ -162,6 +174,10 @@ const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('Zo
         ctx.wavesurfer.zoom(newMinPxPerSec)
         container.scrollLeft = (pointerTime - newLeftSec) * newMinPxPerSec
       }
+
+      // Remember the scroll position this step produced so the next wheel step
+      // can detect an external scroll and re-derive the anchor.
+      lastScrollX = container.scrollLeft
 
       // Reset the accumulated delta
       accumulatedDelta = 0
@@ -232,6 +248,14 @@ const ZoomPlugin = definePlugin<ZoomPluginOptions, ZoomPluginEvents, object>('Zo
       initialZoom = 0
     }
   }
+
+  // A new audio file invalidates the cached exponential-zoom baseline — reset
+  // it so the next zoom step re-derives it from the new duration.
+  const resetStartZoom = () => {
+    startZoom = 0
+  }
+  ctx.scope.add(ctx.wavesurfer.on('load', resetStartZoom))
+  ctx.scope.add(ctx.wavesurfer.on('ready', resetStartZoom))
 
   // Get reactive state
   const { zoom, duration } = ctx.state

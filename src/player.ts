@@ -91,14 +91,19 @@ class Player {
     }
     // Speed
     if (options.playbackRate != null) {
-      this.onMediaEvent(
-        'canplay',
-        () => {
-          if (options.playbackRate != null) {
-            this.media.playbackRate = options.playbackRate
-          }
-        },
-        { once: true },
+      // Registered on mediaScope like every other media listener: with an
+      // external media element that never fires 'canplay', an unregistered
+      // one-shot listener would survive destroy().
+      this.mediaScope.add(
+        this.onMediaEvent(
+          'canplay',
+          () => {
+            if (options.playbackRate != null) {
+              this.media.playbackRate = options.playbackRate
+            }
+          },
+          { once: true },
+        ),
       )
     }
   }

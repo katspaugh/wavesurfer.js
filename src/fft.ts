@@ -84,8 +84,11 @@ function FFT(bufferSize: number, sampleRate: number, windowFunc: string, alpha: 
       break
     case 'lanczoz':
       for (let i = 0; i < windowLength; i++) {
-        this.windowValues[i] =
-          Math.sin(Math.PI * ((2 * i) / (windowLength - 1) - 1)) / (Math.PI * ((2 * i) / (windowLength - 1) - 1))
+        // sinc(x) with sinc(0) = 1: the raw division is 0/0 = NaN at the center sample of odd
+        // window lengths (reachable via the fftSize decoupling, where windowLength may be any
+        // integer >= 2), which would propagate NaN through every frame into a blank spectrogram
+        const x = (2 * i) / (windowLength - 1) - 1
+        this.windowValues[i] = x === 0 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x)
       }
       break
     case 'rectangular':

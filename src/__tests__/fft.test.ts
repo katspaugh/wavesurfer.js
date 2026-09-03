@@ -89,3 +89,40 @@ describe('FFT window construction', () => {
     expect(explicitZero.windowValues[10]).not.toBe(defaulted.windowValues[10])
   })
 })
+
+describe('lanczoz window', () => {
+  const SAMPLE_RATE = 16000
+
+  it('produces finite values (sinc(0) = 1) for odd window lengths', () => {
+    // Odd lengths are reachable via the fftSize decoupling (fftSamples may be any integer from
+    // 2 to fftSize). At the center sample of an odd window the raw sin(pi*x)/(pi*x) formula
+    // hits x = 0, i.e. 0/0 = NaN, which propagates through every frame into a blank spectrogram.
+    const windowLength = 65
+    const fft = new (FFT as any)(512, SAMPLE_RATE, 'lanczoz', undefined, windowLength)
+
+    const live = Array.from(fft.windowValues.slice(0, windowLength)) as number[]
+    expect(live.every(Number.isFinite)).toBe(true)
+    // The center sample is sinc(0) = 1, times the bufferSize / windowLength zero-pad
+    // calibration (Float32 storage, hence the reduced precision)
+    expect(fft.windowValues[(windowLength - 1) / 2]).toBeCloseTo(512 / windowLength, 6)
+  })
+
+  it('yields a finite spectrum (not NaN-blank) for an odd-length lanczoz window', () => {
+    const fft = new (FFT as any)(64, SAMPLE_RATE, 'lanczoz', undefined, 63)
+    const frame = new Float32Array(64)
+    frame.set(makeSine(63, 1000, SAMPLE_RATE))
+
+    const spectrum = fft.calculateSpectrum(frame)
+
+    expect(Array.from(spectrum).every(Number.isFinite)).toBe(true)
+  })
+
+  it('keeps even-length lanczoz windows on the raw sinc formula (Float32 precision)', () => {
+    const windowLength = 64
+    const fft = new (FFT as any)(windowLength, SAMPLE_RATE, 'lanczoz', undefined)
+    for (let i = 0; i < windowLength; i++) {
+      const x = (2 * i) / (windowLength - 1) - 1
+      expect(fft.windowValues[i]).toBeCloseTo(Math.sin(Math.PI * x) / (Math.PI * x), 6)
+    }
+  })
+})

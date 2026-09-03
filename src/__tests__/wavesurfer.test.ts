@@ -414,6 +414,44 @@ describe('WaveSurfer public methods', () => {
     ws.destroy()
   })
 
+  test("normalizes a MediaError into a real Error on the 'error' event", () => {
+    const ws = createWs()
+    const media = ws.getMediaElement()!
+    // HTMLMediaElement.error is a MediaError ({ code, message }), NOT an Error
+    Object.defineProperty(media, 'error', {
+      configurable: true,
+      value: { code: 4, message: 'MEDIA_ELEMENT_ERROR: Format error' },
+    })
+    const onError = jest.fn()
+    ws.on('error', onError)
+
+    media.dispatchEvent(new Event('error'))
+
+    expect(onError).toHaveBeenCalledTimes(1)
+    const err = onError.mock.calls[0][0]
+    expect(err).toBeInstanceOf(Error)
+    expect(err.message).toBe('MEDIA_ELEMENT_ERROR: Format error')
+    ws.destroy()
+  })
+
+  test('preserves the MediaError code in the normalized Error when the message is empty', () => {
+    const ws = createWs()
+    const media = ws.getMediaElement()!
+    Object.defineProperty(media, 'error', {
+      configurable: true,
+      value: { code: 3, message: '' },
+    })
+    const onError = jest.fn()
+    ws.on('error', onError)
+
+    media.dispatchEvent(new Event('error'))
+
+    const err = onError.mock.calls[0][0]
+    expect(err).toBeInstanceOf(Error)
+    expect(err.message).toBe('Media error 3')
+    ws.destroy()
+  })
+
   test('reflects zoom and decoded audio in reactive state', async () => {
     const ws = createWs({
       peaks: [[0, 0.5, 1]],
@@ -621,15 +659,15 @@ describe('WaveSurfer public methods', () => {
       // Regression probe for the destroy-vs-supersede fix above: load(A),
       // then load(B) (superseding A), then destroy() -- all synchronously,
       // no await between them. A was genuinely superseded *before* destroy()
-      // ever ran, so it must still resolve (swallowed) even though, by the
-      // time its rejection handler finally runs (a later microtask),
-      // destroy() has *also* torn the instance down. Only B (the load that
-      // was still live at destroy time) should reject and emit 'error' --
-      // exactly once. A design that re-derives "was this superseded?" from
-      // scope.disposed state at catch time (rather than marking it at the
-      // moment supersession actually happens) gets this wrong: both A and B
-      // would look indistinguishable from "destroyed" by the time their
-      // catches run, so both reject and 'error' fires twice.
+      // ever ran, so it rejects with the supersession AbortError and emits
+      // NO 'error' event, even though, by the time its rejection handler
+      // finally runs (a later microtask), destroy() has *also* torn the
+      // instance down. Only B (the load that was still live at destroy time)
+      // should emit 'error' -- exactly once. A design that re-derives "was
+      // this superseded?" from scope.disposed state at catch time (rather
+      // than marking it at the moment supersession actually happens) gets
+      // this wrong: both A and B would look indistinguishable from
+      // "destroyed" by the time their catches run, so 'error' fires twice.
       global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
         const signal = init.signal as AbortSignal
         return new Promise((_resolve, reject) => {
@@ -653,7 +691,7 @@ describe('WaveSurfer public methods', () => {
       const onError = jest.fn()
       ws.on('error', onError)
 
-      await expect(pA).resolves.toBeUndefined()
+      await expect(pA).rejects.toMatchObject({ name: 'AbortError' })
       await expect(pB).rejects.toMatchObject({ name: 'AbortError' })
       expect(onError).toHaveBeenCalledTimes(1)
       expect(onError.mock.calls[0][0].name).toBe('AbortError')
@@ -779,6 +817,97 @@ describe('WaveSurfer public methods', () => {
         global.fetch = originalFetch
         ws.destroy()
       }
+    })
+
+    it('rejects a superseded load with a canonical AbortError without emitting error', async () => {
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      const onError = jest.fn()
+      ws.on('error', onError)
+      global.fetch = jest.fn().mockImplementation((_url, init: RequestInit) => {
+        const signal = init.signal as AbortSignal
+        return new Promise((_resolve, reject) => {
+          const onAbort = () => reject(new DOMException('The user aborted a request.', 'AbortError'))
+          if (signal.aborted) {
+            onAbort()
+          } else {
+            signal.addEventListener('abort', onAbort, { once: true })
+          }
+        })
+      })
+
+      const pA = ws.load('http://x/a.mp3')
+      await Promise.resolve()
+      ws.load('http://x/b.mp3').catch(() => undefined) // supersedes A
+
+      // v8: the superseded (old) load's promise rejects with an AbortError
+      // DOMException for awaiting callers...
+      await expect(pA).rejects.toBeInstanceOf(DOMException)
+      await expect(pA).rejects.toMatchObject({ name: 'AbortError' })
+      // ...but supersession is normal control flow, not a failure: no public
+      // 'error' event.
+      expect(onError).not.toHaveBeenCalled()
+      ws.destroy()
+    })
+
+    it('rejects a superseded load with AbortError even when the pipeline bails without any rejection', async () => {
+      // Load A gets past its fetch (resolved blob) and parks on the unknown-
+      // duration await; superseding it disposes its scope, so it bails at a
+      // checkpoint rather than via a rejected promise -- it must still reject
+      // with the same canonical AbortError as the fetch-abort path.
+      const ws = WaveSurfer.create({ container: document.createElement('div') })
+      const onError = jest.fn()
+      ws.on('error', onError)
+      const blob = new Blob([new ArrayBuffer(8)], { type: 'audio/wav' })
+      const response = {
+        status: 200,
+        blob: () => Promise.resolve(blob),
+        body: null,
+        headers: new Headers(),
+        clone: () => ({ body: null, headers: new Headers() }),
+      } as unknown as Response
+      global.fetch = jest.fn().mockResolvedValue(response)
+
+      const pA = ws.load('http://x/a.mp3')
+      await new Promise((r) => setTimeout(r, 0)) // let A reach the duration await
+      ws.load('http://x/b.mp3').catch(() => undefined) // supersedes A
+
+      await expect(pA).rejects.toMatchObject({ name: 'AbortError' })
+      expect(onError).not.toHaveBeenCalled()
+      ws.destroy()
+    })
+
+    it('setMediaElement() during an in-flight load with unknown duration settles that load instead of hanging it', async () => {
+      // The duration resolver's 'loadedmetadata' listener lives on the media-
+      // event bridge that setMediaElement() disposes -- without a settle hook
+      // on that same bridge, the load() promise pends forever.
+      const media = createMedia()
+      Object.defineProperty(media, 'duration', { configurable: true, value: NaN })
+      const ws = WaveSurfer.create({ container: document.createElement('div'), media })
+      const blob = new Blob([new ArrayBuffer(8)], { type: 'audio/wav' })
+      const response = {
+        status: 200,
+        blob: () => Promise.resolve(blob),
+        body: null,
+        headers: new Headers(),
+        clone: () => ({ body: null, headers: new Headers() }),
+      } as unknown as Response
+      global.fetch = jest.fn().mockResolvedValue(response)
+
+      const pA = ws.load('http://x/a.mp3')
+      await new Promise((r) => setTimeout(r, 0)) // let the load reach the duration await
+
+      ws.setMediaElement(createMedia())
+
+      await expect(
+        Promise.race([
+          pA.then(
+            () => 'settled',
+            () => 'settled',
+          ),
+          new Promise((r) => setTimeout(() => r('pending'), 50)),
+        ]),
+      ).resolves.toBe('settled')
+      ws.destroy()
     })
 
     it('sets loadPhase=error when a load listener throws synchronously', async () => {

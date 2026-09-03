@@ -43,15 +43,24 @@ export function createElement(tagName: string, content?: TreeNode, container?: N
 
 /**
  * Check if a value is an HTML element, including elements from other realms
- * (e.g. an iframe), for which `instanceof HTMLElement` returns false
+ * (e.g. an iframe), for which `instanceof HTMLElement` returns false.
+ *
+ * The cross-realm fallback duck-types against the core element traits
+ * instead of accepting any `{nodeType: 1, style: object}` bag: it also
+ * requires a string nodeName, the HTML namespace (rejecting SVG elements),
+ * a non-null style object, and a callable appendChild.
  */
 export function isHTMLElement(value: unknown): value is HTMLElement {
   if (value instanceof HTMLElement) return true
+  if (typeof value !== 'object' || value === null) return false
+  const element = value as HTMLElement
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    (value as Node).nodeType === Node.ELEMENT_NODE &&
-    typeof (value as HTMLElement).style === 'object'
+    element.nodeType === Node.ELEMENT_NODE &&
+    typeof element.nodeName === 'string' &&
+    element.namespaceURI === 'http://www.w3.org/1999/xhtml' &&
+    typeof element.style === 'object' &&
+    element.style !== null &&
+    typeof element.appendChild === 'function'
   )
 }
 

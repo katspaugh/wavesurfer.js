@@ -75,6 +75,24 @@ describe('HoverPlugin', () => {
     expect(formatTimeCallback).toHaveBeenCalledTimes(1)
   })
 
+  test('positions the hover line with a string lineWidth instead of producing NaN math', () => {
+    const container = document.createElement('div')
+    const { wavesurfer } = createWaveSurfer(container, 10)
+
+    const plugin = HoverPlugin.create({ lineWidth: '2px' })
+    plugin._init(wavesurfer as any)
+
+    // width is 100 (see createWaveSurfer); posX = min(100 - 2 - 1, 99) = 97.
+    // With the documented string form, `100 - '2px' - 1` is NaN and the line
+    // was positioned at translateX(NaNpx).
+    container.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: 99 }))
+
+    const hover = container.querySelector<HTMLElement>('[part="hover"]')
+    expect(hover?.style.transform).toBe('translateX(97px)')
+    // The CSS border still uses the string verbatim
+    expect(hover?.style.borderLeft).toContain('2px')
+  })
+
   test('does not accumulate transitionend listeners across pointerleave events', () => {
     const container = document.createElement('div')
     const { wavesurfer } = createWaveSurfer(container, 10)

@@ -26,8 +26,13 @@ export class FrameScheduler {
     this.isRunning = true
     const tick = () => {
       if (!this.isRunning) return
-      this.callback?.()
+      // Schedule the next frame BEFORE running the callback: a throwing
+      // subscriber must not kill the loop (isRunning would stay true, blocking
+      // any restart). The exception still propagates to the caller/RAF task so
+      // it stays visible for debugging; a stop() from inside the callback
+      // cancels the frame just scheduled here via cancelAnimationFrame.
       this.frameId = requestAnimationFrame(tick)
+      this.callback?.()
     }
     // Replicate Timer's synchronous first tick so event timing stays identical.
     tick()

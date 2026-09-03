@@ -375,8 +375,21 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
     this.mediaEventScope.add(
       this.player.onMediaEvent('error', () => {
         // Deliberately the raw media (never null): under the WebAudio backend
-        // the error lives on the WebAudioPlayer's media surface.
-        this.emit('error', (this.player.getMediaElement().error ?? new Error('Media error')) as Error)
+        // the error lives on the WebAudioPlayer's media surface (and is
+        // already a real Error there). An HTMLMediaElement reports a
+        // MediaError, which is NOT an Error -- normalize it so the public
+        // 'error' event typing is honest, preserving the MediaError's
+        // message and code.
+        const mediaError = this.player.getMediaElement().error
+        let error: Error
+        if (mediaError instanceof Error) {
+          error = mediaError
+        } else if (mediaError) {
+          error = new Error(mediaError.message || `Media error ${mediaError.code}`)
+        } else {
+          error = new Error('Media error')
+        }
+        this.emit('error', error)
         this.stopAtPosition = null
       }),
     )
@@ -594,7 +607,22 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
     return this.plugins
   }
 
-  private async loadAudio(url: string, blob?: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
+  /**
+   * Classify a bailed-out (disposed-scope) load: 'superseded' when a newer
+   * load()/loadBlob() took over -- the old call's promise must then reject
+   * with a canonical AbortError (see load()) -- and undefined for a
+   * destroy-triggered disposal, which keeps its existing settle contract.
+   */
+  private bailedLoadOutcome(loadScope: Scope): 'superseded' | undefined {
+    return this.supersededLoadScopes.has(loadScope) ? 'superseded' : undefined
+  }
+
+  private async loadAudio(
+    url: string,
+    blob?: Blob,
+    channelData?: WaveSurferOptions['peaks'],
+    duration?: number,
+  ): Promise<'superseded' | undefined> {
     // destroy() is terminal: a post-destroy load must reject (catchably --
     // this async throw becomes a rejection that load()/loadBlob() classify
     // and re-emit as 'error') rather than resurrect torn-down bridges.
@@ -673,7 +701,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
         const onProgress = (percentage: number) => this.emit('loading', percentage)
         blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
         // Guard: bail if a newer load started or the instance was destroyed
-        if (loadScope.disposed) return
+        if (loadScope.disposed) return this.bailedLoadOutcome(loadScope)
         const overriddenMimeType = this.options.blobMimeType
         if (overriddenMimeType) {
           blob = new Blob([blob], { type: overriddenMimeType })
@@ -681,7 +709,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
       }
 
       // Guard: bail if a newer load started or the instance was destroyed
-      if (loadScope.disposed) return
+      if (loadScope.disposed) return this.bailedLoadOutcome(loadScope)
 
       // Set the mediaelement source
       this.player.setSrc(url, blob)
@@ -695,24 +723,31 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
           this.mediaEventScope.add(
             this.player.onMediaEvent('loadedmetadata', () => resolve(this.getDuration()), { once: true }),
           )
-          // Settle if this load is superseded or the instance is destroyed
-          // before 'loadedmetadata' ever fires (e.g. never emitted by the
-          // test/media environment) -- otherwise this promise, and thus
-          // loadAudio()/load(), would hang forever. Registered on loadScope
-          // (not mediaEventScope, which the 'loadedmetadata' listener above
-          // must stay on -- moving it there would remove it, and thus resolve
-          // this promise, on every load's disposal, not just this one's).
-          // Late registration on an already-disposed scope runs immediately
-          // (see Scope.add), so this is safe even if loadScope somehow
-          // disposes synchronously before this line runs. The resolved value
-          // is discarded either way: the very next `if (loadScope.disposed)
-          // return` bails before audioDuration is used.
-          loadScope.add(() => resolve(0))
+          // Settle if the media-event bridge is torn down before
+          // 'loadedmetadata' ever fires: setMediaElement() disposes
+          // mediaEventScope (killing the listener above) WITHOUT disposing
+          // loadScope, so without this hook the promise -- and thus
+          // loadAudio()/load() -- would hang forever; the load then continues
+          // against the new media with an unknown (0) duration, and the
+          // decode step recovers the real duration where possible.
+          const settleOnBridgeTeardown = this.mediaEventScope.add(() => resolve(0))
+          // Also settle if this load is superseded or the instance is
+          // destroyed before 'loadedmetadata' ever fires (e.g. never emitted
+          // by the test/media environment). Running settleOnBridgeTeardown
+          // here both resolves the promise and deregisters the bridge hook
+          // above, so completed loads don't accumulate stale disposers on
+          // mediaEventScope. Late registration on an already-disposed scope
+          // runs immediately (see Scope.add), so this is safe even if
+          // loadScope somehow disposes synchronously before this line runs.
+          // The resolved value is discarded either way: the very next
+          // `if (loadScope.disposed) return` bails before audioDuration is
+          // used.
+          loadScope.add(settleOnBridgeTeardown)
         }
       })
 
       // Guard: bail if a newer load started or the instance was destroyed
-      if (loadScope.disposed) return
+      if (loadScope.disposed) return this.bailedLoadOutcome(loadScope)
 
       // Set the duration if the player is a WebAudioPlayer without a URL
       if (!url && !blob && this.webAudioPlayer) {
@@ -729,18 +764,18 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
       } else if (blob) {
         const arrayBuffer = await blob.arrayBuffer()
         // Guard: bail if a newer load started or the instance was destroyed
-        if (loadScope.disposed) return
+        if (loadScope.disposed) return this.bailedLoadOutcome(loadScope)
         // Decode into a local first: assigning `this.decodedData = await ...`
         // directly would repopulate the field AFTER destroy()'s cleanup ran
         // (the continuation resumes past it), retaining the large buffer on a
         // destroyed instance.
         const decoded = await Decoder.decode(arrayBuffer, this.options.sampleRate)
-        if (loadScope.disposed) return
+        if (loadScope.disposed) return this.bailedLoadOutcome(loadScope)
         this.decodedData = decoded
       }
 
       // Guard: bail if a newer load started or the instance was destroyed
-      if (loadScope.disposed) return
+      if (loadScope.disposed) return this.bailedLoadOutcome(loadScope)
 
       if (this.decodedData) {
         this.wavesurferActions.setAudioBuffer(this.decodedData)
@@ -761,11 +796,13 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
       this.emit('ready', this.getDuration())
     } catch (err) {
       // Superseded loads were marked in supersededLoadScopes at the moment
-      // supersession happened (see the top of this method): swallow those,
-      // the new load owns the state now. Everything else -- destroy
-      // mid-load, or a genuine failure -- must propagate so load()/loadBlob()
-      // rejects and emits 'error' (issue #3637 / cypress/e2e/abort.cy.js
-      // contract).
+      // supersession happened (see the top of this method): swallow the raw
+      // pipeline error (e.g. the aborted fetch's AbortError) -- the new load
+      // owns the state now -- and report the supersession outcome so load()
+      // rejects with the canonical AbortError instead. Everything else --
+      // destroy mid-load, or a genuine failure -- must propagate so
+      // load()/loadBlob() rejects and emits 'error' (issue #3637 /
+      // cypress/e2e/abort.cy.js contract).
       if (!this.supersededLoadScopes.has(loadScope)) {
         // Write the 'error' phase here, not in load()/loadBlob()'s catches,
         // and only when this load is still the current one (this.loadScope
@@ -777,27 +814,55 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
         }
         throw err
       }
+      return 'superseded'
     }
+    return undefined
   }
 
-  /** Load an audio file by URL, with optional pre-decoded audio data */
-  public async load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number) {
-    try {
-      return await this.loadAudio(url, undefined, channelData, duration)
-    } catch (err) {
-      this.emit('error', err as Error)
-      throw err
-    }
+  /**
+   * Classify the settled loadAudio() pipeline for the public promise:
+   * a superseded load rejects with a canonical AbortError (v8) but emits NO
+   * public 'error' event -- supersession is normal control flow, not a
+   * failure; every real rejection (destroy mid-load, fetch/decode failure)
+   * keeps emitting 'error' before propagating. A no-op rejection handler is
+   * attached to the SAME promise object that is returned, so fire-and-forget
+   * callers produce no unhandled-rejection noise while awaiting callers
+   * still observe the rejection.
+   */
+  private classifyLoadResult(loadResult: Promise<'superseded' | undefined>): Promise<void> {
+    const promise = loadResult.then(
+      (outcome) => {
+        if (outcome === 'superseded') {
+          throw new DOMException('The load was superseded by a newer load call', 'AbortError')
+        }
+      },
+      (err) => {
+        this.emit('error', err as Error)
+        throw err
+      },
+    )
+    promise.catch(() => undefined)
+    return promise
   }
 
-  /** Load an audio blob */
-  public async loadBlob(blob: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number) {
-    try {
-      return await this.loadAudio('', blob, channelData, duration)
-    } catch (err) {
-      this.emit('error', err as Error)
-      throw err
-    }
+  /**
+   * Load an audio file by URL, with optional pre-decoded audio data.
+   * If a newer load()/loadBlob() supersedes this call before it completes,
+   * the returned promise rejects with an AbortError DOMException (and no
+   * 'error' event is emitted for it).
+   */
+  public load(url: string, channelData?: WaveSurferOptions['peaks'], duration?: number): Promise<void> {
+    return this.classifyLoadResult(this.loadAudio(url, undefined, channelData, duration))
+  }
+
+  /**
+   * Load an audio blob.
+   * If a newer load()/loadBlob() supersedes this call before it completes,
+   * the returned promise rejects with an AbortError DOMException (and no
+   * 'error' event is emitted for it).
+   */
+  public loadBlob(blob: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number): Promise<void> {
+    return this.classifyLoadResult(this.loadAudio('', blob, channelData, duration))
   }
 
   /** Zoom the waveform by a given pixels-per-second factor */

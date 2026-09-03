@@ -352,10 +352,14 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
   'EnvelopePlugin',
   (ctx, options) => {
     const opts: Options = Object.assign({}, defaultOptions, options)
-    opts.lineColor = opts.lineColor || defaultOptions.lineColor
-    opts.dragPointFill = opts.dragPointFill || defaultOptions.dragPointFill
-    opts.dragPointStroke = opts.dragPointStroke || defaultOptions.dragPointStroke
-    opts.dragPointSize = opts.dragPointSize || defaultOptions.dragPointSize
+    // `??`, not `||`: falsy option values are legitimate here (e.g.
+    // `dragPointSize: 0` to hide the drag points) and must not silently fall
+    // back to the defaults. These re-assignments only guard explicitly-passed
+    // `undefined` values, which Object.assign copies over the defaults.
+    opts.lineColor = opts.lineColor ?? defaultOptions.lineColor
+    opts.dragPointFill = opts.dragPointFill ?? defaultOptions.dragPointFill
+    opts.dragPointStroke = opts.dragPointStroke ?? defaultOptions.dragPointStroke
+    opts.dragPointSize = opts.dragPointSize ?? defaultOptions.dragPointSize
 
     const points: EnvelopePoint[] = options?.points || []
     let polyline: Polyline | null = null
@@ -454,6 +458,8 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
     }
 
     function addPoint(point: EnvelopePoint) {
+      // Post-destroy: public mutators are silent no-ops (matches core WaveSurfer)
+      if (ctx.scope.disposed) return
       if (!point.id) point.id = randomId()
 
       // Insert the point in the correct position to keep the array sorted
@@ -470,6 +476,8 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
     }
 
     function removePoint(point: EnvelopePoint) {
+      // Post-destroy: public mutators are silent no-ops (matches core WaveSurfer)
+      if (ctx.scope.disposed) return
       const index = points.indexOf(point)
       if (index > -1) {
         points.splice(index, 1)
@@ -492,6 +500,8 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
     }
 
     function setVolume(floatValue: number) {
+      // Post-destroy: public mutators are silent no-ops (matches core WaveSurfer)
+      if (ctx.scope.disposed) return
       volume = floatValue
       ctx.wavesurfer?.setVolume(floatValue)
     }
@@ -532,6 +542,19 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
       polyline?.destroy()
       polyline = null
     })
+
+    // "Already decoded" init path (same pattern as minimap/timeline): a plugin
+    // registered AFTER the audio has been decoded gets no 'decode' event, so
+    // build the polyline UI right away.
+    if (ctx.wavesurfer.getDecodedData()) {
+      initPolyline()
+      const duration = ctx.wavesurfer.getDuration()
+      if (duration) {
+        points.forEach((point) => {
+          addPolyPoint(point, duration)
+        })
+      }
+    }
 
     return {
       addPoint,

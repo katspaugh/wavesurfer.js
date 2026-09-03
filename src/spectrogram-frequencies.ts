@@ -126,9 +126,10 @@ export type FrequencyParams = {
   /** Shape parameter used only by the 'blackman' and 'gauss' window functions. */
   alpha?: number
   /**
-   * Frame overlap in samples. A falsy value (0, null, or undefined) falls back to
-   * round(fftSamples * 0.5) - this mirrors the worker's original behavior, where an
-   * explicit 0 is indistinguishable from "not set".
+   * Frame overlap in samples, honored up to fftSamples - 1 (the hop size always stays >= 1
+   * sample, so values >= fftSamples are clamped to fftSamples - 1). A falsy value (0, null, or
+   * undefined) falls back to round(fftSamples * 0.5) - this mirrors the worker's original
+   * behavior, where an explicit 0 is indistinguishable from "not set".
    */
   noverlap?: number | null
   /** Frequency axis scale used to build the filter bank. */
@@ -186,12 +187,13 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
   const filterBank = createSparseFilterBankForScale(scale, numFilters, fftLength, sampleRate)
 
   // Calculate hop size; integer arithmetic so non-power-of-two windows cannot produce
-  // fractional frame starts
+  // fractional frame starts. noverlap is honored as documented ("must be < fftSamples"):
+  // the only clamp is to fftSamples - 1, keeping the hop at >= 1 sample so the frame loop
+  // always advances. (The historical silent 50% cap and 64-sample hop floor contradicted
+  // that contract, quietly halving the requested overlap.)
   let actualNoverlap = noverlap || Math.max(0, Math.round(fftSamples * 0.5))
-  const maxOverlap = Math.floor(fftSamples / 2)
-  actualNoverlap = Math.min(actualNoverlap, maxOverlap)
-  const minHopSize = Math.max(64, Math.ceil(fftSamples * 0.25))
-  const hopSize = Math.max(minHopSize, fftSamples - actualNoverlap)
+  actualNoverlap = Math.min(actualNoverlap, fftSamples - 1)
+  const hopSize = Math.max(1, fftSamples - actualNoverlap)
 
   const frequencies: Uint8Array[][] = []
 

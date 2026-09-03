@@ -138,11 +138,23 @@ describe('worker compute with fftSize', () => {
   it('uses integer hops for non-power-of-two windows', () => {
     const fftSamples = 333
     const signal = makeSine(3000)
-    const result = runWorker(signal, { fftSamples, fftSize: 512, noverlap: 400 })
+    const result = runWorker(signal, { fftSamples, fftSize: 512, noverlap: 166 })
 
-    // noverlap capped at floor(333 / 2) = 166 -> hop = max(max(64, ceil(83.25)), 333 - 166) = 167
+    // hop = 333 - 166 = 167, an integer even though fftSamples is not a power of two
     const hop = 167
     const expectedFrames = Math.floor((signal.length - fftSamples - 1) / hop) + 1
+    expect(result[0].length).toBe(expectedFrames)
+    expect(result[0][0].length).toBe(256)
+  })
+
+  it('honors noverlap above 50% of fftSamples, clamped only to fftSamples - 1', () => {
+    const fftSamples = 333
+    const signal = makeSine(1000)
+    const result = runWorker(signal, { fftSamples, fftSize: 512, noverlap: 400 })
+
+    // noverlap >= fftSamples is clamped to fftSamples - 1 = 332 -> hop = 1 (the old code
+    // silently capped noverlap at 50% and floored the hop, yielding hop 167 here instead)
+    const expectedFrames = Math.floor((signal.length - fftSamples - 1) / 1) + 1
     expect(result[0].length).toBe(expectedFrames)
     expect(result[0][0].length).toBe(256)
   })

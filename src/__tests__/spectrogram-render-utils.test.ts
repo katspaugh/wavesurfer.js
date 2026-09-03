@@ -8,6 +8,11 @@ import {
   createPreEmphasisTilt,
   getBinFrequencies,
   SILENCE_FLOOR_DB,
+  hzToBark,
+  barkToHz,
+  hzToScale,
+  scaleToHz,
+  paintColumnPixels,
 } from '../spectrogram-render-utils.js'
 
 const SCALES = ['mel', 'logarithmic', 'bark', 'erb'] as const
@@ -297,3 +302,59 @@ describe('sparse filter bank golden values (frozen baseline)', () => {
 function closeTo(value: number, precision = 6) {
   return expect.closeTo(value, precision)
 }
+
+describe('bark scale zero normalization', () => {
+  // The vertical-mapping code (renderChannelToCanvas / drawSpectrogramSegment) assumes
+  // hzToScale(0, scale) === 0 when computing rMin/rMax ratios; the raw Traunmüller-corrected
+  // bark formula maps 0 Hz to about -0.1505 instead, producing a slightly negative rMin and
+  // out-of-range bitmap source rows (~0.6% offset). The mapping must be offset-corrected so
+  // 0 Hz lands on exactly 0, consistently in both directions so the pair stays inverse.
+  it('maps 0 Hz to exactly 0', () => {
+    expect(hzToBark(0)).toBe(0)
+    expect(hzToScale(0, 'bark')).toBe(0)
+  })
+
+  it('keeps every other scale mapping 0 Hz to 0 too (the shared zero assumption)', () => {
+    for (const scale of ['linear', 'logarithmic', 'mel', 'erb'] as const) {
+      expect(hzToScale(0, scale)).toBe(0)
+    }
+  })
+
+  it('keeps barkToHz the exact inverse of hzToBark across the audible range', () => {
+    // Values straddle both piecewise corrections (bark < 2 and bark > 20.1)
+    for (const hz of [0, 50, 100, 250, 500, 1000, 2000, 4000, 8000, 12000, 16000, 22050]) {
+      expect(barkToHz(hzToBark(hz))).toBeCloseTo(hz, 6)
+      expect(scaleToHz(hzToScale(hz, 'bark'), 'bark')).toBeCloseTo(hz, 6)
+    }
+  })
+
+  it('stays monotonically increasing after the offset correction', () => {
+    let previous = -Infinity
+    for (let hz = 0; hz <= 22050; hz += 50) {
+      const bark = hzToBark(hz)
+      expect(bark).toBeGreaterThan(previous)
+      previous = bark
+    }
+  })
+})
+
+describe('paintColumnPixels floors fractional bin values', () => {
+  // Internally computed columns are Uint8Array entries (integers 0-255), but
+  // loadFrequenciesData's externally-supplied frequenciesDataUrl JSON can carry fractional
+  // numbers; a fractional index like colorMap[12.7] is undefined and throws mid-draw on
+  // `color[0]`. Values must be floored after clamping.
+  it('does not throw indexing colorMap for fractional values, flooring after the clamp', () => {
+    const colorMap: number[][] = Array.from({ length: 256 }, (_, i) => [i / 255, 0, 0, 1])
+    const data = new Uint8ClampedArray(4 * 3) // 1 column, 3 rows, RGBA
+    const column = [12.7, 254.5, 300.9]
+
+    expect(() => paintColumnPixels(data, column, colorMap, 0, 1, 3)).not.toThrow()
+
+    // row 0 (12.7 -> floor 12) lands at the BOTTOM pixel row: ((3 - 0 - 1) * 1 + 0) * 4 = 8
+    expect(data[8]).toBe(12)
+    // row 1 (254.5 -> floor 254) at pixelIndex (3 - 1 - 1) * 4 = 4
+    expect(data[4]).toBe(254)
+    // row 2 (300.9 -> clamps to 255 first, floor is a no-op) at pixelIndex 0
+    expect(data[0]).toBe(255)
+  })
+})

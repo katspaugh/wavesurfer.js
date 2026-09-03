@@ -279,6 +279,26 @@ describe('Player', () => {
     expect(player.getCurrentTime()).toBe(0)
   })
 
+  test("the playbackRate 'canplay' listener does not survive destroy with external media", () => {
+    const media = createMedia()
+    let playbackRate = 1
+    Object.defineProperty(media, 'playbackRate', {
+      configurable: true,
+      get: () => playbackRate,
+      set: (value: number) => {
+        playbackRate = value
+      },
+    })
+
+    const player = new Player({ media, playbackRate: 2 })
+    player.destroy()
+
+    // The external media element outlives the player; the one-shot 'canplay'
+    // playbackRate listener must have been torn down with mediaScope.
+    media.dispatchEvent(new Event('canplay'))
+    expect(playbackRate).toBe(1)
+  })
+
   test('setSinkId uses media method', async () => {
     const media = createMedia()
     const player = new Player({ media })

@@ -59,6 +59,10 @@ function addUnits(value: string | number): string {
 const HoverPlugin = definePlugin<HoverPluginOptions, HoverPluginEvents, object>('HoverPlugin', (ctx, options) => {
   const opts: HoverPluginOptions & typeof defaultOptions = Object.assign({}, defaultOptions, options)
 
+  // The documented string form of lineWidth ('2', '2px') is fine for CSS but
+  // NaN in the positioning math below — normalize to a pixel number once.
+  const lineWidthPx = typeof opts.lineWidth === 'number' ? opts.lineWidth : parseFloat(opts.lineWidth) || 0
+
   // Create the plugin elements
   const wrapper = createElement('div', { part: 'hover' })
   const label = createElement('span', { part: 'hover-label' }, wrapper)
@@ -130,7 +134,7 @@ const HoverPlugin = definePlugin<HoverPluginOptions, HoverPluginEvents, object>(
       const { width } = bbox
       const offsetX = e.clientX - bbox.left
       const relX = Math.min(1, Math.max(0, offsetX / width))
-      const posX = Math.min(width - opts.lineWidth - 1, offsetX)
+      const posX = Math.min(width - lineWidthPx - 1, offsetX)
       wrapper.style.transform = `translateX(${posX}px)`
       wrapper.style.opacity = '1'
 
@@ -139,7 +143,7 @@ const HoverPlugin = definePlugin<HoverPluginOptions, HoverPluginEvents, object>(
       label.textContent = opts.formatTimeCallback(dur * relX)
       const labelWidth = label.offsetWidth
       const transformCondition = opts.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
-      label.style.transform = transformCondition ? `translateX(-${labelWidth + opts.lineWidth}px)` : ''
+      label.style.transform = transformCondition ? `translateX(-${labelWidth + lineWidthPx}px)` : ''
 
       // Emit a hover event with the relative X position
       ctx.emit('hover', relX)
@@ -191,7 +195,7 @@ const HoverPlugin = definePlugin<HoverPluginOptions, HoverPluginEvents, object>(
       const { width } = bbox
       const offsetX = lastPointerPosition.clientX - bbox.left
       const relX = Math.min(1, Math.max(0, offsetX / width))
-      const posX = Math.min(width - opts.lineWidth - 1, offsetX)
+      const posX = Math.min(width - lineWidthPx - 1, offsetX)
       wrapper.style.transform = `translateX(${posX}px)`
 
       // Timestamp
@@ -199,7 +203,7 @@ const HoverPlugin = definePlugin<HoverPluginOptions, HoverPluginEvents, object>(
       label.textContent = opts.formatTimeCallback(dur * relX)
       const labelWidth = label.offsetWidth
       const transformCondition = opts.labelPreferLeft ? posX - labelWidth > 0 : posX + labelWidth > width
-      label.style.transform = transformCondition ? `translateX(-${labelWidth + opts.lineWidth}px)` : ''
+      label.style.transform = transformCondition ? `translateX(-${labelWidth + lineWidthPx}px)` : ''
     }
   }
 

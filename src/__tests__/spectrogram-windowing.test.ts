@@ -6,6 +6,7 @@ import {
   deriveNoverlap,
   getScrollLeft,
   getViewportWidth,
+  renderFrequencySegment,
 } from '../spectrogram-windowing.js'
 
 /** A minimal, fully-controllable SegmentManagerDeps for unit tests: no DOM/wavesurfer/Scope involved. */
@@ -54,17 +55,27 @@ function makeSegment(start: number, end: number, canvas?: HTMLCanvasElement): Fr
   return { startTime: start, endTime: end, startPixel: start * 100, endPixel: end * 100, frequencies: [], canvas }
 }
 
-describe('SegmentManager eviction', () => {
-  it('does nothing when at or under the cap', () => {
-    const manager = new SegmentManager(makeDeps(), { maxRetainedSegments: 5 })
-    for (let i = 0; i < 5; i++) manager.segments.set(String(i), makeSegment(i * 30, (i + 1) * 30))
+/** A canvas whose backing store costs width * height * 4 bytes (default 100x100 = 40 000 B). */
+function makeCanvas(width = 100, height = 100): HTMLCanvasElement {
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  return canvas
+}
+
+const CANVAS_BYTES = 100 * 100 * 4 // one makeCanvas() backing store
+
+describe('SegmentManager eviction (byte budget)', () => {
+  it('does nothing when at or under the byte budget', () => {
+    const manager = new SegmentManager(makeDeps(), { maxRetainedBytes: 5 * CANVAS_BYTES })
+    for (let i = 0; i < 5; i++) manager.segments.set(String(i), makeSegment(i * 30, (i + 1) * 30, makeCanvas()))
     manager.evictDistantSegments(0)
     expect(manager.segments.size).toBe(5)
   })
 
-  it('evicts the farthest-from-currentTime segments down to the cap', () => {
-    const manager = new SegmentManager(makeDeps(), { maxRetainedSegments: 3 })
-    for (let i = 0; i < 10; i++) manager.segments.set(String(i), makeSegment(i * 30, (i + 1) * 30))
+  it('evicts the farthest-from-currentTime segments down to the byte budget', () => {
+    const manager = new SegmentManager(makeDeps(), { maxRetainedBytes: 3 * CANVAS_BYTES })
+    for (let i = 0; i < 10; i++) manager.segments.set(String(i), makeSegment(i * 30, (i + 1) * 30, makeCanvas()))
 
     manager.evictDistantSegments(0)
 
@@ -75,12 +86,25 @@ describe('SegmentManager eviction', () => {
     expect(manager.segments.has('9')).toBe(false)
   })
 
+  it('counts bytes, not segments: fewer large canvases fit in the same budget', () => {
+    const manager = new SegmentManager(makeDeps(), { maxRetainedBytes: 4 * CANVAS_BYTES })
+    // Each canvas is 4x the base size (200x200), so the 4-canvas-equivalent budget only fits one.
+    for (let i = 0; i < 6; i++) {
+      manager.segments.set(String(i), makeSegment(i * 30, (i + 1) * 30, makeCanvas(200, 200)))
+    }
+
+    manager.evictDistantSegments(0)
+
+    expect(manager.segments.size).toBe(1)
+    expect(manager.segments.has('0')).toBe(true)
+  })
+
   it('removes evicted segments canvases from the DOM', () => {
-    const manager = new SegmentManager(makeDeps(), { maxRetainedSegments: 2 })
+    const manager = new SegmentManager(makeDeps(), { maxRetainedBytes: 2 * CANVAS_BYTES })
     const container = document.createElement('div')
     document.body.appendChild(container)
     for (let i = 0; i < 5; i++) {
-      const canvas = document.createElement('canvas')
+      const canvas = makeCanvas()
       container.appendChild(canvas)
       manager.segments.set(String(i), makeSegment(i * 30, (i + 1) * 30, canvas))
     }
@@ -94,8 +118,8 @@ describe('SegmentManager eviction', () => {
   })
 
   it('anchors eviction on the given currentTime, not always segment index 0', () => {
-    const manager = new SegmentManager(makeDeps(), { maxRetainedSegments: 3 })
-    for (let i = 0; i < 10; i++) manager.segments.set(String(i), makeSegment(i * 30, (i + 1) * 30))
+    const manager = new SegmentManager(makeDeps(), { maxRetainedBytes: 3 * CANVAS_BYTES })
+    for (let i = 0; i < 10; i++) manager.segments.set(String(i), makeSegment(i * 30, (i + 1) * 30, makeCanvas()))
 
     // Anchor near segment 9 (t=285): the lowest-index segments should be evicted instead.
     manager.evictDistantSegments(285)
@@ -103,6 +127,24 @@ describe('SegmentManager eviction', () => {
     expect(manager.segments.has('9')).toBe(true)
     expect(manager.segments.has('8')).toBe(true)
     expect(manager.segments.has('0')).toBe(false)
+  })
+
+  it('never evicts the segment nearest to the current view, even when it alone exceeds the budget', () => {
+    const manager = new SegmentManager(makeDeps(), { maxRetainedBytes: CANVAS_BYTES })
+    manager.segments.set('near', makeSegment(0, 30, makeCanvas(400, 400)))
+    manager.segments.set('far', makeSegment(300, 330, makeCanvas(400, 400)))
+
+    manager.evictDistantSegments(0)
+
+    // Evicting the visible segment would just force an immediate recompute (thrash);
+    // the budget therefore only ever removes all-but-the-nearest.
+    expect(manager.segments.has('near')).toBe(true)
+    expect(manager.segments.has('far')).toBe(false)
+  })
+
+  it('defaults to a ~256MB budget', () => {
+    const manager = new SegmentManager(makeDeps())
+    expect(manager.maxRetainedBytes).toBe(256 * 1024 * 1024)
   })
 })
 
@@ -406,9 +448,15 @@ describe('SegmentManager progressive loading', () => {
     expect(manager.isProgressiveLoading).toBe(false)
   })
 
-  it('enforces maxRetainedSegments purely through the progressive path, with no viewport render involved', async () => {
-    const deps = makeDeps({ getBufferDuration: () => 30 * 20, getWidth: () => 100000 })
-    const manager = new SegmentManager(deps, { progressiveLoading: true, maxRetainedSegments: 3 })
+  it('enforces the byte budget purely through the progressive path, with no viewport render involved', async () => {
+    const deps = makeDeps({
+      getBufferDuration: () => 30 * 20,
+      getWidth: () => 100000,
+      renderSegment: async (segment) => {
+        segment.canvas = makeCanvas()
+      },
+    })
+    const manager = new SegmentManager(deps, { progressiveLoading: true, maxRetainedBytes: 3 * CANVAS_BYTES })
     manager.isProgressiveLoading = true
 
     for (let i = 0; i < 10; i++) {
@@ -573,5 +621,203 @@ describe('getScrollLeft / getViewportWidth', () => {
   it('getViewportWidth falls back to a default when nothing is measurable', () => {
     const wrapper = document.createElement('div')
     expect(getViewportWidth(wrapper)).toBeGreaterThan(0)
+  })
+})
+
+describe('SegmentManager.generateSegments await races', () => {
+  // The progressive loader calls generateSegments() directly, bypassing renderVisibleWindow's
+  // re-entrancy guard - so two generateSegments() calls for overlapping ranges genuinely race.
+  // Every await point must re-check the segment map before/after attaching a canvas, or the
+  // loser's canvas is left attached-but-unreachable (never evicted: no map key points at it).
+  it('does not orphan a canvas when a concurrent call creates the same segment mid-compute', async () => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const resolvers: Array<(value: Uint8Array[][]) => void> = []
+    const deps = makeDeps({
+      // Short audio + small container -> fill-container mode -> both calls race the SAME key.
+      getBufferDuration: () => 5,
+      getWidth: () => 100,
+      getPixelsPerSecond: () => 10,
+      computeSegmentFrequencies: () =>
+        new Promise<Uint8Array[][]>((resolve) => {
+          resolvers.push(resolve)
+        }),
+      renderSegment: async (segment) => {
+        const canvas = document.createElement('canvas')
+        segment.canvas = canvas
+        container.appendChild(canvas)
+      },
+    })
+    const manager = new SegmentManager(deps)
+
+    const first = manager.generateSegments(0, 5)
+    const second = manager.generateSegments(0, 5)
+    expect(resolvers).toHaveLength(2)
+
+    resolvers[0]([[new Uint8Array([1])]])
+    await first
+    resolvers[1]([[new Uint8Array([2])]])
+    await second
+
+    // Pre-fix the second call's Map.set() overwrote the first's entry and attached a second
+    // canvas that nothing could ever evict (the map no longer pointed at it).
+    expect(manager.segments.size).toBe(1)
+    expect(container.children.length).toBe(1)
+    const [segment] = manager.segments.values()
+    expect(segment.canvas?.isConnected).toBe(true)
+  })
+
+  it('removes the canvas it attached when the segment was deleted during the renderSegment await', async () => {
+    const container = document.createElement('div')
+    let resolveRender: (() => void) | null = null
+    const deps = makeDeps({
+      getBufferDuration: () => 5,
+      getWidth: () => 100,
+      getPixelsPerSecond: () => 10,
+      renderSegment: (segment) => {
+        const canvas = document.createElement('canvas')
+        segment.canvas = canvas
+        container.appendChild(canvas)
+        return new Promise<void>((resolve) => {
+          resolveRender = resolve
+        })
+      },
+    })
+    const manager = new SegmentManager(deps)
+
+    const generating = manager.generateSegments(0, 5)
+    for (let i = 0; i < 10 && !resolveRender; i++) {
+      await Promise.resolve()
+    }
+    expect(resolveRender).not.toBeNull()
+
+    // Eviction (or a reset for a new buffer) deletes the segment while its render is in flight.
+    const [key] = manager.segments.keys()
+    manager.segments.delete(key)
+
+    resolveRender!()
+    await generating
+
+    // The canvas the in-flight render attached must not be left orphaned in the DOM.
+    expect(container.children.length).toBe(0)
+  })
+})
+
+describe('SegmentManager progress reporting', () => {
+  it('emits per-segment fractions ending at exactly 1 for a viewport-driven generate (non-progressive)', async () => {
+    const progressValues: number[] = []
+    const deps = makeDeps({
+      getBufferDuration: () => 600,
+      getWidth: () => 1000,
+      getPixelsPerSecond: () => 1000, // segmentDuration = 15000px / 1000px/s = 15s
+      emitProgress: (progress) => progressValues.push(progress),
+    })
+    const manager = new SegmentManager(deps) // progressiveLoading off (the default)
+
+    await manager.generateSegments(0, 45) // 3 segments of 15s
+
+    // Pre-fix every emitted value was 0: getLoadingProgress() only tracks the progressive
+    // loader's cursor, which never moves in default (non-progressive) loading.
+    expect(progressValues).toEqual([1 / 3, 2 / 3, 1])
+  })
+
+  it('emits 1 when a default-loading renderVisibleWindow pass completes', async () => {
+    const progressValues: number[] = []
+    const deps = makeDeps({
+      getBufferDuration: () => 600,
+      emitProgress: (progress) => progressValues.push(progress),
+    })
+    const manager = new SegmentManager(deps)
+
+    await manager.renderVisibleWindow()
+
+    expect(progressValues.length).toBeGreaterThan(0)
+    expect(progressValues[progressValues.length - 1]).toBe(1)
+  })
+
+  it('keeps loader-cursor progress for progressive-load calls, and emits 1 on completion', async () => {
+    const progressValues: number[] = []
+    const deps = makeDeps({
+      getBufferDuration: () => 60,
+      getWidth: () => 100000,
+      emitProgress: (progress) => progressValues.push(progress),
+    })
+    const manager = new SegmentManager(deps, { progressiveLoading: true })
+    manager.isProgressiveLoading = true
+
+    await manager.progressiveLoadNextSegment() // [0, 30): cursor still at 0 when it emits
+    await manager.progressiveLoadNextSegment() // [30, 60): cursor at 30 -> 0.5
+    await manager.progressiveLoadNextSegment() // cursor at 60 -> done: emits 1 and stops
+
+    expect(progressValues).toEqual([0, 0.5, 1])
+    expect(manager.isProgressiveLoading).toBe(false)
+  })
+})
+
+describe('renderFrequencySegment devicePixelRatio scaling', () => {
+  const originalDpr = Object.getOwnPropertyDescriptor(window, 'devicePixelRatio')
+  const originalCreateImageBitmap = (globalThis as any).createImageBitmap
+  const originalImageData = (globalThis as any).ImageData
+  let getContextSpy: jest.SpyInstance
+  let fakeCtx: { scale: jest.Mock; drawImage: jest.Mock }
+
+  beforeEach(() => {
+    Object.defineProperty(window, 'devicePixelRatio', { value: 2, configurable: true })
+    fakeCtx = { scale: jest.fn(), drawImage: jest.fn() }
+    getContextSpy = jest
+      .spyOn(window.HTMLCanvasElement.prototype, 'getContext')
+      .mockReturnValue(fakeCtx as unknown as ReturnType<HTMLCanvasElement['getContext']>)
+    ;(globalThis as any).ImageData = class {
+      data: Uint8ClampedArray
+      constructor(
+        public width: number,
+        public height: number,
+      ) {
+        this.data = new Uint8ClampedArray(width * height * 4)
+      }
+    }
+    ;(globalThis as any).createImageBitmap = jest.fn(() => Promise.resolve({ close: jest.fn() }))
+  })
+
+  afterEach(() => {
+    getContextSpy.mockRestore()
+    ;(globalThis as any).createImageBitmap = originalCreateImageBitmap
+    ;(globalThis as any).ImageData = originalImageData
+    if (originalDpr) {
+      Object.defineProperty(window, 'devicePixelRatio', originalDpr)
+    } else {
+      delete (window as any).devicePixelRatio
+    }
+  })
+
+  it('scales the canvas backing store by devicePixelRatio while keeping its CSS size', async () => {
+    const colorMap = Array.from({ length: 256 }, (_, i) => [i / 255, i / 255, i / 255, 1])
+    const segment: FrequencySegment = {
+      startTime: 0,
+      endTime: 1,
+      startPixel: 0,
+      endPixel: 300,
+      frequencies: [[new Uint8Array([1, 2, 3])]],
+    }
+    const container = document.createElement('div')
+
+    await renderFrequencySegment(segment, {
+      height: 200,
+      colorMap,
+      scale: 'linear',
+      freqFrom: 4000,
+      freqMin: 0,
+      freqMax: 4000,
+      canvasContainer: container,
+    })
+
+    const canvas = segment.canvas!
+    // Pre-fix the backing store matched the CSS size (300x200), rendering blurry on HiDPI.
+    expect(canvas.width).toBe(600)
+    expect(canvas.height).toBe(400)
+    expect(canvas.style.width).toBe('300px')
+    expect(canvas.style.height).toBe('200px')
+    // Drawing happens in CSS coordinates via the context transform.
+    expect(fakeCtx.scale).toHaveBeenCalledWith(2, 2)
   })
 })

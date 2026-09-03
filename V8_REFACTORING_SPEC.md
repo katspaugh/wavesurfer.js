@@ -152,6 +152,8 @@ interface PlaybackBackend {
   export surface; it was never a documented entry point).
 - Protected internals (`this.media` etc.) disappear for subclassers — subclassing
   WaveSurfer was never supported; plugins are the extension mechanism.
+- v7's `vertical` option no longer exists in `WaveSurferOptions` — there is no v8
+  replacement; rotate the container via CSS if a vertical waveform is needed.
 
 ---
 
@@ -305,8 +307,13 @@ before or alongside the refactors above, ordered by severity.
 - `createBuffer`'s fake AudioBuffer has `copyFrom/ToChannel` methods that throw
   "Illegal invocation" (`decoder.ts:71-72`) — implement or drop for v8.
 - `empty()` is fire-and-forget → unhandled rejection path (`wavesurfer.ts:895-897`).
-- **Superseded `load()` resolves as success** — decide consciously for v8: rejecting
-  with a canonical `AbortError` is more conventional than silently fulfilling.
+- **Superseded `load()` resolves as success** — decided for v8: a `load()` superseded
+  by a newer `load()`/`loadBlob()` on a live instance now rejects with a canonical
+  `AbortError` (`DOMException`, name `'AbortError'`). No public `'error'` event is
+  emitted for supersession (it is normal control flow, unlike destroy-mid-load, which
+  keeps rejecting AND emitting `'error'` per #3637/abort.cy.js); an internal no-op
+  rejection handler is attached to the returned promise so fire-and-forget callers get
+  no unhandled-rejection noise, while awaiting callers still observe the rejection.
 - `BasePlugin` exposes `scope` but `BasePlugin.destroy()` never disposes it — a
   third-party class plugin using `this.scope.listen()` with inherited destroy leaks
   everything (`base-plugin.ts:22, 49-59`). Dispose it in `BasePlugin.destroy()` (safe:

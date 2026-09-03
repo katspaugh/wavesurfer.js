@@ -169,6 +169,46 @@ describe('TimelinePlugin', () => {
     expect(notchAt160?.isConnected).toBe(false)
   })
 
+  // Notch widths must be measured AFTER the notch is inserted into the
+  // document: a detached element's clientWidth is always 0, which made the
+  // label-culling condition (`start + width < scrollRight`) degenerate — a
+  // notch whose label sticks out past the visible window was never culled.
+  // jsdom also reports 0 for connected elements, so simulate real browser
+  // behavior with a prototype getter keyed on connectedness.
+  test('culls a notch whose measured width overflows the visible window (width measured after insertion)', () => {
+    const originalDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.isConnected ? 20 : 0
+      },
+    })
+
+    try {
+      const wavesurfer = createWaveSurfer(1, 100)
+      // Visible window: [0, 60). pxPerSec = 100, so notches land at 0 and 50.
+      wavesurfer.getWidth = jest.fn(() => 60)
+
+      const plugin = TimelinePlugin.create({ duration: 1, timeInterval: 0.5 })
+      plugin._init(wavesurfer as any)
+
+      const wrapper = wavesurfer.getWrapper()
+      const notchAt0 = wrapper.querySelector<HTMLElement>('[part^="timeline-notch"][style*="left: 0px"]')
+      const notchAt50 = wrapper.querySelector<HTMLElement>('[part^="timeline-notch"][style*="left: 50px"]')
+
+      // 0 + 20 < 60: stays. 50 + 20 < 60 is false: must be culled — with the
+      // detached (0-width) measurement it incorrectly stayed visible.
+      expect(notchAt0).not.toBeNull()
+      expect(notchAt50).toBeNull()
+    } finally {
+      if (originalDescriptor) {
+        Object.defineProperty(HTMLElement.prototype, 'clientWidth', originalDescriptor)
+      } else {
+        delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth
+      }
+    }
+  })
+
   // ADAPTED (private-internal poke): the original read the private
   // `notchElements`/`currentTimeline` fields directly. Neither exists
   // post-port (they're setup()-local closure state, discarded with the
