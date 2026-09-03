@@ -352,12 +352,51 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     const dblclicks = fromEvent(element, 'dblclick')
     const pointerdowns = fromEvent(element, 'pointerdown')
     const pointerups = fromEvent(element, 'pointerup')
+    const touchends = fromEvent(element, 'touchend')
+
+    // Double-tap detection (#3927): many mobile browsers never fire 'dblclick'
+    // for touch input, so two touchend events on this region within
+    // DOUBLE_TAP_WINDOW synthesize the same 'dblclick' emission. Browsers that
+    // DO fire a native dblclick after a double tap would otherwise emit twice,
+    // so a native dblclick arriving shortly after a synthesized one is deduped.
+    let lastTapTime = 0
+    let lastSyntheticDblclickTime = 0
+
+    const emitDblclick = (e: MouseEvent) => this.emit('dblclick', e)
 
     // Subscribe to streams
     const unsubscribeClick = clicks.subscribe((e) => e && this.emit('click', e))
     const unsubscribeMouseenter = mouseenters.subscribe((e) => e && this.emit('over', e))
     const unsubscribeMouseleave = mouseleaves.subscribe((e) => e && this.emit('leave', e))
-    const unsubscribeDblclick = dblclicks.subscribe((e) => e && this.emit('dblclick', e))
+    const unsubscribeDblclick = dblclicks.subscribe((e) => {
+      if (!e) return
+      // Skip the native dblclick some browsers still fire right after a
+      // double tap we've already synthesized an event for.
+      if (Date.now() - lastSyntheticDblclickTime <= DOUBLE_TAP_WINDOW * 2) return
+      emitDblclick(e)
+    })
+    const unsubscribeTouchend = touchends.subscribe((e) => {
+      if (!e) return
+      const now = Date.now()
+      if (lastTapTime && now - lastTapTime <= DOUBLE_TAP_WINDOW) {
+        lastTapTime = 0
+        lastSyntheticDblclickTime = now
+        // Emit a synthesized MouseEvent so the public event signature
+        // ('region-double-clicked': [region, e: MouseEvent]) stays unchanged.
+        // It is passed to listeners directly, never dispatched to the DOM.
+        const touch = e.changedTouches?.[0]
+        emitDblclick(
+          new MouseEvent('dblclick', {
+            bubbles: true,
+            cancelable: true,
+            clientX: touch?.clientX ?? 0,
+            clientY: touch?.clientY ?? 0,
+          }),
+        )
+      } else {
+        lastTapTime = now
+      }
+    })
     const unsubscribePointerdown = pointerdowns.subscribe((e) => e && this.toggleCursor(true))
     const unsubscribePointerup = pointerups.subscribe((e) => e && this.toggleCursor(false))
 
@@ -367,12 +406,14 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       unsubscribeMouseenter()
       unsubscribeMouseleave()
       unsubscribeDblclick()
+      unsubscribeTouchend()
       unsubscribePointerdown()
       unsubscribePointerup()
       cleanupStream(clicks)
       cleanupStream(mouseenters)
       cleanupStream(mouseleaves)
       cleanupStream(dblclicks)
+      cleanupStream(touchends)
       cleanupStream(pointerdowns)
       cleanupStream(pointerups)
     })
@@ -632,6 +673,35 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   }
 }
 
+/**
+ * Tolerance (in seconds) applied at a region's START boundary when deciding
+ * whether the current time is inside the region.
+ *
+ * Seeking to `region.start` — which is exactly what `region.play()` does via
+ * `wavesurfer.play(region.start, end)` — is not guaranteed to land the next
+ * 'timeupdate' at or after `start`: media elements clamp/round `currentTime`
+ * (notably the MediaElement backend in Chrome, and any start with many
+ * decimals, e.g. 9.16454684654654), so the first tick can arrive a hair
+ * BEFORE `start`. With an exact `start <= currentTime` comparison the region
+ * then counts as "not entered", which fired a spurious 'region-out' for the
+ * previously active region and caused region-in/region-out ping-pong loops
+ * when jumping between regions (#3631, #3658, #3781, #3866).
+ *
+ * 0.05s matches the window already used for zero-length (marker) regions and
+ * is far below typical 'timeupdate' granularity (~100–250ms), so at worst
+ * 'region-in' fires one tick (~50ms of audio) early during linear playback.
+ * The END boundary stays exact so 'region-out' is not delayed.
+ */
+const REGION_BOUNDARY_TOLERANCE = 0.05
+
+/**
+ * Two taps on the same region within this window (ms) count as a double tap
+ * and emit 'region-double-clicked' (native 'dblclick' does not fire for touch
+ * input on many mobile browsers — #3927). 300ms is the conventional
+ * double-tap threshold used by mobile browsers themselves.
+ */
+const DOUBLE_TAP_WINDOW = 300
+
 // The public surface returned by setup() below: getRegions/addRegion/
 // enableDragSelection/clearRegions are RegionsPlugin's only public API
 // methods (destroy is chassis-owned by definePlugin, not part of Api).
@@ -689,10 +759,14 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
 
     ctx.scope.add(
       ctx.wavesurfer.on('timeupdate', (currentTime) => {
-        // Detect when regions are being played
+        // Detect when regions are being played. The start boundary gets a
+        // small tolerance so a seek to region.start that settles slightly
+        // before it (media-element clamping/rounding) still counts as inside —
+        // see REGION_BOUNDARY_TOLERANCE. Zero-length regions keep their
+        // existing `start + 0.05` window at the end boundary.
         const playedRegions = regions.filter(
           (region) =>
-            region.start <= currentTime &&
+            region.start - REGION_BOUNDARY_TOLERANCE <= currentTime &&
             (region.end === region.start ? region.start + 0.05 : region.end) >= currentTime,
         )
 
