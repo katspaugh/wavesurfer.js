@@ -549,6 +549,85 @@ describe('Auto-scroll while dragging, resizing, or creating a region', () => {
     expect(element.parentElement).toBeNull()
   })
 
+  test('holding a region at the edge sustains the auto-scroll feedback loop', () => {
+    const { wavesurfer, plugin, scrollContainer, regionsContainer } = setup()
+    const region = plugin.addRegion({ start: 0.3, end: 0.8 })
+    jest.runOnlyPendingTimers()
+    expect(region.element?.parentElement).toBe(regionsContainer)
+
+    // Fully visible at drag start
+    mockRect(region.element!, { left: 20, top: 0, width: 40, height: 100 })
+    startDrag(region.element!)
+
+    // The pointer parks the region 20px past the right edge and stays there:
+    // the element rect keeps reporting the same overflow (the region tracks
+    // the stationary pointer), so every scroll step must trigger another one
+    mockRect(region.element!, { left: 80, top: 0, width: 40, height: 100 })
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 70, clientY: 10 }))
+    expect(scrollContainer.scrollLeft).toBe(20)
+
+    // The renderer reports each scroll back as a wavesurfer 'scroll' event;
+    // the replay moves the region AND re-triggers adjustScroll — round two
+    const startAfterFirstScroll = region.start
+    wavesurfer.emit('scroll', 0, 0, 20, 120)
+    expect(region.start).toBeCloseTo(startAfterFirstScroll + 2) // +20px = +2s
+    expect(scrollContainer.scrollLeft).toBe(40)
+
+    // ... and round three, without any pointer movement
+    wavesurfer.emit('scroll', 0, 0, 40, 140)
+    expect(region.start).toBeCloseTo(startAfterFirstScroll + 4)
+    expect(scrollContainer.scrollLeft).toBe(60)
+
+    // Once the region no longer overflows, the loop stops
+    mockRect(region.element!, { left: 40, top: 0, width: 40, height: 100 })
+    wavesurfer.emit('scroll', 0, 0, 60, 160)
+    expect(scrollContainer.scrollLeft).toBe(60)
+
+    endDrag(70)
+  })
+
+  test('drag-creation keeps auto-scrolling once the region is wider than the viewport', () => {
+    const { wavesurfer, plugin, wrapper, scrollContainer } = setup()
+    const initialized: Array<{ element: HTMLElement | null }> = []
+    plugin.on('region-initialized', (region) => initialized.push(region))
+
+    plugin.enableDragSelection({})
+
+    wrapper.dispatchEvent(new MouseEvent('pointerdown', { clientX: 10, clientY: 10, bubbles: true }))
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 20, clientY: 10 }))
+    expect(initialized).toHaveLength(1)
+
+    // The created region has grown wider than the viewport: it overflows both
+    // sides (50px each). A rightward scroll step must still scroll right,
+    // by the right-side overflow
+    mockRect(initialized[0].element!, { left: -50, top: 0, width: 200, height: 100 })
+    wavesurfer.emit('scroll', 0, 0, 10, 110)
+
+    expect(scrollContainer.scrollLeft).toBe(50)
+
+    window.dispatchEvent(new MouseEvent('pointerup', { clientX: 20, clientY: 10 }))
+  })
+
+  test('disabling drag selection mid-gesture stops the scroll replay', () => {
+    const { wavesurfer, plugin, wrapper } = setup()
+    const initialized: Array<{ start: number; end: number }> = []
+    plugin.on('region-initialized', (region) => initialized.push(region))
+
+    const disable = plugin.enableDragSelection({})
+
+    wrapper.dispatchEvent(new MouseEvent('pointerdown', { clientX: 10, clientY: 10, bubbles: true }))
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 20, clientY: 10 }))
+    expect(initialized).toHaveLength(1)
+
+    disable()
+
+    // Scrolling after disabling must not keep mutating the abandoned region
+    const { start, end } = initialized[0]
+    wavesurfer.emit('scroll', 0, 0, 10, 110)
+    expect(initialized[0].start).toBeCloseTo(start)
+    expect(initialized[0].end).toBeCloseTo(end)
+  })
+
   test('container scroll during drag-creation keeps growing the region', () => {
     const { wavesurfer, plugin, wrapper } = setup()
     const created: Array<{ start: number; end: number }> = []

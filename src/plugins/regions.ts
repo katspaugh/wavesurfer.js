@@ -1085,9 +1085,13 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       // the container is kept scrolled to that edge.
       const scrollState: ScrollState = { scrollLeft: 0 }
       const onScroll = createScrollHandler(scrollState, (scrollDiff) => {
-        if (region) {
+        if (region && scrollDiff !== 0) {
           region._onUpdate(scrollDiff, scrollDiff > 0 ? 'end' : 'start', startTime)
-          adjustScroll(region, 'both')
+          // Keep scrolling toward the edge being grown. A concrete direction
+          // (not 'both') so the loop keeps going even once the drag-created
+          // region has grown wider than the viewport (adjustScroll ignores
+          // 'both' when both sides overflow).
+          adjustScroll(region, scrollDiff > 0 ? 'right' : 'left')
         }
       })
       let unsubscribeScroll: (() => void) | null = null
@@ -1178,6 +1182,11 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       return ctx.scope.add(() => {
         unsubscribe()
         dragStream.cleanup()
+        // A creation gesture may be mid-flight when drag selection is
+        // disabled: drop its scroll listener too, or waveform scrolls would
+        // keep mutating the abandoned region until the plugin is destroyed.
+        unsubscribeScroll?.()
+        unsubscribeScroll = null
       })
     }
 
