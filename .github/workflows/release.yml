@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - v7
 
 permissions:
   contents: write
@@ -35,7 +36,16 @@ jobs:
               echo "tag=${PRERELEASE_ID:-next}" >> $GITHUB_OUTPUT
               echo "prerelease=true" >> $GITHUB_OUTPUT
             else
-              echo "tag=latest" >> $GITHUB_OUTPUT
+              # Only move the "latest" dist-tag forward: a maintenance release from
+              # an older major (e.g. 7.x from the v7 branch once 8.x is "latest")
+              # is published under its major's dist-tag (v7) instead
+              LATEST_VERSION=$(npm view "$PACKAGE_NAME" dist-tags.latest 2>/dev/null || true)
+              HIGHEST_VERSION=$(printf '%s\n%s\n' "$LATEST_VERSION" "$NEW_VERSION" | sort -V | tail -n 1)
+              if [ "$HIGHEST_VERSION" = "$NEW_VERSION" ]; then
+                echo "tag=latest" >> $GITHUB_OUTPUT
+              else
+                echo "tag=v${NEW_VERSION%%.*}" >> $GITHUB_OUTPUT
+              fi
               echo "prerelease=false" >> $GITHUB_OUTPUT
             fi
             LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
