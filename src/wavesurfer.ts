@@ -7,7 +7,6 @@ import Renderer from './renderer.js'
 import Timer from './timer.js'
 import WebAudioPlayer from './webaudio.js'
 import { createWaveSurferState, type WaveSurferState, type WaveSurferActions } from './state/wavesurfer-state.js'
-import { setupStateEventEmission } from './reactive/state-event-emitter.js'
 
 export type WaveSurferOptions = {
   /** Required: an HTML element or selector where the waveform will be rendered */
@@ -171,7 +170,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
   // Reactive state
   private wavesurferState: WaveSurferState
   private wavesurferActions: WaveSurferActions
-  private reactiveCleanups: Array<() => void> = []
 
   public static readonly BasePlugin = BasePlugin
   public static readonly dom = dom
@@ -227,7 +225,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.initPlayerEvents()
     this.initRendererEvents()
     this.initTimerEvents()
-    this.initReactiveState()
     this.initPlugins()
 
     // Read the initial URL before load has been called
@@ -272,15 +269,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
             this.setTime(stopAt)
           }
         }
-      }),
-    )
-  }
-
-  private initReactiveState() {
-    // Bridge reactive state to EventEmitter for backwards compatibility
-    this.reactiveCleanups.push(
-      setupStateEventEmission(this.wavesurferState, {
-        emit: this.emit.bind(this),
       }),
     )
   }
@@ -756,8 +744,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
     this.plugins.forEach((plugin) => plugin.destroy())
     this.subscriptions.forEach((unsubscribe) => unsubscribe())
     this.unsubscribePlayerEvents()
-    this.reactiveCleanups.forEach((cleanup) => cleanup())
-    this.reactiveCleanups = []
     this.timer.destroy()
     this.renderer.destroy()
     super.destroy()
