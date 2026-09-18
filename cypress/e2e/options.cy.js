@@ -615,6 +615,33 @@ describe('WaveSurfer options tests', () => {
     })
   })
 
+  it('should stay at the paused position when pausing a Web Audio range playback', (done) => {
+    cy.window().then((win) => {
+      const wavesurfer = win.WaveSurfer.create({
+        container: id,
+        url: '../../examples/audio/demo.wav',
+        backend: 'WebAudio',
+      })
+
+      wrapReady(wavesurfer).then(() => {
+        wavesurfer.play(0, 10)
+
+        setTimeout(() => {
+          wavesurfer.pause()
+          const pausedAt = wavesurfer.getCurrentTime()
+          expect(pausedAt).to.be.lessThan(5)
+
+          // Pausing stops the buffer node, which fires 'ended' asynchronously --
+          // the cancelled stop must not move the playhead to the end of the range
+          setTimeout(() => {
+            expect(wavesurfer.getCurrentTime()).to.equal(pausedAt)
+            done()
+          }, 200)
+        }, 500)
+      })
+    })
+  })
+
   it('should load a blob', (done) => {
     cy.window().then((win) => {
       const wavesurfer = win.WaveSurfer.create({

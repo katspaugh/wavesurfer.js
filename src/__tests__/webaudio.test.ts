@@ -18,6 +18,7 @@ function createMockAudioContext() {
     start: jest.fn(),
     stop: jest.fn(),
     addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
     get onended() {
       return bufferSourceOnended
     },
@@ -282,6 +283,47 @@ describe('WebAudioPlayer', () => {
       endedListener?.()
 
       expect(player.currentTime).toBe(5)
+    })
+
+    test('pausing before a scheduled stopAt keeps the paused position', () => {
+      const { audioContext, bufferSource } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      ;(player as any).buffer = createMockBuffer(10)
+
+      audioContext.currentTime = 100
+      player.play()
+      player.stopAt(8)
+
+      // The user pauses one second in, well before the scheduled stop
+      audioContext.currentTime = 101
+      player.pause()
+
+      // Pausing stops the buffer node, which fires 'ended' on it -- the cancelled
+      // stop must not clamp the position to the end of the region
+      const endedListener = bufferSource.addEventListener.mock.calls.find(([type]) => type === 'ended')?.[1]
+      endedListener?.()
+
+      expect(player.currentTime).toBe(1)
+      expect(player.paused).toBe(true)
+    })
+
+    test('seeking before a scheduled stopAt keeps the seeked position', () => {
+      const { audioContext, bufferSource } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      ;(player as any).buffer = createMockBuffer(10)
+
+      audioContext.currentTime = 100
+      player.play()
+      player.stopAt(8)
+
+      audioContext.currentTime = 101
+      player.currentTime = 3
+
+      const endedListener = bufferSource.addEventListener.mock.calls.find(([type]) => type === 'ended')?.[1]
+      endedListener?.()
+
+      expect(player.currentTime).toBe(3)
+      expect(player.paused).toBe(false)
     })
 
     test('does not emit ended when currentTime is beyond tolerance threshold from duration', () => {

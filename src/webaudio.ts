@@ -54,6 +54,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   // destroy(). Everything else in this class is cleaned up manually because
   // it isn't a DOM/timer/observer resource the ban covers.
   private scope = new Scope()
+  // The stop scheduled by stopAt(), while it is still pending. Cleared as soon
+  // as it stops being pending -- either because it fired, or because something
+  // else (an explicit pause, a seek, a rate change) stopped the buffer node
+  // first. `cancel` removes the 'ended' listener and its Scope disposer.
+  private scheduledStop: { node: AudioBufferSourceNode; cancel: () => void } | null = null
 
   constructor(audioContext?: AudioContext) {
     super()
@@ -92,6 +97,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
     // Tear down the stopAt() 'ended' listener, if any is pending
     this.scope.dispose()
+    this.scheduledStop = null
 
     // Invalidate and abort any in-flight fetch/decode chain
     this.srcGeneration++
@@ -219,6 +225,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   private _pause() {
+    // Stopping the node below fires 'ended' on it, which a pending stopAt()
+    // would otherwise mistake for its own scheduled stop and use to clamp the
+    // position to the stop time -- i.e. pausing mid-region would jump the
+    // playhead to the end of the region.
+    this.cancelScheduledStop()
     this.playbackPosition = this.currentTime
     this.paused = true
     // Clear onended before stopping to prevent spurious 'ended' event
@@ -251,39 +262,53 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this.emit('pause')
   }
 
+  /** Drop a pending stopAt(), so its 'ended' listener can no longer clamp the position */
+  private cancelScheduledStop() {
+    this.scheduledStop?.cancel()
+    this.scheduledStop = null
+  }
+
   stopAt(timeSeconds: number) {
+    const currentBufferNode = this.bufferNode
+    if (!currentBufferNode) return
+
+    // Only one stop can be pending at a time: this one supersedes any earlier one
+    this.cancelScheduledStop()
+
     // The stop is scheduled on the AudioContext clock, so convert the remaining
     // media time to real time via the playback rate
     const delay = (timeSeconds - this.currentTime) / this._playbackRate
-    const currentBufferNode = this.bufferNode
     // A stop time already in the past would make AudioScheduledSourceNode.stop()
     // throw a RangeError -- clamp to "now" (stop immediately) instead.
-    currentBufferNode?.stop(this.audioContext.currentTime + Math.max(0, delay))
+    currentBufferNode.stop(this.audioContext.currentTime + Math.max(0, delay))
 
-    if (currentBufferNode) {
-      // Each stopAt() call adds one more disposer to this.scope, even though the `{ once: true }`
-      // listener below removes itself from the DOM node once it fires - Scope.listen()'s own
-      // bookkeeping doesn't know about `once` and only prunes disposers on an explicit early-remove
-      // or scope.dispose(). This does not unbounded-leak in practice: it's bounded by how many
-      // times a single WebAudioPlayer instance has stopAt() called on it over its lifetime (not by
-      // audio duration or playback time), and the whole array - including any already-fired
-      // no-op removeEventListener entries - is pruned in one shot by destroy()'s scope.dispose().
-      this.scope.listen(
-        currentBufferNode,
-        'ended',
-        () => {
-          if (currentBufferNode === this.bufferNode) {
-            this.bufferNode = null
-            this.pause()
-            // The 'ended' event fires with some latency, so clamp the reported
-            // position to the exact stop time
-            this.playbackPosition = Math.min(timeSeconds, this.duration)
-            this.emit('timeupdate')
-          }
-        },
-        { once: true },
-      )
-    }
+    const cancel = this.scope.listen(
+      currentBufferNode,
+      'ended',
+      () => {
+        // Ignore an 'ended' that isn't this scheduled stop: _pause() cancels the
+        // pending stop before stopping the node, so an explicit pause, a seek or
+        // a rate change lands here with nothing scheduled.
+        const scheduled = this.scheduledStop
+        if (scheduled?.node !== currentBufferNode) return
+        this.scheduledStop = null
+        // Prunes the (already self-removed, `once: true`) listener's disposer
+        // from the scope, so repeated stopAt() calls don't pile them up
+        scheduled.cancel()
+
+        if (currentBufferNode === this.bufferNode) {
+          this.bufferNode = null
+          this.pause()
+          // The 'ended' event fires with some latency, so clamp the reported
+          // position to the exact stop time
+          this.playbackPosition = Math.min(timeSeconds, this.duration)
+          this.emit('timeupdate')
+        }
+      },
+      { once: true },
+    )
+
+    this.scheduledStop = { node: currentBufferNode, cancel }
   }
 
   async setSinkId(deviceId: string) {
