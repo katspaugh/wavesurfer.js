@@ -9,6 +9,10 @@ function createMockAudioContext() {
     disconnect: jest.fn(),
   }
 
+  // A real EventTarget backs the mock buffer node so that dispatching 'ended'
+  // behaves like the DOM does: handlers run in registration order, and one
+  // removed by an earlier handler mid-dispatch doesn't run at all.
+  const endedTarget = new EventTarget()
   let bufferSourceOnended: (() => void) | null = null
   const bufferSource = {
     buffer: null as AudioBuffer | null,
@@ -17,13 +21,21 @@ function createMockAudioContext() {
     disconnect: jest.fn(),
     start: jest.fn(),
     stop: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
+    addEventListener: jest.fn((type: string, fn: EventListener, options?: AddEventListenerOptions) =>
+      endedTarget.addEventListener(type, fn, options),
+    ),
+    removeEventListener: jest.fn((type: string, fn: EventListener, options?: AddEventListenerOptions) =>
+      endedTarget.removeEventListener(type, fn, options),
+    ),
     get onended() {
       return bufferSourceOnended
     },
     set onended(fn: (() => void) | null) {
+      // An event handler property takes its place in the listener list where it
+      // is first set, which is what orders it before the stopAt() listener
+      if (bufferSourceOnended) endedTarget.removeEventListener('ended', bufferSourceOnended)
       bufferSourceOnended = fn
+      if (fn) endedTarget.addEventListener('ended', fn)
     },
   }
 
@@ -48,6 +60,8 @@ function createMockAudioContext() {
     triggerOnended: () => {
       if (bufferSourceOnended) bufferSourceOnended()
     },
+    // Dispatches 'ended' to every handler on the node, the way the browser does
+    dispatchEnded: () => endedTarget.dispatchEvent(new Event('ended')),
   }
 }
 
@@ -269,7 +283,7 @@ describe('WebAudioPlayer', () => {
     })
 
     test('stopAt reports exactly the stop position after the buffer ends', () => {
-      const { audioContext, bufferSource } = createMockAudioContext()
+      const { audioContext, dispatchEnded } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       ;(player as any).buffer = createMockBuffer(10)
 
@@ -279,14 +293,13 @@ describe('WebAudioPlayer', () => {
 
       // The 'ended' event fires with some latency after the actual stop
       audioContext.currentTime = 105.03
-      const endedListener = bufferSource.addEventListener.mock.calls.find(([type]) => type === 'ended')?.[1]
-      endedListener?.()
+      dispatchEnded()
 
       expect(player.currentTime).toBe(5)
     })
 
     test('pausing before a scheduled stopAt keeps the paused position', () => {
-      const { audioContext, bufferSource } = createMockAudioContext()
+      const { audioContext, dispatchEnded } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       ;(player as any).buffer = createMockBuffer(10)
 
@@ -300,15 +313,14 @@ describe('WebAudioPlayer', () => {
 
       // Pausing stops the buffer node, which fires 'ended' on it -- the cancelled
       // stop must not clamp the position to the end of the region
-      const endedListener = bufferSource.addEventListener.mock.calls.find(([type]) => type === 'ended')?.[1]
-      endedListener?.()
+      dispatchEnded()
 
       expect(player.currentTime).toBe(1)
       expect(player.paused).toBe(true)
     })
 
     test('seeking before a scheduled stopAt keeps the seeked position', () => {
-      const { audioContext, bufferSource } = createMockAudioContext()
+      const { audioContext, dispatchEnded } = createMockAudioContext()
       const player = new WebAudioPlayer(audioContext)
       ;(player as any).buffer = createMockBuffer(10)
 
@@ -319,11 +331,47 @@ describe('WebAudioPlayer', () => {
       audioContext.currentTime = 101
       player.currentTime = 3
 
-      const endedListener = bufferSource.addEventListener.mock.calls.find(([type]) => type === 'ended')?.[1]
-      endedListener?.()
+      dispatchEnded()
 
       expect(player.currentTime).toBe(3)
       expect(player.paused).toBe(false)
+    })
+
+    test('a stopAt at the end of the track still finalizes through the node onended handler', () => {
+      const { audioContext, dispatchEnded } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      ;(player as any).buffer = createMockBuffer(10)
+      const endedSpy = jest.fn()
+      player.on('ended', endedSpy)
+
+      audioContext.currentTime = 100
+      player.play()
+      player.stopAt(10)
+
+      // Both handlers run in one dispatch, in registration order: the node's own
+      // onended pauses and emits 'ended', then the stopAt listener clamps away
+      // the event latency
+      audioContext.currentTime = 110.03
+      dispatchEnded()
+
+      expect(endedSpy).toHaveBeenCalledTimes(1)
+      expect(player.currentTime).toBe(10)
+    })
+
+    test('a stopAt just before the end of the track clamps to the stop position', () => {
+      const { audioContext, dispatchEnded } = createMockAudioContext()
+      const player = new WebAudioPlayer(audioContext)
+      ;(player as any).buffer = createMockBuffer(10)
+
+      audioContext.currentTime = 100
+      player.play()
+      player.stopAt(9.995)
+
+      // Close enough to the duration for the node's onended handler to pause first
+      audioContext.currentTime = 110.025
+      dispatchEnded()
+
+      expect(player.currentTime).toBe(9.995)
     })
 
     test('does not emit ended when currentTime is beyond tolerance threshold from duration', () => {

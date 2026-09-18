@@ -58,7 +58,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   // as it stops being pending -- either because it fired, or because something
   // else (an explicit pause, a seek, a rate change) stopped the buffer node
   // first. `cancel` removes the 'ended' listener and its Scope disposer.
-  private scheduledStop: { node: AudioBufferSourceNode; cancel: () => void } | null = null
+  private scheduledStop: { node: AudioBufferSourceNode; time: number; cancel: () => void } | null = null
 
   constructor(audioContext?: AudioContext) {
     super()
@@ -228,8 +228,15 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     // Stopping the node below fires 'ended' on it, which a pending stopAt()
     // would otherwise mistake for its own scheduled stop and use to clamp the
     // position to the stop time -- i.e. pausing mid-region would jump the
-    // playhead to the end of the region.
-    this.cancelScheduledStop()
+    // playhead to the end of the region. Only a pause BEFORE the stop position
+    // is such an outside interruption: at or past it the node has already
+    // stopped on schedule, and this is the end-of-playback bookkeeping of that
+    // very stop (the node's own 'ended' handler pauses at the end of the track,
+    // in the same dispatch where the stopAt() listener clamps the position), so
+    // the scheduled stop must survive it and finalize.
+    if (this.scheduledStop && this.currentTime < this.scheduledStop.time) {
+      this.cancelScheduledStop()
+    }
     this.playbackPosition = this.currentTime
     this.paused = true
     // Clear onended before stopping to prevent spurious 'ended' event
@@ -288,7 +295,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
       () => {
         // Ignore an 'ended' that isn't this scheduled stop: _pause() cancels the
         // pending stop before stopping the node, so an explicit pause, a seek or
-        // a rate change lands here with nothing scheduled.
+        // a rate change lands here with nothing scheduled. (Cancelling during
+        // the node's own 'ended' dispatch would also skip this listener
+        // outright, which is why _pause() spares a stop that already fired.)
         const scheduled = this.scheduledStop
         if (scheduled?.node !== currentBufferNode) return
         this.scheduledStop = null
@@ -308,7 +317,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
       { once: true },
     )
 
-    this.scheduledStop = { node: currentBufferNode, cancel }
+    this.scheduledStop = { node: currentBufferNode, time: timeSeconds, cancel }
   }
 
   async setSinkId(deviceId: string) {
