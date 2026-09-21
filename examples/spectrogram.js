@@ -12,8 +12,10 @@ const ws = WaveSurfer.create({
   sampleRate: 44100,
 })
 
-// Initialize the Spectrogram plugin with detailed configuration
-ws.registerPlugin(
+// Initialize the Spectrogram plugin with detailed configuration.
+// registerPlugin() returns the plugin instance, which is what emits
+// the spectrogram's own 'ready' and 'click' events.
+const spectrogram = ws.registerPlugin(
   Spectrogram.create({
     // Display frequency labels on the left side
     labels: true,
@@ -89,12 +91,13 @@ ws.once('interaction', () => {
   ws.play()
 })
 
-// Event listeners for spectrogram interactions
-ws.on('spectrogram-ready', () => {
+// Event listeners for spectrogram interactions.
+// These are emitted by the plugin instance, not by wavesurfer.
+spectrogram.on('ready', () => {
   console.log('Spectrogram has finished rendering')
 })
 
-ws.on('spectrogram-click', (relativeX) => {
+spectrogram.on('click', (relativeX) => {
   console.log('Clicked on spectrogram at position:', relativeX)
   // You can use relativeX to seek to that position in the audio
   ws.setTime(relativeX * ws.getDuration())
