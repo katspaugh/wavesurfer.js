@@ -35,7 +35,7 @@ import WaveSurfer from 'wavesurfer.js'
 
 Alternatively, insert a UMD script tag which exports the library as a global `WaveSurfer` variable:
 ```html
-<script src="https://unpkg.com/wavesurfer.js@7"></script>
+<script src="https://unpkg.com/wavesurfer.js@8"></script>
 ```
 
 Create a wavesurfer instance and pass various [options](https://wavesurfer.xyz/docs/api/options):
@@ -55,7 +55,7 @@ import Regions from 'wavesurfer.js/dist/plugins/regions.esm.js'
 
 Or as a script tag that will export `WaveSurfer.Regions`:
 ```html
-<script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@8/dist/plugins/regions.min.js"></script>
 ```
 
 TypeScript types are included in the package, so there's no need to install `@types/wavesurfer.js`.
