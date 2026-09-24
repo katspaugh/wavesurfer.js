@@ -25,7 +25,7 @@ import {
   applySparseFilterBank,
   magnitudesToColorIndices,
   magnitudesToDb,
-  dbToColorIndices,
+  dbToCompressedColorIndices,
   createPreEmphasisTilt,
   getBinFrequencies,
   SILENCE_FLOOR_DB,
@@ -142,6 +142,8 @@ export type FrequencyParams = {
   preEmphasis?: number | null
   /** Praat-style autoscaling: the white point is the loudest bin across the whole spectrogram. */
   autoGain?: boolean
+  /** Praat-style dynamic compression, 0 (off) to 1: lifts each frame toward the white point. */
+  dynamicCompression?: number
   /** Overrides the autoGain transient-memory budget in bytes (used by tests). */
   autoGainBufferBudgetBytes?: number
   /** Audio sample rate in Hz. */
@@ -170,6 +172,7 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
     rangeDB = 80,
     preEmphasis,
     autoGain,
+    dynamicCompression = 0,
     autoGainBufferBudgetBytes,
     sampleRate,
   } = params
@@ -217,13 +220,26 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
   }
 
   if (!autoGain) {
+    // Compression needs each frame's dB peak; without it the direct path keeps the output unchanged
+    const dbScratch = dynamicCompression > 0 ? new Float32Array(fftLength / 2) : null
     for (let c = 0; c < channels.length; c++) {
       const channelData = channels[c]
       const channelFreq: Uint8Array[] = []
 
       for (let sample = 0; sample + fftSamples < channelData.length; sample += hopSize) {
         // Convert to uint8 color indices
-        channelFreq.push(magnitudesToColorIndices(computeSpectrum(channelData, sample), -gainDB, rangeDB, tilt))
+        const spectrum = computeSpectrum(channelData, sample)
+        channelFreq.push(
+          dbScratch
+            ? dbToCompressedColorIndices(
+                magnitudesToDb(spectrum, tilt, dbScratch),
+                -gainDB,
+                rangeDB,
+                dynamicCompression,
+                tilt,
+              )
+            : magnitudesToColorIndices(spectrum, -gainDB, rangeDB, tilt),
+        )
       }
       frequencies.push(channelFreq)
     }
@@ -265,7 +281,9 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
     const silent = maxDb < SILENCE_FLOOR_DB
     for (const channelDb of dbFrames) {
       frequencies.push(
-        channelDb.map((db) => (silent ? new Uint8Array(db.length) : dbToColorIndices(db, maxDb, rangeDB))),
+        channelDb.map((db) =>
+          silent ? new Uint8Array(db.length) : dbToCompressedColorIndices(db, maxDb, rangeDB, dynamicCompression, tilt),
+        ),
       )
     }
     return frequencies
@@ -291,7 +309,7 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
         channelFreq.push(new Uint8Array(bins))
       } else {
         const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt, dbScratch)
-        channelFreq.push(dbToColorIndices(db, maxDb, rangeDB))
+        channelFreq.push(dbToCompressedColorIndices(db, maxDb, rangeDB, dynamicCompression, tilt))
       }
     }
     frequencies.push(channelFreq)

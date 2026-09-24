@@ -26,6 +26,7 @@ interface WorkerMessage {
     rangeDB: number
     preEmphasis?: number
     autoGain?: boolean
+    dynamicCompression?: number
     /** Internal: overrides the autoGain transient-memory budget (used by tests) */
     autoGainBufferBudgetBytes?: number
     splitChannels: boolean
@@ -94,6 +95,7 @@ function calculateFrequencies(audioChannels: Float32Array[], options: WorkerMess
     rangeDB: options.rangeDB,
     preEmphasis: options.preEmphasis,
     autoGain: options.autoGain,
+    dynamicCompression: options.dynamicCompression,
     autoGainBufferBudgetBytes: options.autoGainBufferBudgetBytes,
     sampleRate,
   })

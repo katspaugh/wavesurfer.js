@@ -203,7 +203,8 @@ export const AUTO_GAIN_BUFFER_BUDGET_BYTES = 64 * 1024 * 1024
 /**
  * Per-bin display tilt in dB: preEmphasis dB/octave relative to 1 kHz - 0 dB at 1 kHz,
  * boosting above, attenuating below. This is Praat's display pre-emphasis formula, including
- * its 1e-308 guard that sends the DC bin toward -infinity instead of NaN.
+ * its 1e-308 guard that sends the DC bin toward -infinity instead of NaN. Unlike Praat, the 0 Hz
+ * row is attenuated for negative pre-emphasis too, so the guard can't make it the loudest bin.
  */
 export function createPreEmphasisTilt(preEmphasis: number, binFrequencies: ArrayLike<number>): Float64Array {
   if (!Number.isFinite(preEmphasis)) {
@@ -211,7 +212,8 @@ export function createPreEmphasisTilt(preEmphasis: number, binFrequencies: Array
   }
   const tilt = new Float64Array(binFrequencies.length)
   for (let i = 0; i < binFrequencies.length; i++) {
-    tilt[i] = preEmphasis * Math.log2(binFrequencies[i] / 1000 + 1e-308)
+    const term = preEmphasis * Math.log2(binFrequencies[i] / 1000 + 1e-308)
+    tilt[i] = binFrequencies[i] > 0 ? term : -Math.abs(term)
   }
   return tilt
 }
@@ -313,6 +315,34 @@ export function dbToColorIndices(db: Float32Array, whiteDb: number, rangeDB: num
     }
   }
   return colorIndices
+}
+
+/**
+ * dbToColorIndices with Praat-style dynamic compression: the frame is shifted by
+ * dynamicCompression * (whiteDb - framePeak) dB, applied by moving the white point instead of the
+ * frame. With compression on, a frame whose peak before pre-emphasis (the tilt that was added to
+ * db) is below SILENCE_FLOOR_DB maps to 0 instead of being lifted from the numeric floor.
+ */
+export function dbToCompressedColorIndices(
+  db: Float32Array,
+  whiteDb: number,
+  rangeDB: number,
+  dynamicCompression = 0,
+  tilt?: Float64Array | null,
+): Uint8Array {
+  if (dynamicCompression === 0) return dbToColorIndices(db, whiteDb, rangeDB)
+
+  let framePeak = -Infinity
+  let rawPeak = -Infinity
+  for (let i = 0; i < db.length; i++) {
+    if (db[i] > framePeak) framePeak = db[i]
+    const raw = tilt ? db[i] - tilt[i] : db[i]
+    if (raw > rawPeak) rawPeak = raw
+  }
+  // A steep tilt can lift the clamped floor over the threshold, so judge silence before it
+  if (rawPeak < SILENCE_FLOOR_DB) return new Uint8Array(db.length)
+
+  return dbToColorIndices(db, whiteDb - dynamicCompression * (whiteDb - framePeak), rangeDB)
 }
 
 export const COLOR_MAPS = {

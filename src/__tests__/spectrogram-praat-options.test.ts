@@ -44,6 +44,16 @@ function runWorker(signal: Float32Array, options: Record<string, unknown>): Uint
 }
 
 const flatten = (result: Uint8Array[][]) => result[0].map((frame) => Array.from(frame))
+const frameMaxima = (result: Uint8Array[][]) => result[0].map((frame) => Math.max(...Array.from(frame)))
+
+/** Full-scale sine for the first half, 40 dB quieter for the second */
+function makeLoudThenQuiet(length: number): Float32Array {
+  const signal = makeSine(length)
+  for (let i = length / 2; i < length; i++) {
+    signal[i] *= 0.01
+  }
+  return signal
+}
 
 beforeAll(() => {
   // jsdom has no Worker; the plugins only check its existence before using the bundled constructor
@@ -88,6 +98,20 @@ describe.each([
 
   it('accepts an explicit blackman alpha of 0', () => {
     expect(() => Plugin.create({ windowFunc: 'blackman', alpha: 0 })).not.toThrow()
+  })
+
+  it('rejects dynamicCompression outside 0-1', () => {
+    expect(() => Plugin.create({ dynamicCompression: NaN })).toThrow(TypeError)
+    expect(() => Plugin.create({ dynamicCompression: Infinity })).toThrow(TypeError)
+    expect(() => Plugin.create({ dynamicCompression: -Infinity })).toThrow(TypeError)
+    expect(() => Plugin.create({ dynamicCompression: -0.1 })).toThrow(TypeError)
+    expect(() => Plugin.create({ dynamicCompression: 1.1 })).toThrow(TypeError)
+  })
+
+  it('accepts dynamicCompression from 0 to 1', () => {
+    expect(() => Plugin.create({ dynamicCompression: 0 })).not.toThrow()
+    expect(() => Plugin.create({ dynamicCompression: 0.5 })).not.toThrow()
+    expect(() => Plugin.create({ dynamicCompression: 1 })).not.toThrow()
   })
 })
 
@@ -151,6 +175,79 @@ describe('worker compute with autoGain', () => {
 
     expect(flatten(recomputed)).toEqual(flatten(buffered))
   })
+
+  it('scales to the signal, not the 0 Hz row, with negative pre-emphasis', () => {
+    const result = runWorker(makeSine(8000), { autoGain: true, preEmphasis: -3 })
+    expect(Math.max(...result[0].map((frame) => Math.max(...Array.from(frame).slice(1))))).toBe(255)
+  })
+})
+
+describe('worker compute with dynamicCompression', () => {
+  it.each([false, true])('is byte-identical to omitting the option at 0 (autoGain: %s)', (autoGain) => {
+    const signal = makeLoudThenQuiet(8000)
+    const compressed = runWorker(signal, { autoGain, dynamicCompression: 0 })
+
+    expect(flatten(compressed)).toEqual(flatten(runWorker(signal, { autoGain })))
+  })
+
+  it('lifts quiet frames toward 255 under autoGain while loud frames stay at 255', () => {
+    const signal = makeLoudThenQuiet(8000)
+    const plain = frameMaxima(runWorker(signal, { autoGain: true }))
+    const half = frameMaxima(runWorker(signal, { autoGain: true, dynamicCompression: 0.5 }))
+    const full = frameMaxima(runWorker(signal, { autoGain: true, dynamicCompression: 1 }))
+    const quiet = plain.length - 1
+
+    expect([plain[0], half[0], full[0]]).toEqual([255, 255, 255])
+    expect(half[quiet]).toBeGreaterThan(plain[quiet])
+    expect(full.every((max) => max === 255)).toBe(true)
+  })
+
+  it.each([false, true])('keeps digitally silent frames blank at full compression (autoGain: %s)', (autoGain) => {
+    const signal = makeSine(8000)
+    signal.fill(0, 3000, 5000)
+    const result = runWorker(signal, { autoGain, dynamicCompression: 1 })
+    // Frames entirely inside the gap (hop 128, window 256)
+    const gapFrames = result[0].filter((_frame, i) => i * 128 >= 3000 && i * 128 + 256 <= 5000)
+
+    expect(gapFrames.length).toBeGreaterThan(0)
+    for (const frame of gapFrames) {
+      expect(frame.every((value) => value === 0)).toBe(true)
+    }
+  })
+
+  it('produces identical output on the buffered and recompute memory strategies', () => {
+    const signal = makeLoudThenQuiet(8000)
+    const options = { autoGain: true, preEmphasis: 6, dynamicCompression: 0.5 }
+    const buffered = runWorker(signal, options)
+    const recomputed = runWorker(signal, { ...options, autoGainBufferBudgetBytes: 1 })
+
+    expect(flatten(recomputed)).toEqual(flatten(buffered))
+  })
+
+  it.each(['linear', 'mel'])('keeps non-DC content visible with negative pre-emphasis (%s)', (scale) => {
+    const result = runWorker(makeSine(8000), { scale, preEmphasis: -3, dynamicCompression: 0.4 })
+    expect(Math.max(...result[0].map((frame) => Math.max(...Array.from(frame).slice(1))))).toBe(255)
+  })
+
+  it.each([
+    ['fixed gain', {}],
+    ['autoGain', { autoGain: true }],
+    ['autoGain, recompute strategy', { autoGain: true, autoGainBufferBudgetBytes: 1 }],
+  ])('keeps a zero gap blank under steep pre-emphasis at full compression (%s)', (_label, extra) => {
+    const sampleRate = 48000
+    const signal = Float32Array.from({ length: sampleRate }, (_, i) => Math.sin((2 * Math.PI * 1000 * i) / sampleRate))
+    signal.fill(0, 20000, 30000)
+    const options = { ...extra, sampleRate, endTime: 1, preEmphasis: 18, dynamicCompression: 1 }
+    const result = runWorker(signal, options)
+    // Frames entirely inside the gap (hop 128, window 256)
+    const gapFrames = result[0].filter((_frame, i) => i * 128 >= 20000 && i * 128 + 256 <= 30000)
+
+    expect(gapFrames.length).toBeGreaterThan(0)
+    for (const frame of gapFrames) {
+      expect(frame.every((value) => value === 0)).toBe(true)
+    }
+    expect(Math.max(...Array.from(result[0][0]))).toBe(255)
+  })
 })
 
 describe('main-thread parity with the worker for the new options', () => {
@@ -172,6 +269,24 @@ describe('main-thread parity with the worker for the new options', () => {
     mainResult[0].forEach((frame: Uint8Array, i: number) => {
       expect(Array.from(frame)).toEqual(Array.from(workerResult[0][i]))
     })
+  })
+
+  // A steady sine gives every frame the same peak, so compression would have nothing to change
+  it.each([
+    ['autoGain', { autoGain: true }],
+    ['fixed gain', {}],
+  ])('matches the worker byte for byte with dynamicCompression and %s', async (_label, extra) => {
+    const signal = makeLoudThenQuiet(8000)
+    const options = { ...extra, dynamicCompression: 0.5 }
+    const workerResult = runWorker(signal, options)
+    const quiet = workerResult[0].length - 1
+    expect(Array.from(workerResult[0][quiet])).not.toEqual(Array.from(runWorker(signal, extra)[0][quiet]))
+
+    const plugin: any = Spectrogram.create({ fftSamples: 256, noverlap: 128, scale: 'linear', ...options } as any)
+    plugin._init(createFakeWaveSurfer())
+    const mainResult = await plugin.__spectrogramInternalsForTests().getFrequencies(makeBuffer(signal))
+
+    expect(flatten(mainResult)).toEqual(flatten(workerResult))
   })
 
   it('uses the recompute strategy on the main thread when over budget, with identical output', async () => {
@@ -271,5 +386,57 @@ describe('windowed plugin preEmphasis', () => {
     expect(worker.postMessage).toHaveBeenCalledTimes(1)
     expect(worker.postMessage.mock.calls[0][0].options.preEmphasis).toBe(6)
     plugin.destroy()
+  })
+})
+
+describe('dynamicCompression forwarding', () => {
+  it('forwards dynamicCompression to the worker in full rendering', async () => {
+    const plugin: any = Spectrogram.create({ useWebWorker: true, noverlap: 128, dynamicCompression: 0.5 })
+    plugin._init(createFakeWaveSurfer())
+    const internals = plugin.__spectrogramInternalsForTests()
+
+    const promise = internals.calculateFrequenciesWithWorker(
+      createFakeAudioBuffer(makeSine(4000), { sampleRate: SAMPLE_RATE }),
+    )
+    promise.catch(() => undefined)
+    const worker = internals.worker
+    expect(worker.postMessage).toHaveBeenCalledTimes(1)
+    expect(worker.postMessage.mock.calls[0][0].options.dynamicCompression).toBe(0.5)
+    plugin.destroy()
+  })
+
+  it('forwards dynamicCompression to the worker in windowed rendering', async () => {
+    const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 128, dynamicCompression: 0.5 })
+    plugin._init(createFakeWaveSurfer())
+    const internals = plugin.__spectrogramInternalsForTests()
+    internals.buffer = createFakeAudioBuffer(makeSine(4000), { sampleRate: SAMPLE_RATE })
+
+    const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.5)
+    promise.catch(() => undefined)
+    const worker = internals.worker
+    expect(worker.postMessage).toHaveBeenCalledTimes(1)
+    expect(worker.postMessage.mock.calls[0][0].options.dynamicCompression).toBe(0.5)
+    plugin.destroy()
+  })
+
+  it('compresses the windowed main-thread computation', async () => {
+    const signal = makeLoudThenQuiet(8000)
+    const create = (dynamicCompression: number): any => {
+      const plugin: any = WindowedSpectrogram.create({
+        fftSamples: 256,
+        noverlap: 128,
+        scale: 'linear',
+        dynamicCompression,
+      })
+      plugin._init(createFakeWaveSurfer())
+      const internals = plugin.__spectrogramInternalsForTests()
+      internals.buffer = createFakeAudioBuffer(signal, { sampleRate: SAMPLE_RATE })
+      return internals.windowed
+    }
+
+    const plain = await create(0).calculateFrequenciesMainThread(0, signal.length / SAMPLE_RATE)
+    const compressed = await create(0.5).calculateFrequenciesMainThread(0, signal.length / SAMPLE_RATE)
+
+    expect(flatten(compressed)).not.toEqual(flatten(plain))
   })
 })

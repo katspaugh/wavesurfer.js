@@ -401,6 +401,30 @@ describe('computeFrequencies golden values', () => {
     result.forEach((channel) => expect(channel.length).toBeGreaterThan(0))
   })
 
+  it('compresses each channel against its own frame peaks under a shared autoGain maximum', () => {
+    const loud = makeSine(4096, 1000)
+    const quiet = makeSine(4096, 1000).map((value) => value * 0.01)
+    const silent = new Float32Array(4096)
+    const params: FrequencyParams = {
+      fftSamples: 256,
+      scale: 'linear',
+      noverlap: 128,
+      gainDB: 20,
+      rangeDB: 80,
+      autoGain: true,
+      sampleRate: SAMPLE_RATE,
+    }
+    const peak = (frames: Uint8Array[]) => Math.max(...frames.map((frame) => Math.max(...Array.from(frame))))
+
+    const plain = computeFrequencies([loud, quiet, silent], params)
+    const compressed = computeFrequencies([loud, quiet, silent], { ...params, dynamicCompression: 1 })
+
+    expect(peak(plain[1])).toBeLessThan(255)
+    expect(peak(compressed[0])).toBe(255)
+    expect(peak(compressed[1])).toBe(255)
+    expect(compressed[2].every((frame) => frame.every((value) => value === 0))).toBe(true)
+  })
+
   it('returns an empty channel when the signal is shorter than one FFT window', () => {
     const shortSignal = makeSine(100, 1000)
 
