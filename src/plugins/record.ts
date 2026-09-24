@@ -22,7 +22,11 @@ export type RecordPluginOptions = {
   continuousWaveform?: boolean
   /** The duration of the continuous waveform, in seconds */
   continuousWaveformDuration?: number
-  /** The timeslice to use for the media recorder, defaults to 200ms */
+  /**
+   * The timeslice (ms) to use for the media recorder. When set, 'record-data-available'
+   * fires every timeslice instead of only when the recording stops or pauses.
+   * Note: timesliced WebM recordings have no duration in their metadata.
+   */
   mediaRecorderTimeslice?: number
 }
 
@@ -46,7 +50,7 @@ export type RecordPluginEvents = BasePluginEvents & {
   'record-ended-externally': []
   /** Fires continuously while recording */
   'record-progress': [duration: number]
-  /** On every new recorded chunk */
+  /** On every new recorded chunk: every `mediaRecorderTimeslice` if set, otherwise on stop/pause */
   'record-data-available': [blob: Blob]
 }
 
@@ -104,7 +108,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       scrollingWaveformWindow: options.scrollingWaveformWindow ?? DEFAULT_SCROLLING_WAVEFORM_WINDOW,
       continuousWaveform: options.continuousWaveform ?? false,
       renderRecordedAudio: options.renderRecordedAudio ?? true,
-      mediaRecorderTimeslice: options.mediaRecorderTimeslice ?? 200,
+      mediaRecorderTimeslice: options.mediaRecorderTimeslice ?? undefined,
     })
 
     // Created against the constructor-time scope so startRecording() works
