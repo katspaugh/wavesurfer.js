@@ -73,6 +73,7 @@ const spectrogram = ws.registerPlugin(
     // colorMap: 'gray' and rangeDB: 70 for the classic Praat look):
     // preEmphasis: 6,    // dB/octave boost above 1 kHz so speech formants stay visible
     // autoGain: true,    // Map the loudest bin to black instead of using the fixed gainDB
+    // dynamicCompression: 0.4, // 0-1: lift quieter frames toward the loudest level
     //
     // Overlap between FFT windows:
     // noverlap: null,    // Auto-calculated by default, or set manually
@@ -150,6 +151,7 @@ spectrogram.on('click', (relativeX) => {
       <li><code>rangeDB: 80</code> - Dynamic range (20 to 120)</li>
       <li><code>preEmphasis: 6</code> - Praat-style dB/octave display tilt around 1 kHz</li>
       <li><code>autoGain: true</code> - Praat-style autoscaling of the white point</li>
+      <li><code>dynamicCompression: 0.4</code> - Praat-style dynamic compression of quieter frames (0 to 1)</li>
       <li><code>windowFunc: 'hann'</code> - FFT window function (hann, hamming, blackman, etc.)</li>
     </ul>
     

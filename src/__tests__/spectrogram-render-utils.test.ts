@@ -5,6 +5,7 @@ import {
   magnitudesToColorIndices,
   magnitudesToDb,
   dbToColorIndices,
+  dbToCompressedColorIndices,
   createPreEmphasisTilt,
   getBinFrequencies,
   SILENCE_FLOOR_DB,
@@ -230,6 +231,43 @@ describe('preEmphasis tilt and autoGain helpers', () => {
 
   it('exports a silence floor far below real signal levels', () => {
     expect(SILENCE_FLOOR_DB).toBe(-180)
+  })
+})
+
+describe('dbToCompressedColorIndices', () => {
+  const frame = () => Float32Array.from([-40, -60, -100, -140])
+
+  it('matches dbToColorIndices without compression', () => {
+    const expected = Array.from(dbToColorIndices(frame(), 0, 80))
+    expect(Array.from(dbToCompressedColorIndices(frame(), 0, 80))).toEqual(expected)
+    expect(Array.from(dbToCompressedColorIndices(frame(), 0, 80, 0))).toEqual(expected)
+  })
+
+  it('lifts every non-silent frame peak to 255 at full compression', () => {
+    expect(dbToCompressedColorIndices(frame(), 0, 80, 1)[0]).toBe(255)
+    expect(dbToCompressedColorIndices(Float32Array.from([-120, -150]), 0, 80, 1)[0]).toBe(255)
+  })
+
+  it('lifts the frame by C * (whiteDb - framePeak)', () => {
+    // Peak -40 dB, C = 0.5: a 20 dB lift, so -40 maps like -20 and -60 like -40 do uncompressed
+    expect(Array.from(dbToCompressedColorIndices(frame(), 0, 80, 0.5))).toEqual([191, 128, 0, 0])
+  })
+
+  it('keeps a frame below the silence floor blank', () => {
+    expect(Array.from(dbToCompressedColorIndices(new Float32Array(4).fill(-240), 0, 80, 1))).toEqual([0, 0, 0, 0])
+  })
+
+  it('darkens a frame louder than the white point but still clamps its peak at 255', () => {
+    // Fixed gain: peak -6 dB against a -20 dB white point, C = 0.5 -> a -7 dB offset
+    const indices = dbToCompressedColorIndices(Float32Array.from([-6, -40]), -20, 80, 0.5)
+    expect(indices[0]).toBe(255)
+    expect(indices[1]).toBe(dbToColorIndices(Float32Array.from([-47]), -20, 80)[0])
+  })
+
+  it('does not modify the input frame', () => {
+    const db = frame()
+    dbToCompressedColorIndices(db, 0, 80, 0.7)
+    expect(Array.from(db)).toEqual(Array.from(frame()))
   })
 })
 

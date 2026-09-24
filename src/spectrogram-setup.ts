@@ -162,13 +162,25 @@ export type SpectrogramPluginOptions = {
    * pre-emphasis) to the last colormap entry and everything rangeDB below it to the first,
    * instead of using the fixed gainDB white point. gainDB is ignored while enabled. With
    * splitChannels, a single maximum serves all channels, so inter-channel level differences
-   * are preserved (a quieter channel renders lighter); per-channel scaling was rejected to
-   * keep channels comparable. If the whole signal is digital silence, the spectrogram is left
-   * blank instead of amplifying the numeric floor. SpectrogramPlugin only - the windowed
-   * variant computes segments lazily and has no global maximum. No effect with
-   * frequenciesDataUrl. (default: false)
+   * are preserved (a quieter channel renders lighter) unless dynamicCompression lifts each
+   * channel's frames; per-channel scaling was rejected to keep channels comparable. If the whole
+   * signal is digital silence, the spectrogram is left blank instead of amplifying the numeric
+   * floor. SpectrogramPlugin only - the windowed variant computes segments lazily and has no
+   * global maximum. No effect with frequenciesDataUrl. (default: false)
    */
   autoGain?: boolean
+  /**
+   * Praat-style dynamic compression, from 0 to 1: after pre-emphasis, each frame is shifted by
+   * dynamicCompression * (whitePoint - framePeak) dB before color mapping, where the white point
+   * is the autoGain maximum, or -gainDB without autoGain (a frame louder than that fixed white
+   * point is darkened). 0 leaves relative levels unchanged; 1 brings every non-silent frame's peak
+   * to the last colormap entry. Frame peaks cover all analyzed frequencies (frequencyMin/
+   * frequencyMax only crop the drawing), and each split channel uses its own frame peaks. With
+   * compression on, frames whose peak is below the numerical silence floor (-180 dB after
+   * pre-emphasis) stay at the first colormap entry. Not a noise gate: background noise is lifted
+   * too. No effect with frequenciesDataUrl. (default: 0)
+   */
+  dynamicCompression?: number
   /**
    * A 256 long array of 4-element arrays. Each entry should contain a float between 0 and 1 and specify r, g, b, and alpha.
    * Each entry should contain a float between 0 and 1 and specify r, g, b, and alpha.
@@ -362,6 +374,12 @@ export function validateOptions(options: SpectrogramPluginOptions): void {
   if (options.preEmphasis != null && !Number.isFinite(options.preEmphasis)) {
     throw new TypeError(`preEmphasis must be a finite number, got ${options.preEmphasis}`)
   }
+  if (
+    options.dynamicCompression != null &&
+    (!Number.isFinite(options.dynamicCompression) || options.dynamicCompression < 0 || options.dynamicCompression > 1)
+  ) {
+    throw new TypeError(`dynamicCompression must be a finite number from 0 to 1, got ${options.dynamicCompression}`)
+  }
   if (options.alpha != null) {
     if (!Number.isFinite(options.alpha)) {
       throw new TypeError(`alpha must be a finite number, got ${options.alpha}`)
@@ -424,6 +442,7 @@ export function spectrogramSetup(
   const scale = options.scale || 'mel'
   const preEmphasis = options.preEmphasis ?? 0
   const autoGain = options.autoGain ?? false
+  const dynamicCompression = options.dynamicCompression ?? 0
   // Per-instance override of the autoGain transient-memory budget (used by tests via
   // __spectrogramInternalsForTests().autoGainBudgetBytes).
   let autoGainBudgetBytes = AUTO_GAIN_BUFFER_BUDGET_BYTES
@@ -730,6 +749,7 @@ export function spectrogramSetup(
       rangeDB,
       preEmphasis,
       autoGain,
+      dynamicCompression,
       autoGainBufferBudgetBytes: autoGainBudgetBytes,
       splitChannels: effectiveSplitChannels(),
     })
@@ -792,6 +812,7 @@ export function spectrogramSetup(
       rangeDB,
       preEmphasis,
       autoGain,
+      dynamicCompression,
       autoGainBufferBudgetBytes: autoGainBudgetBytes,
       sampleRate: audioBuffer.sampleRate,
     }
@@ -860,6 +881,7 @@ export function spectrogramSetup(
       gainDB,
       rangeDB,
       preEmphasis,
+      dynamicCompression,
       splitChannels: effectiveSplitChannels(),
     })
   }
@@ -889,6 +911,7 @@ export function spectrogramSetup(
       gainDB,
       rangeDB,
       preEmphasis,
+      dynamicCompression,
       sampleRate,
     }
     return computeFrequencies(channelData, params)

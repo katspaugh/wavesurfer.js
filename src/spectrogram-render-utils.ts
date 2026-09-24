@@ -315,6 +315,29 @@ export function dbToColorIndices(db: Float32Array, whiteDb: number, rangeDB: num
   return colorIndices
 }
 
+/**
+ * dbToColorIndices with Praat-style dynamic compression: the frame is shifted by
+ * dynamicCompression * (whiteDb - framePeak) dB, applied by moving the white point instead of the
+ * frame. With compression on, a frame whose own peak is below SILENCE_FLOOR_DB maps to 0 instead
+ * of being lifted from the numeric floor.
+ */
+export function dbToCompressedColorIndices(
+  db: Float32Array,
+  whiteDb: number,
+  rangeDB: number,
+  dynamicCompression = 0,
+): Uint8Array {
+  if (dynamicCompression === 0) return dbToColorIndices(db, whiteDb, rangeDB)
+
+  let framePeak = -Infinity
+  for (let i = 0; i < db.length; i++) {
+    if (db[i] > framePeak) framePeak = db[i]
+  }
+  if (framePeak < SILENCE_FLOOR_DB) return new Uint8Array(db.length)
+
+  return dbToColorIndices(db, whiteDb - dynamicCompression * (whiteDb - framePeak), rangeDB)
+}
+
 export const COLOR_MAPS = {
   gray: () => {
     const colorMap = []
