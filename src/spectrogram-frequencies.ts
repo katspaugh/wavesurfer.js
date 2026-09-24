@@ -263,6 +263,8 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
   const estimatedBytes = frameCount * bins * 4 * channels.length
   const budgetBytes = autoGainBufferBudgetBytes ?? AUTO_GAIN_BUFFER_BUDGET_BYTES
   let maxDb = -Infinity
+  // A steep tilt can lift the clamped floor over the threshold, so judge silence before it
+  let maxRawDb = -Infinity
 
   if (estimatedBytes < budgetBytes) {
     const dbFrames: Float32Array[][] = []
@@ -273,12 +275,14 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
         const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt)
         for (let i = 0; i < db.length; i++) {
           if (db[i] > maxDb) maxDb = db[i]
+          const raw = tilt ? db[i] - tilt[i] : db[i]
+          if (raw > maxRawDb) maxRawDb = raw
         }
         channelDb.push(db)
       }
       dbFrames.push(channelDb)
     }
-    const silent = maxDb < SILENCE_FLOOR_DB
+    const silent = maxRawDb < SILENCE_FLOOR_DB
     for (const channelDb of dbFrames) {
       frequencies.push(
         channelDb.map((db) =>
@@ -297,10 +301,12 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
       const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt, dbScratch)
       for (let i = 0; i < db.length; i++) {
         if (db[i] > maxDb) maxDb = db[i]
+        const raw = tilt ? db[i] - tilt[i] : db[i]
+        if (raw > maxRawDb) maxRawDb = raw
       }
     }
   }
-  const silent = maxDb < SILENCE_FLOOR_DB
+  const silent = maxRawDb < SILENCE_FLOOR_DB
   for (let c = 0; c < channels.length; c++) {
     const channelData = channels[c]
     const channelFreq: Uint8Array[] = []
