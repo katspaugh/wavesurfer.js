@@ -175,6 +175,11 @@ describe('worker compute with autoGain', () => {
 
     expect(flatten(recomputed)).toEqual(flatten(buffered))
   })
+
+  it('scales to the signal, not the 0 Hz row, with negative pre-emphasis', () => {
+    const result = runWorker(makeSine(8000), { autoGain: true, preEmphasis: -3 })
+    expect(Math.max(...result[0].map((frame) => Math.max(...Array.from(frame).slice(1))))).toBe(255)
+  })
 })
 
 describe('worker compute with dynamicCompression', () => {
@@ -217,6 +222,31 @@ describe('worker compute with dynamicCompression', () => {
     const recomputed = runWorker(signal, { ...options, autoGainBufferBudgetBytes: 1 })
 
     expect(flatten(recomputed)).toEqual(flatten(buffered))
+  })
+
+  it.each(['linear', 'mel'])('keeps non-DC content visible with negative pre-emphasis (%s)', (scale) => {
+    const result = runWorker(makeSine(8000), { scale, preEmphasis: -3, dynamicCompression: 0.4 })
+    expect(Math.max(...result[0].map((frame) => Math.max(...Array.from(frame).slice(1))))).toBe(255)
+  })
+
+  it.each([
+    ['fixed gain', {}],
+    ['autoGain', { autoGain: true }],
+    ['autoGain, recompute strategy', { autoGain: true, autoGainBufferBudgetBytes: 1 }],
+  ])('keeps a zero gap blank under steep pre-emphasis at full compression (%s)', (_label, extra) => {
+    const sampleRate = 48000
+    const signal = Float32Array.from({ length: sampleRate }, (_, i) => Math.sin((2 * Math.PI * 1000 * i) / sampleRate))
+    signal.fill(0, 20000, 30000)
+    const options = { ...extra, sampleRate, endTime: 1, preEmphasis: 18, dynamicCompression: 1 }
+    const result = runWorker(signal, options)
+    // Frames entirely inside the gap (hop 128, window 256)
+    const gapFrames = result[0].filter((_frame, i) => i * 128 >= 20000 && i * 128 + 256 <= 30000)
+
+    expect(gapFrames.length).toBeGreaterThan(0)
+    for (const frame of gapFrames) {
+      expect(frame.every((value) => value === 0)).toBe(true)
+    }
+    expect(Math.max(...Array.from(result[0][0]))).toBe(255)
   })
 })
 

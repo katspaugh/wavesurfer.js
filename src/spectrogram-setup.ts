@@ -152,9 +152,9 @@ export type SpectrogramPluginOptions = {
    * Praat-style display pre-emphasis in dB per octave, applied before quantization: each bin
    * gets preEmphasis * log2(binHz / 1000) dB - 0 dB at 1 kHz, boosting higher frequencies and
    * attenuating lower ones (Praat's default is 6). Counteracts the natural ~-6 dB/oct spectral
-   * slope of speech so formants above 1 kHz stay visible. Set 0 to disable. Only applies when
-   * frequencies are computed from audio, not to pre-computed frequenciesDataUrl data.
-   * (default: 0)
+   * slope of speech so formants above 1 kHz stay visible. The 0 Hz row is attenuated whatever
+   * the sign. Set 0 to disable. Only applies when frequencies are computed from audio, not to
+   * pre-computed frequenciesDataUrl data. (default: 0)
    */
   preEmphasis?: number
   /**
@@ -176,9 +176,9 @@ export type SpectrogramPluginOptions = {
    * point is darkened). 0 leaves relative levels unchanged; 1 brings every non-silent frame's peak
    * to the last colormap entry. Frame peaks cover all analyzed frequencies (frequencyMin/
    * frequencyMax only crop the drawing), and each split channel uses its own frame peaks. With
-   * compression on, frames whose peak is below the numerical silence floor (-180 dB after
-   * pre-emphasis) stay at the first colormap entry. Not a noise gate: background noise is lifted
-   * too. No effect with frequenciesDataUrl. (default: 0)
+   * compression on, frames that are digitally silent before pre-emphasis (peak below -180 dB)
+   * stay at the first colormap entry. Not a noise gate: background noise is lifted too. No effect
+   * with frequenciesDataUrl. (default: 0)
    */
   dynamicCompression?: number
   /**

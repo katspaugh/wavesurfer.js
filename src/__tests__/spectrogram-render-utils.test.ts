@@ -181,6 +181,14 @@ describe('preEmphasis tilt and autoGain helpers', () => {
     expect(tilt[0]).toBeLessThan(-6000)
   })
 
+  it('attenuates the 0 Hz row for negative pre-emphasis too', () => {
+    const tilt = createPreEmphasisTilt(-3, [0, 500, 2000])
+    expect(Number.isFinite(tilt[0])).toBe(true)
+    expect(tilt[0]).toBeLessThan(-3000)
+    expect(tilt[1]).toBeCloseTo(3, 10)
+    expect(tilt[2]).toBeCloseTo(-3, 10)
+  })
+
   it('rejects non-finite preEmphasis', () => {
     expect(() => createPreEmphasisTilt(NaN, [1000])).toThrow(TypeError)
     expect(() => createPreEmphasisTilt(Infinity, [1000])).toThrow(TypeError)
@@ -255,6 +263,19 @@ describe('dbToCompressedColorIndices', () => {
 
   it('keeps a frame below the silence floor blank', () => {
     expect(Array.from(dbToCompressedColorIndices(new Float32Array(4).fill(-240), 0, 80, 1))).toEqual([0, 0, 0, 0])
+  })
+
+  it('judges silence before the tilt, so a steep tilt cannot lift the numeric floor', () => {
+    // The -240 dB clamp plus tilts up to +82 dB, as 18 dB/oct gives near 24 kHz
+    const tilt = Float64Array.from([0, 60, 82])
+    const floor = Float32Array.from(tilt, (t) => -240 + t)
+    expect(Array.from(dbToCompressedColorIndices(floor, 0, 80, 1, tilt))).toEqual([0, 0, 0])
+  })
+
+  it('still compresses a non-silent frame against its tilted peak', () => {
+    // The untilted peak (-50 dB) would shift the white point further and give [207, 143]
+    const withTilt = dbToCompressedColorIndices(Float32Array.from([-40, -60]), 0, 80, 0.5, Float64Array.from([10, 0]))
+    expect(Array.from(withTilt)).toEqual([191, 128])
   })
 
   it('darkens a frame louder than the white point but still clamps its peak at 255', () => {

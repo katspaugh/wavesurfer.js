@@ -236,6 +236,7 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
                 -gainDB,
                 rangeDB,
                 dynamicCompression,
+                tilt,
               )
             : magnitudesToColorIndices(spectrum, -gainDB, rangeDB, tilt),
         )
@@ -281,7 +282,7 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
     for (const channelDb of dbFrames) {
       frequencies.push(
         channelDb.map((db) =>
-          silent ? new Uint8Array(db.length) : dbToCompressedColorIndices(db, maxDb, rangeDB, dynamicCompression),
+          silent ? new Uint8Array(db.length) : dbToCompressedColorIndices(db, maxDb, rangeDB, dynamicCompression, tilt),
         ),
       )
     }
@@ -308,7 +309,7 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
         channelFreq.push(new Uint8Array(bins))
       } else {
         const db = magnitudesToDb(computeSpectrum(channelData, sample), tilt, dbScratch)
-        channelFreq.push(dbToCompressedColorIndices(db, maxDb, rangeDB, dynamicCompression))
+        channelFreq.push(dbToCompressedColorIndices(db, maxDb, rangeDB, dynamicCompression, tilt))
       }
     }
     frequencies.push(channelFreq)
