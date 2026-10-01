@@ -6,10 +6,10 @@ import { createFakeAudioBuffer } from './helpers/audio-buffer.js'
 
 const SAMPLE_RATE = 8000
 
-function makeSine(length: number, amplitude = 1): Float32Array {
+function makeSine(length: number, amplitude = 1, frequency = 1000): Float32Array {
   const signal = new Float32Array(length)
   for (let i = 0; i < length; i++) {
-    signal[i] = amplitude * Math.sin((2 * Math.PI * 1000 * i) / SAMPLE_RATE)
+    signal[i] = amplitude * Math.sin((2 * Math.PI * frequency * i) / SAMPLE_RATE)
   }
   return signal
 }
@@ -165,6 +165,24 @@ describe('worker compute with autoGain', () => {
     for (const frame of result[0]) {
       expect(frame.every((value: number) => value === 0)).toBe(true)
     }
+  })
+
+  it.each([
+    ['buffered', {}],
+    ['recompute', { autoGainBufferBudgetBytes: 1 }],
+  ])('leaves digital silence blank under steep pre-emphasis (%s strategy)', (_label, extra) => {
+    const options = { ...extra, autoGain: true, sampleRate: 48000, endTime: 1, preEmphasis: 18 }
+    const result = runWorker(new Float32Array(48000), options)
+    expect(result[0].length).toBeGreaterThan(0)
+    for (const frame of result[0]) {
+      expect(frame.every((value: number) => value === 0)).toBe(true)
+    }
+  })
+
+  it('keeps a quiet signal visible when negative pre-emphasis tilts it under the silence floor', () => {
+    // About 3.5 dB above the floor before pre-emphasis, 6 dB below it at -6 dB/oct and 3 kHz
+    const result = runWorker(makeSine(8000, 3e-9, 3000), { autoGain: true, preEmphasis: -6 })
+    expect(Math.max(...result[0].map((frame) => Math.max(...Array.from(frame))))).toBe(255)
   })
 
   it('produces identical output on the buffered and recompute memory strategies', () => {
