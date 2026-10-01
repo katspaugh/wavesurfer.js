@@ -1673,6 +1673,10 @@ export function spectrogramSetup(
   if (!container) {
     container = ctx.wavesurfer.getWrapper()
   }
+  const waveSurferWrapper = ctx.wavesurfer.getWrapper()
+  // Keep a spectrogram in a separate container aligned with the waveform timeline and scroll.
+  const syncExternalContainer = container !== waveSurferWrapper && !waveSurferWrapper.parentElement?.contains(container)
+
   container.appendChild(wrapper)
   ctx.scope.add(() => wrapper.remove())
   ctx.scope.add(() => canvasContainer.remove())
@@ -1684,6 +1688,21 @@ export function spectrogramSetup(
       overflowX: 'hidden',
       overflowY: 'hidden',
     })
+  }
+
+  function updateExternalContainer(scrollLeft?: number): void {
+    if (!syncExternalContainer) return
+
+    const width = getWidth()
+    if (width > 0) wrapper.style.width = `${width}px`
+    const currentScrollLeft = scrollLeft ?? ctx.wavesurfer.getScroll()
+    wrapper.style.transform = currentScrollLeft ? `translateX(-${currentScrollLeft}px)` : ''
+  }
+
+  updateExternalContainer()
+  if (syncExternalContainer) {
+    ctx.scope.add(ctx.wavesurfer.on('scroll', (_start, _end, scrollLeft) => updateExternalContainer(scrollLeft)))
+    ctx.scope.add(ctx.wavesurfer.on('redraw', () => updateExternalContainer()))
   }
 
   if (isWindowed) {
