@@ -58,6 +58,7 @@ jest.mock('../decoder.js', () => {
   return { __esModule: true, default: { decode: jest.fn(), createBuffer } }
 })
 import WaveSurfer from '../wavesurfer.js'
+import Fetcher from '../fetcher.js'
 import { BasePlugin } from '../base-plugin.js'
 import * as RendererModule from '../renderer.js'
 import * as FrameSchedulerModule from '../frame-scheduler.js'
@@ -176,6 +177,33 @@ describe('WaveSurfer public methods', () => {
     const blob = new Blob([])
     await ws.loadBlob(blob)
     expect(spy).toHaveBeenCalledWith('', blob, undefined, undefined)
+  })
+
+  test('load passes fetchMode to the fetcher', async () => {
+    const fetchBlobSpy = jest.spyOn(Fetcher, 'fetchBlob').mockImplementation((_url, _progress, requestInit) => {
+      return new Promise((_resolve, reject) => {
+        requestInit?.signal?.addEventListener(
+          'abort',
+          () => reject(new DOMException('The user aborted a request.', 'AbortError')),
+          { once: true },
+        )
+      })
+    })
+    const ws = createWs({ fetchMode: 'arrayBuffer' })
+
+    const loadPromise = ws.load('http://x/audio.mp4')
+    await Promise.resolve()
+
+    expect(fetchBlobSpy).toHaveBeenCalledWith(
+      'http://x/audio.mp4',
+      expect.any(Function),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      'arrayBuffer',
+    )
+
+    ws.destroy()
+    await expect(loadPromise).rejects.toMatchObject({ name: 'AbortError' })
+    fetchBlobSpy.mockRestore()
   })
 
   test('zoom requires decoded data', () => {

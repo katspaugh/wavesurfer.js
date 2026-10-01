@@ -86,6 +86,8 @@ export type WaveSurferOptions = {
   renderFunction?: (peaks: Array<Float32Array | number[]>, ctx: CanvasRenderingContext2D) => void
   /** Options to pass to the fetch method */
   fetchParams?: RequestInit
+  /** How to read the fetched response. Use 'arrayBuffer' if Response.blob() fails in the browser. Defaults to 'blob'. */
+  fetchMode?: 'blob' | 'arrayBuffer'
   /** Playback "backend" to use, defaults to MediaElement */
   backend?: 'WebAudio' | 'MediaElement'
   /** Nonce for CSP if necessary */
@@ -699,7 +701,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
           fetchParams.signal = loadScope.abortSignal()
         }
         const onProgress = (percentage: number) => this.emit('loading', percentage)
-        blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
+        blob = await Fetcher.fetchBlob(url, onProgress, fetchParams, this.options.fetchMode)
         // Guard: bail if a newer load started or the instance was destroyed
         if (loadScope.disposed) return this.bailedLoadOutcome(loadScope)
         const overriddenMimeType = this.options.blobMimeType
