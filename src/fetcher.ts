@@ -64,7 +64,15 @@ async function fetchBlob(
   // Pass the abort signal so the progress reader can be cancelled
   watchProgress(response.clone(), progressCallback, requestInit?.signal ?? undefined)
 
-  return response.blob()
+  // response.blob() can fail for some large files, while arrayBuffer() succeeds
+  const fallback = response.clone()
+  try {
+    return await response.blob()
+  } catch (err) {
+    if (requestInit?.signal?.aborted) throw err
+    const buffer = await fallback.arrayBuffer()
+    return new Blob([buffer], { type: fallback.headers?.get('Content-Type') || '' })
+  }
 }
 
 const Fetcher = {
