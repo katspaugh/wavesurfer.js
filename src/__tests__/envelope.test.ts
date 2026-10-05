@@ -148,6 +148,64 @@ describe('EnvelopePlugin initialization and options', () => {
     expect(circle.getAttribute('rx')).toBe('0')
   })
 
+  it('keeps envelope strokes and point dragging stable when zoom changes the SVG size', () => {
+    const ws = createWaveSurfer(10)
+    const plugin = EnvelopePlugin.create({ points: [] })
+    plugin._init(ws as any)
+    ws.emit('decode', 10)
+
+    const svg = ws.getWrapper().querySelector('svg') as SVGSVGElement
+    mockSvgGeometry(svg, 100, 100)
+    jest.spyOn(svg, 'getBoundingClientRect').mockReturnValue({ width: 400, height: 100 } as DOMRect)
+    Object.defineProperty(svg, 'clientWidth', { value: 400 })
+    Object.defineProperty(svg, 'clientHeight', { value: 100 })
+
+    const point = { time: 5, volume: 0.5 }
+    plugin.addPoint(point)
+    const circle = svg.querySelector('ellipse') as SVGEllipseElement
+    const line = svg.querySelector('polyline') as SVGPolylineElement
+    expect(line.getAttribute('vector-effect')).toBe('non-scaling-stroke')
+    expect(circle.getAttribute('vector-effect')).toBe('non-scaling-stroke')
+    expect(circle.getAttribute('rx')).toBe('1.25')
+
+    circle.dispatchEvent(new MouseEvent('pointerdown', { clientX: 200, clientY: 50, bubbles: true }))
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 240, clientY: 50 }))
+    window.dispatchEvent(new MouseEvent('pointerup', { clientX: 240, clientY: 50 }))
+
+    // Forty screen pixels across a four-times-wider SVG are ten viewBox units.
+    expect(point.time).toBe(6)
+    expect(circle.getAttribute('cx')).toBe('60')
+
+    circle.dispatchEvent(new MouseEvent('pointerdown', { clientX: 240, clientY: 50, bubbles: true }))
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 406, clientY: 50 }))
+    window.dispatchEvent(new MouseEvent('pointerup', { clientX: 406, clientY: 50 }))
+    // The handle radius is 1.25 viewBox units, so 1.5 units beyond the edge removes it.
+    expect(plugin.getPoints()).toHaveLength(0)
+    plugin.destroy()
+  })
+
+  it('converts line dragging from screen pixels to SVG coordinates after zoom', () => {
+    const ws = createWaveSurfer(10)
+    const plugin = EnvelopePlugin.create({ points: [], dragLine: true })
+    plugin._init(ws as any)
+    ws.emit('decode', 10)
+
+    const svg = ws.getWrapper().querySelector('svg') as SVGSVGElement
+    mockSvgGeometry(svg, 100, 100)
+    jest.spyOn(svg, 'getBoundingClientRect').mockReturnValue({ width: 400, height: 200 } as DOMRect)
+
+    const point = { time: 5, volume: 0.5 }
+    plugin.addPoint(point)
+    const line = svg.querySelector('polyline') as SVGPolylineElement
+    line.dispatchEvent(new MouseEvent('pointerdown', { clientX: 200, clientY: 100, bubbles: true }))
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 200, clientY: 120 }))
+    window.dispatchEvent(new MouseEvent('pointerup', { clientX: 200, clientY: 120 }))
+
+    // Twenty screen pixels are ten viewBox units, or one tenth of the volume range.
+    expect(point.volume).toBeCloseTo(0.4)
+    plugin.destroy()
+  })
+
   // Post-destroy contract (matches core WaveSurfer): public mutators silently
   // no-op after destroy instead of still mutating closure state.
   it('makes public mutators silent no-ops after destroy', () => {

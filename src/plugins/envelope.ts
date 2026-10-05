@@ -112,6 +112,7 @@ class Polyline {
         points: `0,${height} ${width},${height}`,
         stroke: options.lineColor,
         'stroke-width': options.lineWidth,
+        'vector-effect': 'non-scaling-stroke',
         fill: 'none',
         part: 'polyline',
         style: options.dragLine
@@ -131,8 +132,10 @@ class Polyline {
         const drag = dragStream.signal.value
         if (!drag || drag.type !== 'move' || drag.deltaY === undefined) return
 
-        const deltaY = drag.deltaY
+        const rect = svg.getBoundingClientRect()
+        if (!rect.height) return
         const { height } = svg.viewBox.baseVal
+        const deltaY = (drag.deltaY * height) / rect.height
         const { points } = polyline
         for (let i = 1; i < points.numberOfItems - 1; i++) {
           const point = points.getItem(i)
@@ -198,7 +201,10 @@ class Polyline {
       if (drag.type === 'start') {
         draggable.style.cursor = 'grabbing'
       } else if (drag.type === 'move' && drag.deltaX !== undefined && drag.deltaY !== undefined) {
-        onDrag(drag.deltaX, drag.deltaY)
+        const rect = this.svg.getBoundingClientRect()
+        if (!rect.width || !rect.height) return
+        const { width, height } = this.svg.viewBox.baseVal
+        onDrag((drag.deltaX * width) / rect.width, (drag.deltaY * height) / rect.height)
       } else if (drag.type === 'end') {
         draggable.style.cursor = 'grab'
       }
@@ -224,6 +230,7 @@ class Polyline {
         fill: this.options.dragPointFill,
         stroke: this.options.dragPointStroke,
         'stroke-width': '2',
+        'vector-effect': 'non-scaling-stroke',
         style: {
           cursor: 'grab',
           pointerEvents: 'all',
@@ -256,7 +263,6 @@ class Polyline {
     const { width, height } = svg.viewBox.baseVal
     const x = relX * width
     const y = height - relY * height
-    const threshold = this.options.dragPointSize / 2
 
     const newPoint = svg.createSVGPoint()
     newPoint.x = relX * width
@@ -274,7 +280,9 @@ class Polyline {
       const newY = newPoint.y + dy
 
       // Remove the point if it's dragged out of the SVG
-      if (newX < -threshold || newY < -threshold || newX > width + threshold || newY > height + threshold) {
+      const thresholdX = Number(circle.getAttribute('rx'))
+      const thresholdY = Number(circle.getAttribute('ry'))
+      if (newX < -thresholdX || newY < -thresholdY || newX > width + thresholdX || newY > height + thresholdY) {
         this.callbacks.onPointDragout(refPoint)
         return
       }
@@ -297,6 +305,15 @@ class Polyline {
     })
 
     this.pointCleanups.set(refPoint, cleanup)
+    this.resizeCircle(circle, svg.clientWidth, svg.clientHeight)
+  }
+
+  private resizeCircle(circle: SVGEllipseElement, clientWidth: number, clientHeight: number) {
+    if (!clientWidth || !clientHeight) return
+    const { width, height } = this.svg.viewBox.baseVal
+    const radius = this.options.dragPointSize / 2
+    circle.setAttribute('rx', ((radius * width) / clientWidth).toString())
+    circle.setAttribute('ry', ((radius * height) / clientHeight).toString())
   }
 
   update() {
@@ -307,16 +324,10 @@ class Polyline {
       return
     }
 
-    const aspectRatioX = svg.viewBox.baseVal.width / clientWidth
-    const aspectRatioY = svg.viewBox.baseVal.height / clientHeight
     const circles = svg.querySelectorAll('ellipse')
 
     circles.forEach((circle) => {
-      const radius = this.options.dragPointSize / 2
-      const rx = radius * aspectRatioX
-      const ry = radius * aspectRatioY
-      circle.setAttribute('rx', rx.toString())
-      circle.setAttribute('ry', ry.toString())
+      this.resizeCircle(circle, clientWidth, clientHeight)
     })
   }
 
