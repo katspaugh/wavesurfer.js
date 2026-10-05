@@ -263,7 +263,6 @@ class Polyline {
     const { width, height } = svg.viewBox.baseVal
     const x = relX * width
     const y = height - relY * height
-    const threshold = this.options.dragPointSize / 2
 
     const newPoint = svg.createSVGPoint()
     newPoint.x = relX * width
@@ -281,7 +280,9 @@ class Polyline {
       const newY = newPoint.y + dy
 
       // Remove the point if it's dragged out of the SVG
-      if (newX < -threshold || newY < -threshold || newX > width + threshold || newY > height + threshold) {
+      const thresholdX = Number(circle.getAttribute('rx'))
+      const thresholdY = Number(circle.getAttribute('ry'))
+      if (newX < -thresholdX || newY < -thresholdY || newX > width + thresholdX || newY > height + thresholdY) {
         this.callbacks.onPointDragout(refPoint)
         return
       }
@@ -304,7 +305,15 @@ class Polyline {
     })
 
     this.pointCleanups.set(refPoint, cleanup)
-    this.update()
+    this.resizeCircle(circle, svg.clientWidth, svg.clientHeight)
+  }
+
+  private resizeCircle(circle: SVGEllipseElement, clientWidth: number, clientHeight: number) {
+    if (!clientWidth || !clientHeight) return
+    const { width, height } = this.svg.viewBox.baseVal
+    const radius = this.options.dragPointSize / 2
+    circle.setAttribute('rx', ((radius * width) / clientWidth).toString())
+    circle.setAttribute('ry', ((radius * height) / clientHeight).toString())
   }
 
   update() {
@@ -315,16 +324,10 @@ class Polyline {
       return
     }
 
-    const aspectRatioX = svg.viewBox.baseVal.width / clientWidth
-    const aspectRatioY = svg.viewBox.baseVal.height / clientHeight
     const circles = svg.querySelectorAll('ellipse')
 
     circles.forEach((circle) => {
-      const radius = this.options.dragPointSize / 2
-      const rx = radius * aspectRatioX
-      const ry = radius * aspectRatioY
-      circle.setAttribute('rx', rx.toString())
-      circle.setAttribute('ry', ry.toString())
+      this.resizeCircle(circle, clientWidth, clientHeight)
     })
   }
 

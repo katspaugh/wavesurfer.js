@@ -175,6 +175,12 @@ describe('EnvelopePlugin initialization and options', () => {
     // Forty screen pixels across a four-times-wider SVG are ten viewBox units.
     expect(point.time).toBe(6)
     expect(circle.getAttribute('cx')).toBe('60')
+
+    circle.dispatchEvent(new MouseEvent('pointerdown', { clientX: 240, clientY: 50, bubbles: true }))
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 406, clientY: 50 }))
+    window.dispatchEvent(new MouseEvent('pointerup', { clientX: 406, clientY: 50 }))
+    // The handle radius is 1.25 viewBox units, so 1.5 units beyond the edge removes it.
+    expect(plugin.getPoints()).toHaveLength(0)
     plugin.destroy()
   })
 
