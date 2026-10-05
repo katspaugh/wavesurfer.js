@@ -350,6 +350,74 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
       nowSpy.mockRestore()
     }
   })
+
+  it('keeps the continuous waveform cursor aligned after late draws, a mic preview, and a paused progress clock', async () => {
+    let now = 1_000
+    const nowSpy = jest.spyOn(performance, 'now').mockImplementation(() => now)
+    const analyserSpy = jest.spyOn(MockAudioContext.prototype, 'createAnalyser').mockReturnValue({
+      fftSize: 32,
+      frequencyBinCount: 16,
+      getFloatTimeDomainData: jest.fn((samples: Float32Array) => samples.fill(0.5)),
+    })
+    let drawWaveform!: () => void
+    const intervalSpy = jest.spyOn(global, 'setInterval').mockImplementation(((callback: () => void) => {
+      drawWaveform = callback
+      return 1
+    }) as typeof setInterval)
+    const wavesurfer = {
+      options: { interact: true, minPxPerSec: 1 },
+      getWidth: () => 500,
+      getDuration: () => 5,
+      load: jest.fn().mockResolvedValue(undefined),
+      setTime: jest.fn(),
+      setOptions: jest.fn(),
+    }
+    const plugin = RecordPlugin.create({ continuousWaveform: true, continuousWaveformDuration: 5 })
+    plugin._init(wavesurfer as never)
+
+    try {
+      await plugin.startMic()
+      drawWaveform()
+      now = 3_000
+      drawWaveform() // only two callbacks in two seconds of preview
+
+      await plugin.startRecording() // reset the preview's waveform position
+      drawWaveform()
+      now = 3_500
+      drawWaveform() // one delayed callback after 500 ms of recording
+
+      const lastLoad = wavesurfer.load.mock.calls[wavesurfer.load.mock.calls.length - 1]
+      const peaks = lastLoad[1][0] as Float32Array
+      expect(peaks[0]).toBe(0.5)
+      expect(peaks[50]).toBe(0.5)
+      expect(peaks[51]).toBe(0)
+      await flushMicrotasks()
+      expect(wavesurfer.setTime).toHaveBeenLastCalledWith(0.5)
+
+      // The waveform interval can keep drawing while animation-frame progress
+      // callbacks are suspended. Pausing must preserve the elapsed recording
+      // time even though handleTick() has not advanced this.duration.
+      plugin.pauseRecording()
+      expect(plugin.getDuration()).toBe(500)
+      now = 13_500
+      plugin.resumeRecording()
+      now = 13_600
+      drawWaveform()
+
+      const resumedPeaks = wavesurfer.load.mock.calls[wavesurfer.load.mock.calls.length - 1][1][0] as Float32Array
+      expect(resumedPeaks[51]).toBe(0.5)
+      expect(resumedPeaks[60]).toBe(0.5)
+      expect(resumedPeaks[61]).toBe(0)
+      await flushMicrotasks()
+      expect(wavesurfer.setTime).toHaveBeenLastCalledWith(0.6)
+    } finally {
+      plugin.destroy()
+      await flushMicrotasks()
+      intervalSpy.mockRestore()
+      analyserSpy.mockRestore()
+      nowSpy.mockRestore()
+    }
+  })
 })
 
 describe('RecordPlugin capture device loss (track "ended")', () => {

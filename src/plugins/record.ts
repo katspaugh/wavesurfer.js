@@ -145,7 +145,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     const bufferLength = analyser.frequencyBinCount
     const dataArray = new Float32Array(bufferLength)
 
-    let sampleIdx = 0
+    let sampleIdx = -1
+    let monitorStartTime = performance.now()
 
     if (this.wavesurfer) {
       this.originalOptions ??= {
@@ -198,6 +199,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       } else if (this.options.continuousWaveform) {
         // Continuous waveform
         if (!this.dataWindow) {
+          sampleIdx = -1
+          monitorStartTime = performance.now()
           const size = this.options.continuousWaveformDuration
             ? Math.round(this.options.continuousWaveformDuration * FPS)
             : (this.wavesurfer?.getWidth() ?? 0) * window.devicePixelRatio
@@ -212,14 +215,21 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
           }
         }
 
-        if (sampleIdx + 1 > this.dataWindow.length) {
-          const tempArray = new Float32Array(this.dataWindow.length * 2)
+        // The interval can run late or be throttled. Place peaks on the same
+        // elapsed-time axis as the recording cursor instead of assuming every
+        // callback represents exactly 1 / FPS seconds.
+        const elapsedMs = this.isRecording()
+          ? this.lastDuration + performance.now() - this.lastStartTime
+          : performance.now() - monitorStartTime
+        const nextSampleIdx = Math.max(sampleIdx, Math.floor((elapsedMs / 1000) * FPS))
+        if (nextSampleIdx >= this.dataWindow.length) {
+          const tempArray = new Float32Array(Math.max(this.dataWindow.length * 2, nextSampleIdx + 1))
           tempArray.set(this.dataWindow, 0)
           this.dataWindow = tempArray
         }
 
-        this.dataWindow[sampleIdx] = maxValue
-        sampleIdx++
+        this.dataWindow.fill(maxValue, sampleIdx + 1, nextSampleIdx + 1)
+        sampleIdx = nextSampleIdx
       } else {
         this.dataWindow = dataArray
       }
@@ -227,6 +237,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       // Render the waveform
       if (this.wavesurfer) {
         const totalDuration = (this.dataWindow?.length ?? 0) / FPS
+        const cursorTime = this.isRecording() && this.options.continuousWaveform ? sampleIdx / FPS : 0
         this.wavesurfer
           .load(
             '',
@@ -235,7 +246,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
           )
           .then(() => {
             if (this.wavesurfer && this.options.continuousWaveform) {
-              this.wavesurfer.setTime(this.getDuration() / 1000)
+              this.wavesurfer.setTime(cursorTime)
 
               if (!this.wavesurfer.options.minPxPerSec) {
                 this.wavesurfer.setOptions({
@@ -523,7 +534,10 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       this.mediaRecorder?.requestData()
       this.mediaRecorder?.pause()
       this.frameScheduler.stop()
-      this.lastDuration = this.duration
+      // Progress ticks may be throttled while mic waveform draws continue.
+      // Capture the actual recording time so resumed peaks keep advancing.
+      this.lastDuration += performance.now() - this.lastStartTime
+      this.duration = this.lastDuration
     }
   }
 
