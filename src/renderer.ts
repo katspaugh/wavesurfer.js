@@ -17,6 +17,8 @@ export type RendererDragEvent = { type: 'start' | 'move' | 'end'; relativeX: num
 const SMOOTH_SCROLL_FPS = 60
 const SMOOTH_SCROLL_MAX_DELTA = 10
 const LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD = SMOOTH_SCROLL_MAX_DELTA * SMOOTH_SCROLL_FPS
+const DRAG_EDGE_SIZE = 50
+const DRAG_MAX_SCROLL_SPEED = 30
 
 class Renderer {
   private options: WaveSurferOptions
@@ -38,6 +40,8 @@ class Renderer {
   private audioData: AudioBuffer | null = null
   private lastContainerWidth = 0
   private isDragging = false
+  private dragClientX: number | null = null
+  private edgeScope: Scope | null = null
   private scope = new Scope()
   // Recreated (disposed + replaced) at the top of render()/reRender(), exactly
   // where `unsubscribeOnScroll.forEach(...); unsubscribeOnScroll = []` used to run.
@@ -215,18 +219,28 @@ class Renderer {
       const drag = this.dragStream!.signal.value
       if (!drag) return
 
-      const width = this.wrapper.getBoundingClientRect().width
-      const relX = utils.clampToUnit(drag.x / width)
+      const rect = this.wrapper.getBoundingClientRect()
+      const width = rect.width
+      let relX = utils.clampToUnit(drag.x / width)
+
+      if (drag.clientX !== undefined) {
+        // The wrapper moves while auto-scrolling, so use the live pointer position
+        relX = utils.clampToUnit((drag.clientX - rect.left) / width)
+      }
 
       if (drag.type === 'start') {
         this.isDragging = true
+        this.startEdgeScroll(dragScope)
         this._dragEventsSignal.set({ type: 'start', relativeX: relX })
       } else if (drag.type === 'move') {
         this._dragEventsSignal.set({ type: 'move', relativeX: relX })
       } else if (drag.type === 'end') {
         this.isDragging = false
+        this.stopEdgeScroll()
         this._dragEventsSignal.set({ type: 'end', relativeX: relX })
       }
+
+      if (this.isDragging && drag.clientX !== undefined) this.dragClientX = drag.clientX
     }, [this.dragStream.signal])
 
     dragScope.add(unsubscribeDrag)
@@ -241,8 +255,47 @@ class Renderer {
    * the second time.
    */
   private disposeDrag() {
+    this.stopEdgeScroll()
+    this.isDragging = false
     this.dragScope?.dispose()
     this.dragScope = null
+  }
+
+  private startEdgeScroll(parent: Scope) {
+    this.stopEdgeScroll()
+    const edgeScope = parent.child()
+    this.edgeScope = edgeScope
+    const tick = () => {
+      const clientX = this.dragClientX
+      if (clientX !== null && this.options.autoScroll) {
+        const container = this.scrollContainer
+        const box = container.getBoundingClientRect()
+        const edge = Math.min(DRAG_EDGE_SIZE, box.width / 2)
+        let speed = 0
+        if (clientX < box.left + edge) {
+          speed = -Math.min(1, (box.left + edge - clientX) / edge)
+        } else if (clientX > box.right - edge) {
+          speed = Math.min(1, (clientX - (box.right - edge)) / edge)
+        }
+        if (speed !== 0) {
+          const before = container.scrollLeft
+          container.scrollLeft += speed * DRAG_MAX_SCROLL_SPEED
+          if (container.scrollLeft !== before) {
+            const rect = this.wrapper.getBoundingClientRect()
+            const relX = utils.clampToUnit((clientX - rect.left) / rect.width)
+            this._dragEventsSignal.set({ type: 'move', relativeX: relX })
+          }
+        }
+      }
+      edgeScope.raf(tick)
+    }
+    edgeScope.raf(tick)
+  }
+
+  private stopEdgeScroll() {
+    this.edgeScope?.dispose()
+    this.edgeScope = null
+    this.dragClientX = null
   }
 
   private calculateInlinePadding(): void {
@@ -884,13 +937,8 @@ class Renderer {
     const middle = clientWidth / 2
 
     if (this.isDragging) {
-      // Scroll when dragging close to the edge of the viewport
-      const minGap = 30
-      if (progressWidth + minGap > endEdge) {
-        this.scrollContainer.scrollLeft += minGap
-      } else if (progressWidth - minGap < startEdge) {
-        this.scrollContainer.scrollLeft -= minGap
-      }
+      // Edge scrolling during drag is handled by the rAF loop in startEdgeScroll
+      return
     } else {
       if (progressWidth < startEdge || progressWidth > endEdge) {
         this.scrollContainer.scrollLeft = progressWidth - (this.options.autoCenter ? middle : 0)

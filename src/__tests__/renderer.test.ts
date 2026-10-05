@@ -512,6 +512,75 @@ describe('Renderer', () => {
       expect(dragStartSpy).toHaveBeenCalled()
     })
 
+    test('auto-scrolls continuously while the pointer rests in the edge zone during a drag', () => {
+      jest.useFakeTimers()
+      const wrapper = renderer.getWrapper()
+      stubRect(wrapper)
+      const scrollContainer = (renderer as any).scrollContainer as HTMLElement
+      scrollContainer.getBoundingClientRect = () =>
+        ({ left: 0, top: 0, right: 100, bottom: 50, width: 100, height: 50, x: 0, y: 0, toJSON: () => ({}) }) as DOMRect
+      scrollContainer.scrollLeft = 500
+      renderer.setOptions({ ...(renderer as any).options, dragToSeek: true, autoScroll: true })
+
+      wrapper.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 0, button: 0 }))
+      window.dispatchEvent(new PointerEvent('pointermove', { clientX: 60, clientY: 0 }))
+      window.dispatchEvent(new PointerEvent('pointermove', { clientX: 0, clientY: 0 }))
+      const before = scrollContainer.scrollLeft
+      jest.advanceTimersByTime(100)
+      expect(scrollContainer.scrollLeft).toBeLessThan(before)
+
+      window.dispatchEvent(new PointerEvent('pointerup', { clientX: 0, clientY: 0 }))
+      const after = scrollContainer.scrollLeft
+      jest.advanceTimersByTime(100)
+      expect(scrollContainer.scrollLeft).toBe(after)
+      jest.useRealTimers()
+    })
+
+    test('drag move events report the current pointer position', () => {
+      const wrapper = renderer.getWrapper()
+      wrapper.getBoundingClientRect = () =>
+        ({
+          left: 0,
+          top: 0,
+          right: 1000,
+          bottom: 50,
+          width: 1000,
+          height: 50,
+          x: 0,
+          y: 0,
+          toJSON: () => ({}),
+        }) as DOMRect
+      renderer.setOptions({ ...(renderer as any).options, dragToSeek: true })
+      const moves: number[] = []
+      renderer.dragEventsSignal.subscribe((e) => {
+        if (e?.type === 'move') moves.push(e.relativeX)
+      })
+
+      wrapper.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 0, button: 0 }))
+      for (const x of [200, 400, 600]) window.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: 0 }))
+      window.dispatchEvent(new PointerEvent('pointerup', { clientX: 600, clientY: 0 }))
+      expect(moves).toEqual([0.2, 0.4, 0.6])
+    })
+
+    test('does not auto-scroll during a drag when autoScroll is false', () => {
+      jest.useFakeTimers()
+      const wrapper = renderer.getWrapper()
+      stubRect(wrapper)
+      const scrollContainer = (renderer as any).scrollContainer as HTMLElement
+      scrollContainer.getBoundingClientRect = () =>
+        ({ left: 0, top: 0, right: 100, bottom: 50, width: 100, height: 50, x: 0, y: 0, toJSON: () => ({}) }) as DOMRect
+      scrollContainer.scrollLeft = 500
+      renderer.setOptions({ ...(renderer as any).options, dragToSeek: true, autoScroll: false })
+
+      wrapper.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 0, button: 0 }))
+      window.dispatchEvent(new PointerEvent('pointermove', { clientX: 0, clientY: 0 }))
+      jest.advanceTimersByTime(100)
+      expect(scrollContainer.scrollLeft).toBe(500)
+
+      window.dispatchEvent(new PointerEvent('pointerup', { clientX: 0, clientY: 0 }))
+      jest.useRealTimers()
+    })
+
     test('disabling dragToSeek via setOptions (object -> false) kills drag', () => {
       const wrapper = renderer.getWrapper()
       stubRect(wrapper)
