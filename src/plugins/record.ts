@@ -534,7 +534,10 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       this.mediaRecorder?.requestData()
       this.mediaRecorder?.pause()
       this.frameScheduler.stop()
-      this.lastDuration = this.duration
+      // Progress ticks may be throttled while mic waveform draws continue.
+      // Capture the actual recording time so resumed peaks keep advancing.
+      this.lastDuration += performance.now() - this.lastStartTime
+      this.duration = this.lastDuration
     }
   }
 
