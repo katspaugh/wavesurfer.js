@@ -11,6 +11,8 @@ export interface DragEvent {
   type: 'start' | 'move' | 'end'
   x: number
   y: number
+  /** Pointer position in viewport coordinates */
+  clientX?: number
   deltaX?: number
   deltaY?: number
 }
@@ -103,6 +105,7 @@ export function createDragStream(
             type: 'start',
             x: startX - left,
             y: startY - top,
+            clientX: startX,
           })
           isDragging = true
         }
@@ -112,6 +115,7 @@ export function createDragStream(
           type: 'move',
           x: x - left,
           y: y - top,
+          clientX: x,
           deltaX: dx,
           deltaY: dy,
         })
@@ -135,6 +139,7 @@ export function createDragStream(
           type: 'end',
           x: x - left,
           y: y - top,
+          clientX: x,
         })
       }
 

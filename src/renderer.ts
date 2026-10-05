@@ -223,9 +223,9 @@ class Renderer {
       const width = rect.width
       let relX = utils.clampToUnit(drag.x / width)
 
-      if (drag.type === 'move' && this.dragClientX !== null) {
+      if (drag.clientX !== undefined) {
         // The wrapper moves while auto-scrolling, so use the live pointer position
-        relX = utils.clampToUnit((this.dragClientX - rect.left) / width)
+        relX = utils.clampToUnit((drag.clientX - rect.left) / width)
       }
 
       if (drag.type === 'start') {
@@ -239,6 +239,8 @@ class Renderer {
         this.stopEdgeScroll()
         this._dragEventsSignal.set({ type: 'end', relativeX: relX })
       }
+
+      if (this.isDragging && drag.clientX !== undefined) this.dragClientX = drag.clientX
     }, [this.dragStream.signal])
 
     dragScope.add(unsubscribeDrag)
@@ -263,13 +265,9 @@ class Renderer {
     this.stopEdgeScroll()
     const edgeScope = parent.child()
     this.edgeScope = edgeScope
-    edgeScope.listen(window, 'pointermove', ((e: PointerEvent) => {
-      this.dragClientX = e.clientX
-    }) as EventListener)
-
     const tick = () => {
       const clientX = this.dragClientX
-      if (clientX !== null) {
+      if (clientX !== null && this.options.autoScroll) {
         const container = this.scrollContainer
         const box = container.getBoundingClientRect()
         const edge = Math.min(DRAG_EDGE_SIZE, box.width / 2)
