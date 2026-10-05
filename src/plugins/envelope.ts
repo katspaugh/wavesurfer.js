@@ -112,6 +112,7 @@ class Polyline {
         points: `0,${height} ${width},${height}`,
         stroke: options.lineColor,
         'stroke-width': options.lineWidth,
+        'vector-effect': 'non-scaling-stroke',
         fill: 'none',
         part: 'polyline',
         style: options.dragLine
@@ -131,8 +132,10 @@ class Polyline {
         const drag = dragStream.signal.value
         if (!drag || drag.type !== 'move' || drag.deltaY === undefined) return
 
-        const deltaY = drag.deltaY
+        const rect = svg.getBoundingClientRect()
+        if (!rect.height) return
         const { height } = svg.viewBox.baseVal
+        const deltaY = (drag.deltaY * height) / rect.height
         const { points } = polyline
         for (let i = 1; i < points.numberOfItems - 1; i++) {
           const point = points.getItem(i)
@@ -198,7 +201,10 @@ class Polyline {
       if (drag.type === 'start') {
         draggable.style.cursor = 'grabbing'
       } else if (drag.type === 'move' && drag.deltaX !== undefined && drag.deltaY !== undefined) {
-        onDrag(drag.deltaX, drag.deltaY)
+        const rect = this.svg.getBoundingClientRect()
+        if (!rect.width || !rect.height) return
+        const { width, height } = this.svg.viewBox.baseVal
+        onDrag((drag.deltaX * width) / rect.width, (drag.deltaY * height) / rect.height)
       } else if (drag.type === 'end') {
         draggable.style.cursor = 'grab'
       }
@@ -224,6 +230,7 @@ class Polyline {
         fill: this.options.dragPointFill,
         stroke: this.options.dragPointStroke,
         'stroke-width': '2',
+        'vector-effect': 'non-scaling-stroke',
         style: {
           cursor: 'grab',
           pointerEvents: 'all',
@@ -297,6 +304,7 @@ class Polyline {
     })
 
     this.pointCleanups.set(refPoint, cleanup)
+    this.update()
   }
 
   update() {
