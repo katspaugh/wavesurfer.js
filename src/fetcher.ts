@@ -52,6 +52,7 @@ async function fetchBlob(
   url: string,
   progressCallback: (percentage: number) => void,
   requestInit?: RequestInit,
+  fetchMode: 'blob' | 'arrayBuffer' = 'blob',
 ): Promise<Blob> {
   // Fetch the resource
   const response = await fetch(url, requestInit)
@@ -63,6 +64,11 @@ async function fetchBlob(
   // Read the data to track progress
   // Pass the abort signal so the progress reader can be cancelled
   watchProgress(response.clone(), progressCallback, requestInit?.signal ?? undefined)
+
+  if (fetchMode === 'arrayBuffer') {
+    const arrayBuffer = await response.arrayBuffer()
+    return new Blob([arrayBuffer], { type: response.headers.get('Content-Type') ?? '' })
+  }
 
   return response.blob()
 }
