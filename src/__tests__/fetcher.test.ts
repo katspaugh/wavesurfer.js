@@ -32,4 +32,27 @@ describe('Fetcher', () => {
     await new Promise(process.nextTick)
     expect(progress).toHaveBeenCalledWith(100)
   })
+
+  test('fetchBlob falls back to arrayBuffer when blob() fails', async () => {
+    const data = new TextEncoder().encode('hello')
+    const response = {
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({ 'Content-Type': 'video/mp4' }),
+      body: null,
+      clone() {
+        return this
+      },
+      blob: async () => {
+        throw new TypeError('Failed to fetch')
+      },
+      arrayBuffer: async () => data.buffer,
+    } as unknown as Response
+
+    global.fetch = jest.fn().mockResolvedValue(response)
+
+    const blob = await Fetcher.fetchBlob('url', jest.fn())
+    expect(blob.size).toBe(5)
+    expect(blob.type).toBe('video/mp4')
+  })
 })
