@@ -185,10 +185,10 @@ export function createSparseFilterBankForScale(
 }
 
 /**
- * Global-peak level below which autoGain treats the whole signal as digital silence and leaves
- * the spectrogram blank instead of amplifying the numeric floor. -180 dBFS is well below the
- * quantization floor of 24-bit audio (~-144 dBFS) and float32 near full scale (~-138 dB), but
- * far above denormals, so it only triggers on true silence.
+ * Global-peak level, measured before pre-emphasis, below which autoGain treats the whole signal as
+ * digital silence and leaves the spectrogram blank instead of amplifying the numeric floor.
+ * -180 dBFS is well below the quantization floor of 24-bit audio (~-144 dBFS) and float32 near
+ * full scale (~-138 dB), but far above denormals, so it only triggers on true silence.
  */
 export const SILENCE_FLOOR_DB = -180
 
