@@ -76,7 +76,7 @@ const spectrogram = ws.registerPlugin(
     // dynamicCompression: 0.4, // 0-1: lift quieter frames toward the loudest level
     //
     // Overlap between FFT windows:
-    // noverlap: null,    // Auto-calculated by default, or set manually
+    // noverlap: null,    // null = auto (default), 0 = no overlap
     //
     // Zero-padded FFT length (power of 2, >= fftSamples):
     // fftSize: 4096,     // Interpolates extra frequency bins for a smoother image without
@@ -141,7 +141,7 @@ spectrogram.on('click', (relativeX) => {
       <li><code>useWebWorker: true</code> - Use web worker for faster processing</li>
       <li><code>fallbackToMainThread: true</code> - Whether a failed worker FFT silently recomputes on the main thread</li>
       <li><code>maxCanvasWidth: 30000</code> - Split large spectrograms into multiple canvases</li>
-      <li><code>noverlap: null</code> - Overlap between FFT windows (auto-calculated)</li>
+      <li><code>noverlap: null</code> - Overlap between FFT windows (null = auto, 0 = no overlap)</li>
     </ul>
     
     <h4>Color & Styling</h4>

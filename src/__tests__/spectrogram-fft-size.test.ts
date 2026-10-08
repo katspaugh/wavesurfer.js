@@ -41,6 +41,11 @@ function runWorker(signal: Float32Array, options: Record<string, unknown>): Uint
   return response.result
 }
 
+beforeAll(() => {
+  // jsdom has no Worker; the plugins only check its existence before using the bundled constructor
+  ;(globalThis as any).Worker = function Worker() {}
+})
+
 // SpectrogramPlugin is a definePlugin() plugin, but validateOptions() runs from its constructor
 // (see spectrogram.ts) same as the pre-port class, so `Plugin.create({...})` alone still throws
 // synchronously below - no `_init()` needed for the validation tests. The functional tests further
@@ -185,5 +190,110 @@ describe('main-thread compute with fftSize', () => {
     mainResult[0].forEach((frame: Uint8Array, i: number) => {
       expect(Array.from(frame)).toEqual(Array.from(workerResult[0][i]))
     })
+  })
+})
+
+describe('noverlap resolution', () => {
+  const FFT_SAMPLES = 128
+  const LENGTH = 1280
+  const makeBuffer = (signal: Float32Array) => createFakeAudioBuffer(signal, { sampleRate: SAMPLE_RATE })
+  const framesForHop = (hop: number) => Math.floor((LENGTH - FFT_SAMPLES - 1) / hop) + 1
+
+  /** Full-rendering plugin on a wrapper of the given width whose offsetWidth reads are counted */
+  function createFull(options: Record<string, unknown>, width = 600) {
+    const wrapper = document.createElement('div')
+    const widthGetter = jest.fn(() => width)
+    Object.defineProperty(wrapper, 'offsetWidth', { get: widthGetter, configurable: true })
+    Object.defineProperty(wrapper, 'clientWidth', { value: width, configurable: true })
+    const plugin: any = Spectrogram.create({ fftSamples: FFT_SAMPLES, scale: 'linear', ...options } as any)
+    plugin._init(createFakeWaveSurfer({ getWrapper: () => wrapper }))
+    widthGetter.mockClear()
+    return { plugin, internals: plugin.__spectrogramInternalsForTests(), widthGetter }
+  }
+
+  /** The overlap a full-rendering worker request carries; the mock worker never answers */
+  function forwardedNoverlap(internals: any): number {
+    const promise = internals.calculateFrequenciesWithWorker(makeBuffer(makeSine(LENGTH)))
+    promise.catch(() => undefined)
+    return internals.worker.postMessage.mock.calls[0][0].options.noverlap
+  }
+
+  it.each([0, 64])('uses an explicit overlap of %i as is, without reading the wrapper width', async (noverlap) => {
+    const worker = createFull({ useWebWorker: true, noverlap })
+    expect(forwardedNoverlap(worker.internals)).toBe(noverlap)
+    expect(worker.widthGetter).not.toHaveBeenCalled()
+    worker.plugin.destroy()
+
+    const main = createFull({ useWebWorker: false, noverlap })
+    await main.internals.getFrequencies(makeBuffer(makeSine(LENGTH)))
+    expect(main.widthGetter).not.toHaveBeenCalled()
+    main.plugin.destroy()
+  })
+
+  it('forwards an explicit 0 to the worker in windowed rendering', () => {
+    const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, fftSamples: FFT_SAMPLES, noverlap: 0 })
+    plugin._init(createFakeWaveSurfer())
+    const internals = plugin.__spectrogramInternalsForTests()
+    internals.buffer = makeBuffer(makeSine(LENGTH))
+
+    const promise = internals.windowed.calculateFrequenciesWithWorker(0, LENGTH / SAMPLE_RATE)
+    promise.catch(() => undefined)
+    expect(internals.worker.postMessage.mock.calls[0][0].options.noverlap).toBe(0)
+    plugin.destroy()
+  })
+
+  it('computes an explicit 0 without overlap on the main thread, matching the worker', async () => {
+    const signal = makeSine(LENGTH)
+    // On this 600px wrapper the automatic overlap is 126 (hop 2), which an explicit 0 must not fall back to
+    const { plugin, internals } = createFull({ useWebWorker: false, noverlap: 0 })
+
+    const mainResult = await internals.getFrequencies(makeBuffer(signal))
+    const workerResult = runWorker(signal, { fftSamples: FFT_SAMPLES, noverlap: 0 })
+
+    expect(mainResult[0].length).toBe(framesForHop(FFT_SAMPLES))
+    expect(mainResult[0].length).toBe(workerResult[0].length)
+    mainResult[0].forEach((frame: Uint8Array, i: number) => {
+      expect(Array.from(frame)).toEqual(Array.from(workerResult[0][i]))
+    })
+    plugin.destroy()
+  })
+
+  it('derives the automatic overlap from the wrapper width', async () => {
+    // round(128 - 1280 / 600) = 126
+    const worker = createFull({ useWebWorker: true })
+    expect(forwardedNoverlap(worker.internals)).toBe(126)
+    expect(worker.widthGetter).toHaveBeenCalled()
+    worker.plugin.destroy()
+
+    const main = createFull({ useWebWorker: false })
+    const result = await main.internals.getFrequencies(makeBuffer(makeSine(LENGTH)))
+    expect(result[0].length).toBe(framesForHop(2))
+    expect(main.widthGetter).toHaveBeenCalled()
+    main.plugin.destroy()
+  })
+
+  it('keeps half a window when the automatic overlap derives to 0', async () => {
+    // 1280 samples on 8px is 160 samples per pixel, more than the 128-sample window
+    const worker = createFull({ useWebWorker: true }, 8)
+    expect(forwardedNoverlap(worker.internals)).toBe(64)
+    worker.plugin.destroy()
+
+    const main = createFull({ useWebWorker: false }, 8)
+    const result = await main.internals.getFrequencies(makeBuffer(makeSine(LENGTH)))
+    expect(result[0].length).toBe(framesForHop(64))
+    main.plugin.destroy()
+  })
+
+  it('keeps half a window when the windowed automatic overlap derives to 0', async () => {
+    // 50 px/s at 8 kHz is 160 samples per pixel
+    const plugin: any = WindowedSpectrogram.create({ fftSamples: FFT_SAMPLES, scale: 'linear' })
+    plugin._init(createFakeWaveSurfer({ options: { minPxPerSec: 50 } }))
+    const internals = plugin.__spectrogramInternalsForTests()
+    internals.buffer = makeBuffer(makeSine(LENGTH))
+
+    const result = await internals.windowed.calculateFrequenciesMainThread(0, LENGTH / SAMPLE_RATE)
+
+    expect(result[0].length).toBe(framesForHop(64))
+    plugin.destroy()
   })
 })

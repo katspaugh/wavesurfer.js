@@ -8,7 +8,8 @@
  * main-thread fallback) to stop them drifting apart. The worker's copy was
  * the most complete of the three (it alone had both the autoGain budget
  * strategies and the noverlap re-fallback), so it is the behavioral
- * reference this module reproduces exactly.
+ * reference this module reproduces, except that an explicit noverlap of 0
+ * now means no overlap (the re-fallback applies to null/undefined only).
  *
  * Pure with respect to output: every scratch buffer (frame, dB scratch) is owned by a
  * single call, so concurrent callers never share mutable state that could change what a
@@ -127,9 +128,8 @@ export type FrequencyParams = {
   alpha?: number
   /**
    * Frame overlap in samples, honored up to fftSamples - 1 (the hop size always stays >= 1
-   * sample, so values >= fftSamples are clamped to fftSamples - 1). A falsy value (0, null, or
-   * undefined) falls back to round(fftSamples * 0.5) - this mirrors the worker's original
-   * behavior, where an explicit 0 is indistinguishable from "not set".
+   * sample, so values >= fftSamples are clamped to fftSamples - 1). 0 means no overlap
+   * (hop = fftSamples); null or undefined fall back to round(fftSamples * 0.5).
    */
   noverlap?: number | null
   /** Frequency axis scale used to build the filter bank. */
@@ -193,8 +193,9 @@ export function computeFrequencies(channels: Float32Array[], params: FrequencyPa
   // fractional frame starts. noverlap is honored as documented ("must be < fftSamples"):
   // the only clamp is to fftSamples - 1, keeping the hop at >= 1 sample so the frame loop
   // always advances. (The historical silent 50% cap and 64-sample hop floor contradicted
-  // that contract, quietly halving the requested overlap.)
-  let actualNoverlap = noverlap || Math.max(0, Math.round(fftSamples * 0.5))
+  // that contract, quietly halving the requested overlap.) An explicit 0 means no overlap;
+  // only null/undefined fall back to half a window.
+  let actualNoverlap = noverlap ?? Math.max(0, Math.round(fftSamples * 0.5))
   actualNoverlap = Math.min(actualNoverlap, fftSamples - 1)
   const hopSize = Math.max(1, fftSamples - actualNoverlap)
 

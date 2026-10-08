@@ -582,13 +582,12 @@ describe('computeWindowedPixelsPerSecond', () => {
 })
 
 describe('deriveNoverlap', () => {
-  it('returns the explicit value when truthy', () => {
+  it('returns the explicit value when provided', () => {
     expect(deriveNoverlap(1024, 200, 44100, 500)).toBe(200)
   })
 
-  it('treats an explicit 0 as unset, like the legacy windowed plugin', () => {
-    const derived = deriveNoverlap(1024, 0, 4410, 100)
-    expect(derived).toBe(Math.max(0, Math.round(1024 - 4410 / 100)))
+  it('honors an explicit 0 (no overlap) instead of deriving', () => {
+    expect(deriveNoverlap(1024, 0, 4410, 100)).toBe(0)
   })
 
   it('derives from samples-per-pixel when unset', () => {
@@ -596,8 +595,10 @@ describe('deriveNoverlap', () => {
     expect(deriveNoverlap(100, null, 1000, 100)).toBe(90)
   })
 
-  it('never goes negative', () => {
-    expect(deriveNoverlap(64, undefined, 100, 1)).toBe(0)
+  it('falls back to half a window when the derivation gives no overlap', () => {
+    // 100 samples/px exceeds the 64-sample window, so the derivation is 0
+    expect(deriveNoverlap(64, undefined, 100, 1)).toBe(32)
+    expect(deriveNoverlap(64, null, 100, 1)).toBe(32)
   })
 })
 
