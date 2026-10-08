@@ -108,7 +108,7 @@ export type SpectrogramPluginOptions = {
    * the hop stays >= 1 sample). Omit it, or pass null, to derive the overlap from the canvas
    * size; when that derivation would give no overlap, half a window is used.
    */
-  noverlap?: number
+  noverlap?: number | null
   /** The window function to be used. */
   windowFunc?:
     | 'bartlett'

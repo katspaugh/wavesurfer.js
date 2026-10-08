@@ -258,6 +258,20 @@ describe('noverlap resolution', () => {
     plugin.destroy()
   })
 
+  it('accepts noverlap: null through the typed options as the automatic overlap', () => {
+    // Not via createFull, whose options are cast to any: the call must type-check with null
+    const plugin: any = Spectrogram.create({
+      useWebWorker: true,
+      fftSamples: FFT_SAMPLES,
+      scale: 'linear',
+      noverlap: null,
+    })
+    plugin._init(createFakeWaveSurfer())
+    // round(128 - 1280 / 600) = 126, the same as omitting the option
+    expect(forwardedNoverlap(plugin.__spectrogramInternalsForTests())).toBe(126)
+    plugin.destroy()
+  })
+
   it('derives the automatic overlap from the wrapper width', async () => {
     // round(128 - 1280 / 600) = 126
     const worker = createFull({ useWebWorker: true })
