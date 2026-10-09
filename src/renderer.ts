@@ -40,6 +40,7 @@ class Renderer {
   private audioData: AudioBuffer | null = null
   private lastContainerWidth = 0
   private isDragging = false
+  private lastProgressWidth: number | undefined
   private dragClientX: number | null = null
   private edgeScope: Scope | null = null
   private scope = new Scope()
@@ -940,6 +941,11 @@ class Renderer {
       // Edge scrolling during drag is handled by the rAF loop in startEdgeScroll
       return
     } else {
+      // How far the cursor has moved since the previous update, so the smoothed
+      // scroll below can never fall behind it when updates are slower than 60/s
+      const moved = this.lastProgressWidth === undefined ? 0 : progressWidth - this.lastProgressWidth
+      this.lastProgressWidth = progressWidth
+
       if (progressWidth < startEdge || progressWidth > endEdge) {
         this.scrollContainer.scrollLeft = progressWidth - (this.options.autoCenter ? middle : 0)
       }
@@ -955,7 +961,7 @@ class Renderer {
 
         const pixelsPerSecond = scrollWidth / duration
         if (pixelsPerSecond <= LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD) {
-          this.scrollContainer.scrollLeft += Math.min(center, SMOOTH_SCROLL_MAX_DELTA)
+          this.scrollContainer.scrollLeft += Math.min(center, Math.max(SMOOTH_SCROLL_MAX_DELTA, moved))
         } else {
           this.scrollContainer.scrollLeft += center
         }

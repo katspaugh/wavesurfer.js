@@ -318,6 +318,21 @@ describe('Renderer', () => {
     expect(renderer.getScroll()).toBe(20)
   })
 
+  test('auto-centering keeps up with a cursor moving faster than the smoothing step', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable.set(true)
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
+    // 1000 px over 2 s = 500 px/s, within the smoothed range
+    ;(renderer as any).audioData = { duration: 2 }
+    renderer.setScroll(0)
+    renderer.renderProgress(0.05, true) // cursor at 50, centre of the view
+    const before = renderer.getScroll()
+    renderer.renderProgress(0.065, true) // cursor moves 15 px, more than the 10 px step
+    expect(renderer.getScroll() - before).toBe(15)
+  })
+
   test('renderProgress updates styles', () => {
     renderer.renderProgress(0.5)
     expect((renderer as any).progressWrapper.style.width).toBe('50%')
