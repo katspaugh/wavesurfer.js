@@ -27,6 +27,18 @@ export interface FrequencySegment {
   endPixel: number
   frequencies: Uint8Array[][]
   canvas?: HTMLCanvasElement
+  /** Zoom (pixels per second) the frequencies were computed for: about one FFT column per pixel at that zoom. */
+  pixelsPerSecond?: number
+}
+
+/**
+ * Whether frequencies computed for `computedPxPerSec` are too coarse (or too fine) to show at
+ * `pixelsPerSec`: more than 2x away. Judged against the zoom a segment was computed for, not the
+ * previous zoom step's, so that a run of small zoom steps adds up.
+ */
+function isOutOfZoomRange(computedPxPerSec: number, pixelsPerSec: number): boolean {
+  const zoomRatio = pixelsPerSec / computedPxPerSec
+  return zoomRatio < 0.5 || zoomRatio > 2.0
 }
 
 export interface TimeRange {
@@ -280,6 +292,11 @@ export class SegmentManager {
         const frequencies = await this.deps.computeSegmentFrequencies(segmentStart, segmentEnd)
         if (this.deps.isDisposed()) return
 
+        // The zoom may have moved more than 2x while we were computing. Kept, this result would
+        // be stretched yet count as coverage, so the render every zoom schedules would skip its
+        // range; stop here and leave the range to that render, at the current zoom.
+        if (isOutOfZoomRange(pixelsPerSec, this.deps.getPixelsPerSecond())) return
+
         // Re-check after the await: a concurrent generateSegments() (the progressive loader
         // races the viewport-driven calls - only renderVisibleWindow has a re-entrancy guard)
         // may have created and rendered this same segment while we were computing. Overwriting
@@ -297,6 +314,7 @@ export class SegmentManager {
             startPixel: shouldFillContainer ? 0 : segmentStart * pixelsPerSec,
             endPixel: shouldFillContainer ? containerWidth : segmentEnd * pixelsPerSec,
             frequencies,
+            pixelsPerSecond: pixelsPerSec,
           }
 
           this.segments.set(segmentKey, segment)
@@ -385,15 +403,29 @@ export class SegmentManager {
         segment.canvas.style.width = `${segmentWidth}px`
       }
     }
-    const zoomRatio = newPxPerSec / oldPxPerSec
-    return zoomRatio < 0.5 || zoomRatio > 2.0
+    return Array.from(this.segments.values()).some((segment) =>
+      isOutOfZoomRange(segment.pixelsPerSecond ?? oldPxPerSec, newPxPerSec),
+    )
   }
 
-  /** Re-render (at the current zoom level) whichever loaded segments overlap the visible viewport. */
+  /**
+   * Re-render (at the current zoom level) whichever loaded segments overlap the visible viewport.
+   * Segments computed at a zoom more than 2x away are dropped and the visible window recomputed
+   * instead: redrawing their frequencies at a new size can't add (or shed) detail.
+   */
   async updateVisibleSegmentQuality(): Promise<void> {
     if (this.deps.getBufferDuration() === null) return
 
     const pixelsPerSec = this.deps.getPixelsPerSecond()
+    let dropped = false
+    for (const [key, segment] of this.segments) {
+      if (segment.pixelsPerSecond && isOutOfZoomRange(segment.pixelsPerSecond, pixelsPerSec)) {
+        segment.canvas?.remove()
+        this.segments.delete(key)
+        dropped = true
+      }
+    }
+
     const scrollLeft = this.deps.getScrollLeft()
     const viewportWidth = this.deps.getViewportWidth()
     const visibleStartTime = scrollLeft / pixelsPerSec
@@ -409,6 +441,8 @@ export class SegmentManager {
         if (this.deps.isDisposed()) return
       }
     }
+
+    if (dropped) await this.renderVisibleWindow()
   }
 
   startProgressiveLoading(): void {
