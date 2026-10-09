@@ -565,16 +565,23 @@ export function computeWindowedPixelsPerSecond(
   return WINDOWED_MIN_PX_PER_SEC
 }
 
-/** Default noverlap (in samples) for a range covering `sampleSpan` samples rendered into `pixelWidth` CSS pixels. */
+/**
+ * Effective noverlap (in samples) for a range covering `sampleSpan` samples rendered into
+ * `pixelWidth` CSS pixels. An explicit value, including 0 (no overlap), is returned as is.
+ * Otherwise the overlap is derived from the samples per pixel, falling back to half a window
+ * when that derivation gives no overlap (what the shared computation's fallback used to do
+ * with a derived 0).
+ */
 export function deriveNoverlap(
   fftSamples: number,
   explicitNoverlap: number | null | undefined,
   sampleSpan: number,
   pixelWidth: number,
 ): number {
-  if (explicitNoverlap) return explicitNoverlap
+  if (explicitNoverlap != null) return explicitNoverlap
   const uniqueSamplesPerPx = sampleSpan / pixelWidth
-  return Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
+  const derived = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
+  return derived || Math.round(fftSamples * 0.5)
 }
 
 // ---- Segment canvas rendering (shared by both windowed entry points) ----

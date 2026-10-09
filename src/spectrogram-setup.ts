@@ -103,11 +103,12 @@ export type SpectrogramPluginOptions = {
   labelsColor?: string
   labelsHzColor?: string
   /**
-   * Size of the overlapping window, in samples. Must be < fftSamples; larger values are
-   * clamped to fftSamples - 1 (the hop size always stays >= 1 sample). Auto deduced from
-   * canvas size by default.
+   * Overlap between consecutive analysis windows, in samples. 0 means no overlap (the hop
+   * equals fftSamples); values are honored up to fftSamples - 1 (larger values are clamped, so
+   * the hop stays >= 1 sample). Omit it, or pass null, to derive the overlap from the canvas
+   * size; when that derivation would give no overlap, half a window is used.
    */
-  noverlap?: number
+  noverlap?: number | null
   /** The window function to be used. */
   windowFunc?:
     | 'bartlett'
@@ -427,7 +428,7 @@ export function spectrogramSetup(
   const fftSamples = fftSize != null ? (options.fftSamples ?? 512) : options.fftSamples || 512
   const height = options.height || 200
   // Will be calculated later based on canvas size when not set
-  const noverlap: number | null = options.noverlap || null
+  const noverlap: number | null = options.noverlap ?? null
 
   const windowFunc = options.windowFunc || 'hann'
   const alpha = options.alpha
@@ -721,13 +722,8 @@ export function spectrogramSetup(
 
     const channels = effectiveSplitChannels() ? audioBuffer.numberOfChannels : 1
 
-    // Calculate noverlap
-    let requestNoverlap = noverlap
-    if (!requestNoverlap) {
-      const totalWidth = getWidth()
-      const uniqueSamplesPerPx = audioBuffer.length / totalWidth
-      requestNoverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
-    }
+    // An explicit noverlap (including 0) is used as is; the width is only read for the automatic one
+    const requestNoverlap = noverlap ?? deriveNoverlap(fftSamples, null, audioBuffer.length, getWidth())
 
     // Prepare audio data for worker
     const audioData: Float32Array[] = []
@@ -788,13 +784,8 @@ export function spectrogramSetup(
 
     const channels = effectiveSplitChannels() ? audioBuffer.numberOfChannels : 1
 
-    // Calculate noverlap (same logic as worker for consistency)
-    let mainThreadNoverlap = noverlap
-    if (!mainThreadNoverlap) {
-      const totalWidth = getWidth()
-      const uniqueSamplesPerPx = audioBuffer.length / totalWidth
-      mainThreadNoverlap = Math.max(0, Math.round(fftSamples - uniqueSamplesPerPx))
-    }
+    // Same noverlap resolution as the worker request
+    const mainThreadNoverlap = noverlap ?? deriveNoverlap(fftSamples, null, audioBuffer.length, getWidth())
 
     const channelData: Float32Array[] = []
     for (let c = 0; c < channels; c++) {

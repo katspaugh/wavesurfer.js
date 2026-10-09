@@ -239,11 +239,7 @@ describe('computeFrequencies oracle equivalence (pre-refactor worker loop)', () 
       params: { fftSamples: 200, fftSize: 256, scale: 'linear', noverlap: 100, gainDB: 20, rangeDB: 80 },
     },
     {
-      name: 'noverlap: 0 is treated as unset (falsy re-fallback quirk preserved)',
-      params: { fftSamples: 256, scale: 'linear', noverlap: 0, gainDB: 20, rangeDB: 80 },
-    },
-    {
-      name: 'noverlap: null falls back same as 0/undefined',
+      name: 'noverlap: null falls back to half a window (same as undefined)',
       params: { fftSamples: 256, scale: 'linear', noverlap: null, gainDB: 20, rangeDB: 80 },
     },
   ]
@@ -617,5 +613,17 @@ describe('noverlap contract (hop size)', () => {
 
     const expectedFrames = Math.floor((640 - 64 - 1) / 32) + 1
     expect(result[0].length).toBe(expectedFrames)
+  })
+
+  it('honors an explicit noverlap of 0 as no overlap (hop = fftSamples)', () => {
+    const signal = makeSine(1280, 1000)
+
+    const noOverlap = computeFrequencies([signal], { ...base, fftSamples: 128, noverlap: 0 })
+    const unset = computeFrequencies([signal], { ...base, fftSamples: 128, noverlap: null })
+
+    // hop = 128; frames start at 0, 128, ..., 1024 while sample + 128 < 1280
+    const expectedFrames = Math.floor((1280 - 128 - 1) / 128) + 1
+    expect(noOverlap[0].length).toBe(expectedFrames)
+    expect(noOverlap[0].length).toBeLessThan(unset[0].length)
   })
 })
