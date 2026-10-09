@@ -106,6 +106,13 @@ export type RegionParams = {
   channelIdx?: number
   /** Allow/Disallow contenteditable property for content */
   contentEditable?: boolean
+  /**
+   * Move the content down when it overlaps the content of an earlier region (default: true).
+   * Set to false for content you position yourself: it is not moved, it is ignored when placing
+   * other regions' content, and turning it off with setOptions clears its margin-top.
+   * Turning it back on takes effect the next time labels are placed, after a drag or resize.
+   */
+  avoidOverlapping?: boolean
 }
 
 /** How far each side of a region's element sticks out of the scroll container, in pixels */
@@ -167,6 +174,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   public maxLength = Infinity
   public channelIdx: number
   public contentEditable = false
+  public avoidOverlapping = true
   public updatingSide?: UpdateSide = undefined
   public isRemoved = false
   /** True while the region body is being dragged; guards virtualization from detaching it mid-drag */
@@ -209,6 +217,7 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     this.maxLength = params.maxLength ?? this.maxLength
     this.channelIdx = params.channelIdx ?? -1
     this.contentEditable = params.contentEditable ?? this.contentEditable
+    this.avoidOverlapping = params.avoidOverlapping ?? this.avoidOverlapping
     this.element = this.initElement()
     this.setContent(params.content)
     this.setPart()
@@ -706,7 +715,19 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
   /** Update the region's options */
   public setOptions(
     options: Partial<
-      Pick<RegionParams, 'color' | 'start' | 'end' | 'drag' | 'content' | 'id' | 'resize' | 'resizeStart' | 'resizeEnd'>
+      Pick<
+        RegionParams,
+        | 'color'
+        | 'start'
+        | 'end'
+        | 'drag'
+        | 'content'
+        | 'id'
+        | 'resize'
+        | 'resizeStart'
+        | 'resizeEnd'
+        | 'avoidOverlapping'
+      >
     >,
   ) {
     if (!this.element) return
@@ -745,6 +766,12 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       }
 
       this.emit('render')
+    }
+
+    // Before setContent, so only the content the plugin may have placed is reset
+    if (options.avoidOverlapping !== undefined && options.avoidOverlapping !== this.avoidOverlapping) {
+      this.avoidOverlapping = options.avoidOverlapping
+      if (!this.avoidOverlapping && this.content) this.content.style.removeProperty('margin-top')
     }
 
     if (options.content) {
@@ -922,7 +949,7 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
     }
 
     function avoidOverlapping(region: Region) {
-      if (!region.content || region.isRemoved) return
+      if (!region.content || region.isRemoved || !region.avoidOverlapping) return
 
       // Schedule on the region's own scope so a removal cancels this pending
       // reflow instead of letting it fire, or accumulate, on the plugin
@@ -932,7 +959,7 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       // no fallback needed.
       const scope = regionScopes.get(region)!
       scope.timeout(() => {
-        if (!region.content) return
+        if (!region.content || !region.avoidOverlapping) return
 
         // Check that the label doesn't overlap with other labels
         // If it does, push it down until it doesn't
@@ -949,7 +976,7 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
           .slice(0, regionIndex)
           .filter((reg) => !reg.isRemoved)
           .reduce<DOMRect[]>((boxes, reg) => {
-            if (reg === region || !reg.content) return boxes
+            if (reg === region || !reg.content || !reg.avoidOverlapping) return boxes
 
             const otherBox = reg.content.getBoundingClientRect()
             if (box.left < otherBox.right && otherBox.left < box.right) {

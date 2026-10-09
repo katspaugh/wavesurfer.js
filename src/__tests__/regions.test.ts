@@ -194,6 +194,103 @@ describe('RegionsPlugin', () => {
     expect(firstRegion.content?.style.marginTop).toBe('0px')
     expect(secondRegion.content?.style.marginTop).toBe('0px')
   })
+
+  test('skips label placement for a region that opts out and ignores it as an obstacle', () => {
+    const wavesurfer = createWaveSurfer()
+    const plugin = RegionsPlugin.create()
+
+    plugin._init(wavesurfer as any)
+
+    const firstRegion = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const secondRegion = plugin.addRegion({ start: 1, end: 2, content: 'Second', avoidOverlapping: false })
+    const thirdRegion = plugin.addRegion({ start: 2, end: 3, content: 'Third' })
+
+    mockRect(firstRegion.content!, { left: 0, top: 0, width: 40, height: 10 })
+    mockRect(secondRegion.content!, { left: 20, top: 0, width: 40, height: 10 })
+    mockRect(thirdRegion.content!, { left: 50, top: 0, width: 40, height: 10 })
+
+    jest.runOnlyPendingTimers()
+    expect(firstRegion.content?.style.marginTop).toBe('0px')
+    expect(secondRegion.content?.style.marginTop).toBe('')
+    expect(thirdRegion.content?.style.marginTop).toBe('0px')
+
+    // The pass after a drag or resize schedules nothing for the opted-out region
+    const timerCount = jest.getTimerCount()
+    firstRegion.onContentBlur()
+    expect(jest.getTimerCount()).toBe(timerCount + 2)
+
+    jest.runOnlyPendingTimers()
+    expect(secondRegion.content?.style.marginTop).toBe('')
+    expect(thirdRegion.content?.style.marginTop).toBe('0px')
+    expect(secondRegion.content!.getBoundingClientRect).not.toHaveBeenCalled()
+  })
+
+  test('avoidOverlapping can be changed with setOptions', () => {
+    const wavesurfer = createWaveSurfer()
+    const plugin = RegionsPlugin.create()
+
+    plugin._init(wavesurfer as any)
+
+    const firstRegion = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const secondRegion = plugin.addRegion({ start: 1, end: 2, content: 'Second' })
+
+    mockRect(firstRegion.content!, { left: 0, top: 0, width: 40, height: 10 })
+    mockRect(secondRegion.content!, { left: 20, top: 0, width: 40, height: 10 })
+
+    jest.runOnlyPendingTimers()
+    expect(secondRegion.content?.style.marginTop).toBe('12px')
+
+    secondRegion.setOptions({ avoidOverlapping: false })
+    expect(secondRegion.content?.style.marginTop).toBe('')
+
+    firstRegion.onContentBlur()
+    jest.runOnlyPendingTimers()
+    expect(secondRegion.content?.style.marginTop).toBe('')
+
+    secondRegion.setOptions({ avoidOverlapping: true })
+    firstRegion.onContentBlur()
+    jest.runOnlyPendingTimers()
+    expect(secondRegion.content?.style.marginTop).toBe('12px')
+
+    // A placement already scheduled when the region opts out does nothing
+    const thirdRegion = plugin.addRegion({ start: 2, end: 3, content: 'Third' })
+    mockRect(thirdRegion.content!, { left: 10, top: 0, width: 40, height: 10 })
+    thirdRegion.setOptions({ avoidOverlapping: false })
+
+    jest.runOnlyPendingTimers()
+    expect(thirdRegion.content?.style.marginTop).toBe('')
+    expect(thirdRegion.content!.getBoundingClientRect).not.toHaveBeenCalled()
+  })
+
+  test('opting out together with new content keeps the margin of the new content', () => {
+    const wavesurfer = createWaveSurfer()
+    const plugin = RegionsPlugin.create()
+
+    plugin._init(wavesurfer as any)
+
+    const firstRegion = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const secondRegion = plugin.addRegion({ start: 1, end: 2, content: 'Second' })
+
+    mockRect(firstRegion.content!, { left: 0, top: 0, width: 40, height: 10 })
+    mockRect(secondRegion.content!, { left: 20, top: 0, width: 40, height: 10 })
+
+    jest.runOnlyPendingTimers()
+    expect(secondRegion.content?.style.marginTop).toBe('12px')
+
+    const overlay = document.createElement('div')
+    overlay.style.marginTop = '24px'
+    mockRect(overlay, { left: 20, top: 0, width: 40, height: 10 })
+
+    secondRegion.setOptions({ content: overlay, avoidOverlapping: false })
+    expect(secondRegion.content).toBe(overlay)
+    expect(overlay.style.marginTop).toBe('24px')
+
+    secondRegion.setOptions({ avoidOverlapping: false })
+    firstRegion.onContentBlur()
+    jest.runOnlyPendingTimers()
+    expect(overlay.style.marginTop).toBe('24px')
+    expect(overlay.getBoundingClientRect).not.toHaveBeenCalled()
+  })
 })
 
 describe('Region length constraints during drag-creation', () => {
