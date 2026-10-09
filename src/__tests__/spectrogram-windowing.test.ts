@@ -861,4 +861,28 @@ describe('SegmentManager zoom changes', () => {
     expect(computed).toEqual([[0, 3.75]])
     expect([...manager.segments.values()].map((segment) => segment.pixelsPerSecond)).toEqual([400])
   })
+
+  it('leaves a range to the pending render when the zoom moved more than 2x while it was computing', async () => {
+    let pixelsPerSecond = 100
+    const computing: Array<(frequencies: Uint8Array[][]) => void> = []
+    const manager = new SegmentManager(
+      makeDeps({
+        getPixelsPerSecond: () => pixelsPerSecond,
+        computeSegmentFrequencies: () => new Promise((resolve) => computing.push(resolve)),
+      }),
+    )
+    const rendering = manager.renderVisibleWindow()
+
+    // Zoom in 4x mid-compute: the render the zoom schedules bails while the first is in flight
+    pixelsPerSecond = 400
+    void manager.renderVisibleWindow()
+    computing.shift()?.([[new Uint8Array([1, 2, 3])]])
+
+    // The pending pass computes the range again, at the current zoom
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    computing.shift()?.([[new Uint8Array([1, 2, 3])]])
+    await rendering
+
+    expect([...manager.segments.values()].map((segment) => segment.pixelsPerSecond)).toEqual([400])
+  })
 })

@@ -292,6 +292,11 @@ export class SegmentManager {
         const frequencies = await this.deps.computeSegmentFrequencies(segmentStart, segmentEnd)
         if (this.deps.isDisposed()) return
 
+        // The zoom may have moved more than 2x while we were computing. Kept, this result would
+        // be stretched yet count as coverage, so the render every zoom schedules would skip its
+        // range; stop here and leave the range to that render, at the current zoom.
+        if (isOutOfZoomRange(pixelsPerSec, this.deps.getPixelsPerSecond())) return
+
         // Re-check after the await: a concurrent generateSegments() (the progressive loader
         // races the viewport-driven calls - only renderVisibleWindow has a re-entrancy guard)
         // may have created and rendered this same segment while we were computing. Overwriting
