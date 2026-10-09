@@ -822,3 +822,43 @@ describe('renderFrequencySegment devicePixelRatio scaling', () => {
     expect(fakeCtx.scale).toHaveBeenCalledWith(2, 2)
   })
 })
+
+describe('SegmentManager zoom changes', () => {
+  it('flags a refresh once the zoom is more than 2x from the one a segment was computed at, in however many steps', async () => {
+    const manager = new SegmentManager(makeDeps())
+    await manager.generateSegments(0, 10)
+    expect([...manager.segments.values()][0].pixelsPerSecond).toBe(100)
+
+    expect(manager.updateSegmentPositions(100, 200)).toBe(false)
+    expect(manager.updateSegmentPositions(200, 400)).toBe(true)
+  })
+
+  it('recomputes, rather than redraws, segments more than 2x from the current zoom', async () => {
+    let pixelsPerSecond = 100
+    const computed: Array<[number, number]> = []
+    const manager = new SegmentManager(
+      makeDeps({
+        getPixelsPerSecond: () => pixelsPerSecond,
+        computeSegmentFrequencies: async (start, end) => {
+          computed.push([start, end])
+          return [[new Uint8Array([1, 2, 3])]]
+        },
+        renderSegment: async (segment) => {
+          segment.canvas = makeCanvas()
+          document.body.appendChild(segment.canvas)
+        },
+      }),
+    )
+    await manager.renderVisibleWindow()
+    const [stale] = manager.segments.values()
+
+    pixelsPerSecond = 400
+    manager.updateSegmentPositions(100, 400)
+    computed.length = 0
+    await manager.updateVisibleSegmentQuality()
+
+    expect(stale.canvas?.isConnected).toBe(false)
+    expect(computed).toEqual([[0, 3.75]])
+    expect([...manager.segments.values()].map((segment) => segment.pixelsPerSecond)).toEqual([400])
+  })
+})
