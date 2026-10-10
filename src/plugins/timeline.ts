@@ -15,8 +15,8 @@ export type TimelinePluginOptions = {
   container?: HTMLElement | string
   /**
    * Pass 'beforebegin' to insert the timeline on top of the waveform. In the default container it gets its own
-   * space above the waveform (the player grows by `height`). With a custom `container` no space is reserved and
-   * the timeline is positioned at the top of that container.
+   * space above the waveform (the player grows by `height`). With a custom `container`, no space is reserved;
+   * absolute positioning remains relative to the nearest positioned ancestor.
    */
   insertPosition?: InsertPosition
   /** The duration of the timeline in seconds, defaults to wavesurfer's duration */
