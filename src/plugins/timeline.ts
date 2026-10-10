@@ -13,7 +13,11 @@ export type TimelinePluginOptions = {
   height?: number
   /** HTML element or selector for a timeline container, defaults to wavesufer's container */
   container?: HTMLElement | string
-  /** Pass 'beforebegin' to insert the timeline on top of the waveform */
+  /**
+   * Pass 'beforebegin' to insert the timeline on top of the waveform. In the default container it gets its own
+   * space above the waveform (the player grows by `height`). With a custom `container` no space is reserved and
+   * the timeline is positioned at the top of that container.
+   */
   insertPosition?: InsertPosition
   /** The duration of the timeline in seconds, defaults to wavesurfer's duration */
   duration?: number
@@ -57,12 +61,93 @@ export type TimelinePluginEvents = BasePluginEvents & {
   ready: []
 }
 
+// Top timelines sharing one scroll container reserve space above the waveform together. The stack
+// remembers the container's own padding (a stylesheet may set it, e.g. through ::part(scroll)) and
+// its inline declaration, so that spacing is kept while any timeline is active and the original
+// declaration is put back when the last one goes. Every add or remove re-lays out all the entries,
+// so destroying timelines in any order keeps the remaining ones sitting right above the waveform.
+type TopReservation = { height: number; place: (offset: number) => void }
+type TopStack = { basePadding: number; inlineValue: string; inlinePriority: string; entries: TopReservation[] }
+const topStacks = new WeakMap<HTMLElement, TopStack>()
+
+function restoreInlinePadding(scrollContainer: HTMLElement, stack: TopStack) {
+  if (stack.inlineValue) scrollContainer.style.setProperty('padding-top', stack.inlineValue, stack.inlinePriority)
+  else scrollContainer.style.removeProperty('padding-top')
+}
+
+// The page's own padding, as it is right now. Our reservation hides it (it is important), so put the
+// original inline declaration back first; the caller lays the stack out again straight afterwards.
+function measureBasePadding(scrollContainer: HTMLElement, stack: TopStack): number {
+  restoreInlinePadding(scrollContainer, stack)
+  return parseFloat(getComputedStyle(scrollContainer).paddingTop) || 0
+}
+
+function layoutTopStack(scrollContainer: HTMLElement, stack: TopStack) {
+  let offset = 0
+  for (const entry of stack.entries) {
+    offset += entry.height
+    entry.place(offset)
+  }
+  // `important`: a page rule on the container (e.g. `::part(scroll) { padding-top }`) comes from an
+  // outer tree context and beats a normal inline declaration, which would leave the timeline
+  // clipped above the container. Its value is already part of basePadding, so it isn't lost.
+  scrollContainer.style.setProperty('padding-top', `${stack.basePadding + offset}px`, 'important')
+}
+
+/**
+ * Reserves `height` px above the waveform. Returns a function that gives it back and one that
+ * re-reads the page's padding (it can change with the viewport, e.g. in a media query) and re-lays
+ * out, since the reservation freezes whatever padding was there when it was made.
+ */
+function reserveTopSpace(scrollContainer: HTMLElement, height: number, place: (offset: number) => void) {
+  let stack = topStacks.get(scrollContainer)
+  if (!stack) {
+    stack = {
+      basePadding: parseFloat(getComputedStyle(scrollContainer).paddingTop) || 0,
+      inlineValue: scrollContainer.style.getPropertyValue('padding-top'),
+      inlinePriority: scrollContainer.style.getPropertyPriority('padding-top'),
+      entries: [],
+    }
+    topStacks.set(scrollContainer, stack)
+  }
+  const entry: TopReservation = { height, place }
+  stack.entries.push(entry)
+  layoutTopStack(scrollContainer, stack)
+
+  const release = () => {
+    const index = stack.entries.indexOf(entry)
+    if (index === -1) return
+    stack.entries.splice(index, 1)
+    if (stack.entries.length) {
+      layoutTopStack(scrollContainer, stack)
+      return
+    }
+    topStacks.delete(scrollContainer)
+    restoreInlinePadding(scrollContainer, stack)
+  }
+
+  const refresh = () => {
+    // Every top timeline registers this for the same events but they share one stack, so only the
+    // first live entry does the work. When it is released the next one becomes the first, and takes over.
+    if (stack.entries[0] !== entry) return
+    const base = measureBasePadding(scrollContainer, stack)
+    // Re-lay out either way: measuring put the original inline declaration back
+    stack.basePadding = base
+    layoutTopStack(scrollContainer, stack)
+  }
+
+  return { release, refresh }
+}
+
 const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents, object>(
   'TimelinePlugin',
   (ctx, options) => {
     const opts: TimelinePluginOptions & typeof defaultOptions = Object.assign({}, defaultOptions, options)
 
     const timelineWrapper = createElement('div', { part: 'timeline-wrapper', style: { pointerEvents: 'none' } })
+    // How far above the waveform a top timeline sits (px): its own height plus that of the top
+    // timelines registered before it. Kept up to date by reserveTopSpace().
+    let reservedTop = 0
 
     // Notch metadata for batch visibility updates, and the currently rendered
     // timeline element (rebuilt on every initTimeline() call).
@@ -170,7 +255,7 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
           ...(isTop
             ? {
                 position: 'absolute',
-                top: '0',
+                top: `${-reservedTop}px`,
                 left: '0',
                 right: '0',
                 zIndex: '2',
@@ -247,6 +332,24 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
       container.appendChild(timelineWrapper)
     }
     ctx.scope.add(() => timelineWrapper.remove())
+
+    // A top timeline inside the waveform gets its own space above it, like a bottom one does,
+    // instead of being drawn over the waveform's top edge where high peaks run under the labels
+    // (#3551). The space is padding on the scroll container, so the waveform, progress and cursor
+    // move down together; the timeline sits in it at a negative top and still scrolls with them.
+    // Each top timeline stacks above the ones registered before it.
+    const scrollContainer = ctx.wavesurfer.getWrapper().parentElement
+    if (opts.insertPosition === 'beforebegin' && container === ctx.wavesurfer.getWrapper() && scrollContainer) {
+      const { release, refresh } = reserveTopSpace(scrollContainer, opts.height, (offset) => {
+        reservedTop = offset
+        if (currentTimeline) currentTimeline.style.top = `${-offset}px`
+      })
+      ctx.scope.add(release)
+      // The page's own padding can change with the viewport (a media query), but the reservation
+      // overrides it, so re-read it when the waveform re-renders or the window is resized.
+      ctx.scope.add(ctx.wavesurfer.on('redraw', refresh))
+      ctx.scope.listen(window, 'resize', refresh)
+    }
 
     // Get reactive state
     const { duration } = ctx.state
