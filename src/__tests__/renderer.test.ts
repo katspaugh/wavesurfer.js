@@ -347,18 +347,23 @@ describe('Renderer', () => {
     expect(renderer.getScroll()).toBe(450)
   })
 
-  test('auto-centering centers a cursor that starts playing off-center and moves further than the smoothing step', () => {
+  test('auto-centering catches up a step at a time with a cursor that starts playing off-center', () => {
     ;(renderer as any).options.autoScroll = true
     ;(renderer as any).options.autoCenter = true
     ;(renderer as any).isScrollable.set(true)
-    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 100 })
-    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
-    // 1000 px over 2 s = 500 px/s, within the smoothed range
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 128 })
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 1024 })
+    // 1024 px over 2 s = 512 px/s, within the smoothed range
     ;(renderer as any).audioData = { duration: 2 }
     renderer.setScroll(0)
-    renderer.renderProgress(0.08) // paused, cursor clicked to 80, right of center
-    renderer.renderProgress(0.095, true) // playing, cursor moves 15 px
-    expect(renderer.getScroll()).toBe(45) // cursor at 95, the center of the view
+    renderer.renderProgress(96 / 1024) // paused, cursor clicked to 96, 32 px right of center
+    renderer.renderProgress(112 / 1024, true) // playing, cursor moves 16 px, now 48 px right of center
+    // The view moves at most the 10 px step more than the cursor did, not all the way to it
+    expect(renderer.getScroll()).toBe(26)
+    renderer.renderProgress(128 / 1024, true)
+    renderer.renderProgress(144 / 1024, true)
+    renderer.renderProgress(160 / 1024, true)
+    expect(renderer.getScroll()).toBe(96) // cursor at 160, the center of the view
   })
 
   test('auto-centering keeps the cursor centered when zoomed out during playback', () => {

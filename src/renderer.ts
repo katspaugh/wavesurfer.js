@@ -942,8 +942,7 @@ class Renderer {
       return
     } else {
       // How far the cursor has moved since the previous update, at the current
-      // zoom, so that the scroll below centers it outright when it moves further
-      // than the smoothing step, as it does when updates are slower than 60/s
+      // zoom: further than the smoothing step when updates are slower than 60/s
       const moved = this.lastProgress === undefined ? 0 : (progress - this.lastProgress) * scrollWidth
       this.lastProgress = progress
 
@@ -964,8 +963,12 @@ class Renderer {
         }
 
         const pixelsPerSecond = scrollWidth / duration
-        if (pixelsPerSecond <= LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD && moved <= SMOOTH_SCROLL_MAX_DELTA) {
-          this.scrollContainer.scrollLeft += Math.min(center, SMOOTH_SCROLL_MAX_DELTA)
+        if (pixelsPerSecond <= LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD) {
+          // At most the smoothing step, or where the cursor has moved further
+          // than that, at most the step more than it moved, so that the view
+          // keeps gaining on it a step at a time
+          const step = moved > SMOOTH_SCROLL_MAX_DELTA ? moved + SMOOTH_SCROLL_MAX_DELTA : SMOOTH_SCROLL_MAX_DELTA
+          this.scrollContainer.scrollLeft += Math.min(center, step)
         } else {
           this.scrollContainer.scrollLeft += center
         }
