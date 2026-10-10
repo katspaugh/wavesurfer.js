@@ -366,6 +366,27 @@ describe('Renderer', () => {
     expect(renderer.getScroll()).toBe(96) // cursor at 160, the center of the view
   })
 
+  test('auto-centering measures movement since the previous update, even one that did not scroll', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable.set(true)
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 128 })
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 1024 })
+    // 1024 px over 2 s = 512 px/s, within the smoothed range
+    ;(renderer as any).audioData = { duration: 2 }
+    renderer.setScroll(0)
+    renderer.renderProgress(64 / 1024, true) // cursor at 64, the center of the view
+    // Auto-scroll off for three updates of 16 px: the view stays where it is
+    ;(renderer as any).options.autoScroll = false
+    renderer.renderProgress(80 / 1024, true)
+    renderer.renderProgress(96 / 1024, true)
+    renderer.renderProgress(112 / 1024, true)
+    ;(renderer as any).options.autoScroll = true
+    renderer.renderProgress(128 / 1024, true) // cursor moves 16 px, now 64 px right of center
+    // The step counts only those 16 px, not the 64 since the last scroll
+    expect(renderer.getScroll()).toBe(26)
+  })
+
   test('auto-centering keeps the cursor centered when zoomed out during playback', () => {
     ;(renderer as any).options.autoScroll = true
     ;(renderer as any).options.autoCenter = true

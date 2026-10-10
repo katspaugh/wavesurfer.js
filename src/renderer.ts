@@ -930,7 +930,7 @@ class Renderer {
     this.reRender()
   }
 
-  private scrollIntoView(progress: number, isPlaying = false) {
+  private scrollIntoView(progress: number, isPlaying = false, previousProgress?: number) {
     const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
     const progressWidth = progress * scrollWidth
     const startEdge = scrollLeft
@@ -943,8 +943,7 @@ class Renderer {
     } else {
       // How far the cursor has moved since the previous update, at the current
       // zoom: further than the smoothing step when updates are slower than 60/s
-      const moved = this.lastProgress === undefined ? 0 : (progress - this.lastProgress) * scrollWidth
-      this.lastProgress = progress
+      const moved = previousProgress === undefined ? 0 : (progress - previousProgress) * scrollWidth
 
       // Where the view starts once a cursor out of view is brought into it
       let viewStart = scrollLeft
@@ -978,6 +977,10 @@ class Renderer {
 
   renderProgress(progress: number, isPlaying?: boolean) {
     if (isNaN(progress)) return
+    // Kept on every update, scrolled or not (dragging, auto-scroll off), so
+    // that the next scroll measures only the cursor's movement since this one
+    const previousProgress = this.lastProgress
+    this.lastProgress = progress
     const percents = progress * 100
     this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
     this.progressWrapper.style.width = `${percents}%`
@@ -988,7 +991,7 @@ class Renderer {
 
     // Only scroll if we have valid audio data to prevent race conditions during loading
     if (this.isScrollable.value && this.options.autoScroll && this.audioData && this.audioData.duration > 0) {
-      this.scrollIntoView(progress, isPlaying)
+      this.scrollIntoView(progress, isPlaying, previousProgress)
     }
   }
 
