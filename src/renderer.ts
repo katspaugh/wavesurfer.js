@@ -946,12 +946,15 @@ class Renderer {
       const moved = this.lastProgressWidth === undefined ? 0 : progressWidth - this.lastProgressWidth
       this.lastProgressWidth = progressWidth
 
+      // Where the view starts once a cursor out of view is brought into it
+      let viewStart = scrollLeft
       if (progressWidth < startEdge || progressWidth > endEdge) {
-        this.scrollContainer.scrollLeft = progressWidth - (this.options.autoCenter ? middle : 0)
+        viewStart = progressWidth - (this.options.autoCenter ? middle : 0)
+        this.scrollContainer.scrollLeft = viewStart
       }
 
       // Keep the cursor centered when playing
-      const center = progressWidth - scrollLeft - middle
+      const center = progressWidth - viewStart - middle
       if (isPlaying && this.options.autoCenter && center > 0) {
         const duration = this.audioData?.duration
         if (duration === undefined || duration <= 0) {

@@ -333,6 +333,20 @@ describe('Renderer', () => {
     expect(renderer.getScroll() - before).toBe(15)
   })
 
+  test('auto-centering leaves the cursor centered after a forward seek during playback', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable.set(true)
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
+    // 1000 px over 2 s = 500 px/s, within the smoothed range
+    ;(renderer as any).audioData = { duration: 2 }
+    renderer.setScroll(0)
+    renderer.renderProgress(0.05, true) // cursor at 50, the center of the view
+    renderer.renderProgress(0.5, true) // seek to 500, out of view: the view moves to center it
+    expect(renderer.getScroll()).toBe(450)
+  })
+
   test('renderProgress updates styles', () => {
     renderer.renderProgress(0.5)
     expect((renderer as any).progressWrapper.style.width).toBe('50%')
