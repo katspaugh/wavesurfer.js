@@ -139,6 +139,8 @@ function reserveTopSpace(scrollContainer: HTMLElement, height: number, place: (o
   return { release, refresh }
 }
 
+type PendingNotch = { start: number; element: HTMLElement }
+
 const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents, object>(
   'TimelinePlugin',
   (ctx, options) => {
@@ -190,29 +192,24 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
       return 2
     }
 
-    function virtualAppend(start: number, container: HTMLElement, element: HTMLElement) {
-      // Append BEFORE measuring: a detached element's clientWidth is always 0,
-      // which would make the culling condition below degenerate (no label was
-      // ever culled for overflowing the visible window). The timeline element
-      // is already attached to the document at this point (see initTimeline).
+    // Append all notches first, then measure them in one pass (a single layout),
+    // then remove the ones outside the visible window.
+    function virtualAppend(start: number, container: HTMLElement, element: HTMLElement, pending: PendingNotch[]) {
       container.appendChild(element)
-      const width = element.clientWidth
+      pending.push({ start, element })
+    }
 
-      // Initial render check
+    function flushNotches(pending: PendingNotch[]) {
       const scrollLeft = ctx.wavesurfer.getScroll()
       const scrollRight = scrollLeft + ctx.wavesurfer.getWidth()
-      const isVisible = start >= scrollLeft && start + width < scrollRight
+      const widths = pending.map(({ element }) => element.clientWidth)
 
-      // Store notch metadata for batch updates
-      notchElements.set(element, {
-        start,
-        width,
-        wasVisible: isVisible,
+      pending.forEach(({ start, element }, i) => {
+        const width = widths[i]
+        const isVisible = start >= scrollLeft && start + width < scrollRight
+        notchElements.set(element, { start, width, wasVisible: isVisible })
+        if (!isVisible) element.remove()
       })
-
-      if (!isVisible) {
-        element.remove()
-      }
     }
 
     function updateVisibleNotches(scrollLeft: number, scrollRight: number, container: HTMLElement) {
@@ -297,6 +294,7 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
         },
       })
 
+      const pending: PendingNotch[] = []
       for (let i = 0, notches = 0; i < duration; i += timeInterval, notches++) {
         const notch = notchEl.cloneNode() as HTMLElement
         const isPrimary =
@@ -318,8 +316,9 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
 
         const offset = (i + opts.timeOffset) * pxPerSec
         notch.style.left = `${offset}px`
-        virtualAppend(offset, timeline, notch)
+        virtualAppend(offset, timeline, notch, pending)
       }
+      flushNotches(pending)
 
       ctx.emit('ready')
     }
