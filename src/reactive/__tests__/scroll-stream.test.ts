@@ -255,6 +255,38 @@ describe('scroll-stream', () => {
       stream.cleanup()
     })
 
+    it('updates percentages and bounds before notifying either on a scroll event', () => {
+      // Regression: scrollData.set() used to run unbatched, so percentages
+      // notified while bounds still held the previous scroll position -- a
+      // subscriber of both saw a half-updated state, then ran again.
+      const stream = createScrollStream(element)
+      const boundsLeftSeen: number[] = []
+      stream.percentages.subscribe(() => boundsLeftSeen.push(stream.bounds.value.left))
+      stream.bounds.subscribe(() => boundsLeftSeen.push(stream.bounds.value.left))
+
+      Object.defineProperty(element, 'scrollLeft', { value: 200, writable: true, configurable: true })
+      element.dispatchEvent(new Event('scroll'))
+
+      expect(boundsLeftSeen).toEqual([200, 200])
+
+      stream.cleanup()
+    })
+
+    it('updates percentages and bounds before notifying either on refresh()', () => {
+      const stream = createScrollStream(element)
+      const boundsLeftSeen: number[] = []
+      stream.percentages.subscribe(() => boundsLeftSeen.push(stream.bounds.value.left))
+      stream.bounds.subscribe(() => boundsLeftSeen.push(stream.bounds.value.left))
+
+      Object.defineProperty(element, 'scrollLeft', { value: 250, writable: true, configurable: true })
+      Object.defineProperty(element, 'scrollWidth', { value: 2000, writable: true, configurable: true })
+      stream.refresh()
+
+      expect(boundsLeftSeen).toEqual([250, 250])
+
+      stream.cleanup()
+    })
+
     it('should cleanup event listeners', () => {
       const stream = createScrollStream(element)
       const addSpy = jest.spyOn(element, 'addEventListener')

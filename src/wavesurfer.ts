@@ -424,11 +424,37 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
     // pairing the renderer's old internal scroll effect used
     {
       const { percentages, bounds } = this.renderer.getScrollSignals()
+      // A scroll updates both signals, so this effect runs once per signal.
+      // Both already hold the new metrics by then (the scroll stream batches
+      // its writes), so the second run would emit the very same event again:
+      // skip a run that repeats the last emission.
+      let emitted = false
+      let lastStartX = 0
+      let lastEndX = 0
+      let lastLeft = 0
+      let lastRight = 0
+      let lastDuration = 0
       this.scope.add(
         effect(() => {
           const { startX, endX } = percentages.value
           const { left: scrollLeft, right: scrollRight } = bounds.value
           const duration = this.getDuration()
+          if (
+            emitted &&
+            startX === lastStartX &&
+            endX === lastEndX &&
+            scrollLeft === lastLeft &&
+            scrollRight === lastRight &&
+            duration === lastDuration
+          ) {
+            return
+          }
+          emitted = true
+          lastStartX = startX
+          lastEndX = endX
+          lastLeft = scrollLeft
+          lastRight = scrollRight
+          lastDuration = duration
           this.wavesurferActions.setScrollPosition(scrollLeft)
           this.emit('scroll', startX * duration, endX * duration, scrollLeft, scrollRight)
         }, [percentages, bounds]),
