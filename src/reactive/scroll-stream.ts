@@ -5,7 +5,7 @@
  * Automatically handles scroll event optimization and cleanup.
  */
 
-import { signal, computed, type Signal } from './store.js'
+import { signal, computed, batch, type Signal } from './store.js'
 
 export interface ScrollData {
   /** Current scroll position in pixels */
@@ -131,9 +131,17 @@ export function createScrollStream(element: HTMLElement): ScrollStream {
     return calculateScrollBounds(scrollData.value)
   }, [scrollData])
 
+  // Publish new metrics inside a batch. `percentages` and `bounds` both derive
+  // from `scrollData`; unbatched they update one after the other, so a
+  // subscriber of both (the 'scroll' bridge in WaveSurfer) ran once between the
+  // two updates, seeing the new percentages next to the OLD bounds, and then
+  // again with consistent values. Batched, both have updated before either
+  // notifies, so every subscriber only ever sees the new metrics.
+  const publish = (next: ScrollData) => batch(() => scrollData.set(next))
+
   // Update scroll data on scroll event
   const onScroll = () => {
-    scrollData.set(readScrollData())
+    publish(readScrollData())
   }
 
   // Attach scroll listener
@@ -158,7 +166,7 @@ export function createScrollStream(element: HTMLElement): ScrollStream {
     ) {
       return
     }
-    scrollData.set(next)
+    publish(next)
   }
 
   // Cleanup function

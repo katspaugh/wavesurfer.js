@@ -59,6 +59,7 @@ jest.mock('../decoder.js', () => {
 })
 import WaveSurfer from '../wavesurfer.js'
 import { BasePlugin } from '../base-plugin.js'
+import { batch } from '../reactive/store.js'
 import * as RendererModule from '../renderer.js'
 import * as FrameSchedulerModule from '../frame-scheduler.js'
 const getRenderer = (RendererModule as any).getLastInstance as () => any
@@ -480,6 +481,34 @@ describe('WaveSurfer public methods', () => {
     // The public 'scroll' event still emits time-scaled values, unaffected by
     // the new action call above.
     expect(scrollSpy).toHaveBeenCalledWith(20, 40, 200, 400)
+    ws.destroy()
+  })
+
+  test('emits one scroll event per scroll when both scroll signals update together', () => {
+    const ws = createWs()
+    const renderer = getRenderer()
+
+    jest.spyOn(ws, 'getDuration').mockReturnValue(100)
+    const scrollSpy = jest.fn()
+    ws.on('scroll', scrollSpy)
+
+    // The scroll stream writes both signals in one batch: the bridge effect
+    // runs once per signal, but only the first run may emit
+    batch(() => {
+      renderer.scrollSignals.percentages.set({ startX: 0.2, endX: 0.4 })
+      renderer.scrollSignals.bounds.set({ left: 200, right: 400 })
+    })
+    expect(scrollSpy).toHaveBeenCalledTimes(1)
+    expect(scrollSpy).toHaveBeenLastCalledWith(20, 40, 200, 400)
+
+    // A later scroll to a new position still emits, again exactly once
+    batch(() => {
+      renderer.scrollSignals.percentages.set({ startX: 0.3, endX: 0.5 })
+      renderer.scrollSignals.bounds.set({ left: 300, right: 500 })
+    })
+    expect(scrollSpy).toHaveBeenCalledTimes(2)
+    expect(scrollSpy).toHaveBeenLastCalledWith(30, 50, 300, 500)
+    expect(ws.getState().scrollPosition.value).toBe(300)
     ws.destroy()
   })
 
