@@ -1156,6 +1156,10 @@ export function spectrogramSetup(
       )
       return
     }
+    await fetchAndDrawFrequencies(url)
+  }
+
+  async function fetchAndDrawFrequencies(url: string | URL, beforeReady?: () => void): Promise<void> {
     const resp = await fetch(url)
     if (!resp.ok) {
       throw new Error('Unable to fetch frequencies data')
@@ -1167,7 +1171,7 @@ export function spectrogramSetup(
     // produce plain number arrays (never real Uint8Array instances), but every consumer below
     // only relies on indexing/length/iteration, which plain arrays support identically. Not
     // runtime-validated, matching the pre-port behavior.
-    drawSpectrogram(data as Uint8Array[][])
+    drawSpectrogram(data as Uint8Array[][], beforeReady)
   }
 
   async function getFrequenciesData(): Promise<Uint8Array[][] | null> {
@@ -1315,7 +1319,8 @@ export function spectrogramSetup(
   // A change made while a draw ran (from a 'ready' or 'error' listener) gets a draw of its own
   function redrawIfChanged(version: number): void {
     if (version < 0 || version === stateVersion || isRenderPending() || ctx.scope.disposed) return
-    if (analysisFailed()) {
+    // After a failed analysis nothing is retained to redraw; a failed draw keeps its data
+    if (analysisFailed() && !frequenciesDataUrl && !cachedFrequencies) {
       settleRequests(stateVersion, null, (request) => request.generation === null)
     } else {
       redrawSettings()
@@ -1431,8 +1436,9 @@ export function spectrogramSetup(
     const failed = analysisFailed()
     const analysisPending = appliedGeneration !== analysisGeneration && !failed
     const idle = !isRenderPending() && !analysisPending
-    // Failed and idle: nothing is retained to redraw, so the values apply to the next draw
-    if (failed && idle) return Promise.resolve()
+    // Failed and idle: a call that changes nothing has no draw to wait for. A display change
+    // still redraws below when a failed draw left its data in place
+    if (failed && idle && !displayChanged) return Promise.resolve()
     // Nothing changed and the current options are drawn, even if another redraw is scheduled
     if (!displayChanged && !failed && !analysisPending && appliedVersion === stateVersion) return Promise.resolve()
     if (idle && displayChanged && !frequenciesDataUrl && !cachedFrequencies) {
@@ -1495,10 +1501,15 @@ export function spectrogramSetup(
     analysisFailure = null
     let version = -1
     let failed = false
+    let completed = false
+    const completeBeforeReady = () => {
+      completed = true
+      completeDraw(drawVersion, generation)
+    }
 
     try {
       if (frequenciesDataUrl) {
-        await loadFrequenciesData(frequenciesDataUrl)
+        await fetchAndDrawFrequencies(frequenciesDataUrl, completeBeforeReady)
         if (ctx.scope.disposed) return
         version = drawVersion
       } else {
@@ -1509,7 +1520,7 @@ export function spectrogramSetup(
           if (ctx.scope.disposed || !frequencies || generation !== analysisGeneration) return
           // Draw what this render computed (cache hit, fresh data, or empty on failure)
           // rather than whatever the cache field holds
-          drawSpectrogram(frequencies)
+          drawSpectrogram(frequencies, completeBeforeReady)
           version = drawVersion
         }
       }
@@ -1519,7 +1530,8 @@ export function spectrogramSetup(
       failed = true
     } finally {
       isRendering = false
-      if (version >= 0 && !failed) completeDraw(version, generation)
+      // A draw without 'ready' (empty data, zero width) is settled here
+      if (version >= 0 && !failed && !completed) completeDraw(version, generation)
       runQueuedRerender()
       redrawIfChanged(version)
     }
@@ -1539,10 +1551,14 @@ export function spectrogramSetup(
     analysisFailure = null
     let version = -1
     let failed = false
+    let completed = false
 
     try {
       // Use cached frequencies for fast re-render
-      drawSpectrogram(cachedFrequencies)
+      drawSpectrogram(cachedFrequencies, () => {
+        completed = true
+        completeDraw(drawVersion, generation)
+      })
       version = drawVersion
       lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
     } catch (error) {
@@ -1550,7 +1566,7 @@ export function spectrogramSetup(
       failed = true
     } finally {
       isRendering = false
-      if (!failed) completeDraw(version, generation)
+      if (!failed && !completed) completeDraw(version, generation)
       runQueuedRerender()
       redrawIfChanged(version)
     }
@@ -1644,7 +1660,7 @@ export function spectrogramSetup(
   // reachable via loadFrequenciesData's externally-supplied JSON, see
   // SpectrogramPluginOptions.frequenciesDataUrl. Both shapes are duck-type compatible for the
   // emptiness check below (Uint8Array and Uint8Array[] both have a numeric .length).
-  function drawSpectrogram(input: Uint8Array[][] | Uint8Array[]): void {
+  function drawSpectrogram(input: Uint8Array[][] | Uint8Array[], beforeReady?: () => void): void {
     drawVersion = stateVersion
     if (!input || input.length === 0 || input.every((channel) => !channel || channel.length === 0)) {
       // Nothing to draw (failed computation, or a buffer too short for a single FFT frame):
@@ -1831,6 +1847,9 @@ export function spectrogramSetup(
       )
     }
 
+    // Settle the requests this draw shows before listeners run, so their actions only affect
+    // later requests
+    beforeReady?.()
     ctx.emit('ready')
   }
 

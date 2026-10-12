@@ -578,6 +578,56 @@ describe('SpectrogramPlugin setOptions in full rendering mode', () => {
       expect(h.events.error).toHaveBeenCalledTimes(1)
     })
 
+    it('redraws a display change after a failed cached redraw from the retained data', async () => {
+      const h = createPlugin()
+      await firstDraw()
+      throwOnDraw()
+      const failing = track(h.plugin.setOptions({ height: 250 }))
+      nextFrame()
+      await flush()
+      expect(failing.state).toBe('rejected')
+      expect(h.events.error).toHaveBeenCalledTimes(1)
+
+      restoreDraw()
+      const readyBefore = h.events.ready.mock.calls.length
+      const recovery = track(h.plugin.setOptions({ height: 260 }))
+      await flush()
+      expect(recovery.state).toBe('pending')
+
+      nextFrame()
+      await flush()
+      expect(recovery.state).toBe('resolved')
+      expect(h.events.ready).toHaveBeenCalledTimes(readyBefore + 1)
+      expect(h.internals.canvases[0].style.height).toBe('260px')
+      expect(posted()).toHaveLength(1)
+    })
+
+    it('redraws a display change made from the error listener of a failed cached redraw', async () => {
+      const h = createPlugin()
+      await firstDraw()
+      let fromListener: Settled | undefined
+      h.plugin.on(
+        'error',
+        () => {
+          restoreDraw()
+          fromListener = track(h.plugin.setOptions({ height: 300 }))
+        },
+        { once: true },
+      )
+      throwOnDraw()
+      const failing = track(h.plugin.setOptions({ height: 250 }))
+      nextFrame()
+      await flush()
+      expect(failing.state).toBe('rejected')
+      expect(fromListener?.state).toBe('pending')
+
+      nextFrame()
+      await flush()
+      expect(fromListener?.state).toBe('resolved')
+      expect(h.internals.canvases[0].style.height).toBe('300px')
+      expect(h.events.error).toHaveBeenCalledTimes(1)
+    })
+
     it('emits and rejects when the frame redraw throws', async () => {
       const h = createPlugin()
       await firstDraw()
@@ -770,6 +820,53 @@ describe('SpectrogramPlugin setOptions in full rendering mode', () => {
       expect(h.internals.canvases[0].style.height).toBe('300px')
     })
 
+    it.each(['display', 'analysis', 'frequenciesDataUrl'])(
+      'settles the drawn request before a ready listener destroys the plugin (%s draw)',
+      async (kind) => {
+        const originalFetch = global.fetch
+        const data = [Array.from({ length: FRAMES }, () => Array.from({ length: BINS }, () => 100))]
+        global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => data }) as any
+        try {
+          const url = kind === 'frequenciesDataUrl'
+          const h = createPlugin(
+            url
+              ? { frequenciesDataUrl: 'https://example.com/frequencies.json', sampleRate: 8000, useWebWorker: false }
+              : {},
+          )
+          if (url) {
+            jest.advanceTimersByTime(50)
+            await flush()
+          } else {
+            await firstDraw()
+          }
+
+          const drawn = track(h.plugin.setOptions(kind === 'analysis' ? { fftSamples: 1024 } : { height: 250 }))
+          let later: Settled | undefined
+          h.plugin.on(
+            'ready',
+            () => {
+              later = track(h.plugin.setOptions({ height: 300 }))
+              h.plugin.destroy()
+            },
+            { once: true },
+          )
+          if (kind === 'display') {
+            nextFrame()
+          } else {
+            jest.advanceTimersByTime(50)
+            if (kind === 'analysis') respond()
+          }
+          await flush()
+
+          expect(drawn.state).toBe('resolved')
+          expect(later?.state).toBe('rejected')
+          expect(later?.error.name).toBe('AbortError')
+        } finally {
+          global.fetch = originalFetch
+        }
+      },
+    )
+
     it('rejects pending requests with AbortError on destroy, and calls made after it', async () => {
       const h = createPlugin()
       await firstDraw()
@@ -787,6 +884,32 @@ describe('SpectrogramPlugin setOptions in full rendering mode', () => {
       expect(afterDestroy.state).toBe('rejected')
       expect(afterDestroy.error.name).toBe('AbortError')
     })
+  })
+
+  it('settles a drawn analysis when a ready listener starts a newer one', async () => {
+    const h = createPlugin()
+    await firstDraw()
+    let newer: Settled | undefined
+    const drawn = track(h.plugin.setOptions({ fftSamples: 1024 }))
+    h.plugin.on(
+      'ready',
+      () => {
+        newer = track(h.plugin.setOptions({ fftSamples: 2048 }))
+      },
+      { once: true },
+    )
+    jest.advanceTimersByTime(50)
+    respond()
+    await flush()
+
+    expect(drawn.state).toBe('resolved')
+    expect(newer?.state).toBe('pending')
+
+    jest.advanceTimersByTime(50)
+    expect(lastPosted().options.fftSamples).toBe(2048)
+    respond()
+    await flush()
+    expect(newer?.state).toBe('resolved')
   })
 
   it('settles a display change made from a ready listener with the next draw, not the current one', async () => {
