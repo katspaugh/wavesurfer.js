@@ -244,6 +244,36 @@ type WorkerRequest = {
 }
 type WorkerFrequenciesMessage = { type: string; id: string; result?: Uint8Array[][]; error?: string }
 
+/** A pending setOptions() call, settled by the first draw that read its state */
+type SettingsRequest = {
+  version: number
+  // The analysis generation it waits for (rejected when a newer one starts), or null when any
+  // later draw settles it
+  generation: number | null
+  resolve: () => void
+  reject: (error: unknown) => void
+}
+
+type OptionKey = keyof SpectrogramPluginOptions
+
+// setOptions() option classes; every other option is fixed after creation
+const DISPLAY_KEYS: OptionKey[] = ['height', 'frequencyMin', 'frequencyMax', 'colorMap']
+const ANALYSIS_KEYS: OptionKey[] = [
+  'fftSamples',
+  'fftSize',
+  'noverlap',
+  'windowFunc',
+  'alpha',
+  'scale',
+  'gainDB',
+  'rangeDB',
+  'preEmphasis',
+  'autoGain',
+  'dynamicCompression',
+  'splitChannels',
+]
+const POLICY_KEYS: OptionKey[] = ['workerTimeout', 'fallbackToMainThread']
+
 /**
  * Test-only introspection/poking surface. The pre-port class exposed all of this as plain
  * instance fields, which the existing spectrogram unit test suite (predating this port) pokes
@@ -310,6 +340,29 @@ export type Api = {
    * lives in segmentManager instead; see loadFrequenciesData's doc comment for why.
    */
   clearCache: () => void
+  /**
+   * Change options without re-creating the plugin. The promise resolves once the change has been
+   * drawn (after that draw's 'ready' event). Not supported in 'windowed' rendering mode, where it
+   * warns and returns a rejected promise.
+   * - Display options (height, frequencyMin, frequencyMax, colorMap) redraw from the retained
+   *   frequency data on the next animation frame, without a new analysis. Display changes made in
+   *   the same frame share one redraw.
+   * - Analysis options (fftSamples, fftSize, noverlap, windowFunc, alpha, scale, gainDB, rangeDB,
+   *   preEmphasis, autoGain, dynamicCompression, splitChannels) recompute the frequencies. A newer
+   *   analysis change rejects the pending one with an AbortError, without an 'error' event, and
+   *   replaces a busy worker. A failed analysis emits 'error' and rejects with that error; the next
+   *   call with analysis options retries it.
+   * - workerTimeout applies to the next worker request, and fallbackToMainThread to the next worker
+   *   failure.
+   * - Every other option is fixed: it is accepted when equal to the value the plugin was created
+   *   with, and throws otherwise. With frequenciesDataUrl, the analysis options are fixed too.
+   *
+   * A call that changes nothing resolves once the current options have been drawn. Invalid options
+   * throw synchronously, and undefined values are ignored. Destroying the plugin rejects pending
+   * calls with an AbortError. A plugin that is destroyed and registered again starts from the
+   * options it was created with.
+   */
+  setOptions: (options: SpectrogramPluginOptions) => Promise<void>
   /** Windowed rendering only: current loading progress as a percentage (0-100); 100 in 'full' mode. */
   getLoadingProgress: () => number
   /** Windowed rendering only: stop progressive background loading if it's currently running. No-op in 'full' mode. */
@@ -392,6 +445,39 @@ export function validateOptions(options: SpectrogramPluginOptions): void {
 }
 
 /**
+ * The defaulted values of the options that setOptions() can change, shared by setup() and
+ * setOptions(). An automatic frequencyMax (0) is resolved separately, once data arrives.
+ */
+function resolveSettings(options: SpectrogramPluginOptions) {
+  const fftSize = options.fftSize
+  return {
+    // With fftSize set, fftSamples is a validated analysis-window length: only absent values get
+    // the default. Without it, the historical coercion of falsy values is preserved.
+    fftSamples: fftSize != null ? (options.fftSamples ?? 512) : options.fftSamples || 512,
+    fftSize,
+    height: options.height || 200,
+    // Will be calculated later based on canvas size when not set
+    noverlap: options.noverlap ?? null,
+    windowFunc: options.windowFunc || 'hann',
+    alpha: options.alpha,
+    // Getting file's original samplerate is difficult(#1248).
+    // So set 12kHz default to render like wavesurfer.js 5.x.
+    frequencyMin: options.frequencyMin || 0,
+    frequencyMax: options.frequencyMax || 0,
+    gainDB: options.gainDB ?? 20,
+    rangeDB: options.rangeDB ?? 80,
+    scale: options.scale || 'mel',
+    preEmphasis: options.preEmphasis ?? 0,
+    autoGain: options.autoGain ?? false,
+    dynamicCompression: options.dynamicCompression ?? 0,
+    workerTimeout: options.workerTimeout ?? 30000,
+    fallbackToMainThread: options.fallbackToMainThread ?? true,
+  }
+}
+
+type Settings = ReturnType<typeof resolveSettings>
+
+/**
  * The plugin's setup function, consumed by both plugins/spectrogram.ts's `SpectrogramPlugin` and
  * plugins/spectrogram-windowed.ts's deprecated `WindowedSpectrogramPlugin` shim, whose setup is
  * `(ctx, options) => spectrogramSetup(ctx, { ...options, rendering: 'windowed' })` - i.e.
@@ -417,33 +503,18 @@ export function spectrogramSetup(
   const frequenciesDataUrl = options.frequenciesDataUrl
 
   const useWebWorker = options.useWebWorker === true
-  const workerTimeout = options.workerTimeout ?? 30000
-  const fallbackToMainThread = options.fallbackToMainThread ?? true
 
-  const colorMap = setupColorMap(options.colorMap)
+  // The merged options as passed (validation, fixed-option checks, splitChannels fallback, label
+  // styling) and their defaulted values (computation and drawing); setOptions() replaces both
+  let currentOptions: SpectrogramPluginOptions = { ...options }
+  let settings = resolveSettings(options)
 
-  const fftSize = options.fftSize
-  // With fftSize set, fftSamples is a validated analysis-window length: only absent values get
-  // the default. Without it, the historical coercion of falsy values is preserved.
-  const fftSamples = fftSize != null ? (options.fftSamples ?? 512) : options.fftSamples || 512
-  const height = options.height || 200
-  // Will be calculated later based on canvas size when not set
-  const noverlap: number | null = options.noverlap ?? null
+  let colorMap = setupColorMap(options.colorMap)
 
-  const windowFunc = options.windowFunc || 'hann'
-  const alpha = options.alpha
+  // The effective maximum: an automatic (0) maximum is latched to the Nyquist frequency of the
+  // first data and kept for later buffers
+  let frequencyMax = settings.frequencyMax
 
-  // Getting file's original samplerate is difficult(#1248).
-  // So set 12kHz default to render like wavesurfer.js 5.x.
-  const frequencyMin = options.frequencyMin || 0
-  let frequencyMax = options.frequencyMax || 0
-
-  const gainDB = options.gainDB ?? 20
-  const rangeDB = options.rangeDB ?? 80
-  const scale = options.scale || 'mel'
-  const preEmphasis = options.preEmphasis ?? 0
-  const autoGain = options.autoGain ?? false
-  const dynamicCompression = options.dynamicCompression ?? 0
   // Per-instance override of the autoGain transient-memory budget (used by tests via
   // __spectrogramInternalsForTests().autoGainBudgetBytes).
   let autoGainBudgetBytes = AUTO_GAIN_BUFFER_BUDGET_BYTES
@@ -470,6 +541,20 @@ export function spectrogramSetup(
   let drawnCanvases: Record<number, boolean> = {}
   let canvases: HTMLCanvasElement[] = []
   let scrollUnsubscribe: (() => void) | null = null
+
+  // ---- setOptions() state ----
+  // Bumped by every analysis change: an older generation's result is never cached or drawn
+  let analysisGeneration = 0
+  // Bumped by every display or analysis change. A draw records the value it read, and settles the
+  // requests registered up to it
+  let stateVersion = 0
+  let drawVersion = -1
+  // The state and generation of the last completed draw
+  let appliedVersion = -1
+  let appliedGeneration = -1
+  let analysisFailure: { generation: number; error: Error } | null = null
+  let requests: SettingsRequest[] = []
+  let cancelSettingsRedraw: (() => void) | null = null
 
   // ---- DOM ----
   const wrapper = createElement('div', {
@@ -587,7 +672,7 @@ export function spectrogramSetup(
   // windowed (which read only options.splitChannels, ignoring the wavesurfer-level option) did
   // before this unification.
   function effectiveSplitChannels(): boolean {
-    return Boolean(options.splitChannels ?? ctx.wavesurfer?.options.splitChannels)
+    return Boolean(currentOptions.splitChannels ?? ctx.wavesurfer?.options.splitChannels)
   }
 
   // Normalizes a caught value into an Error and routes it to the plugin's own 'error' event,
@@ -597,7 +682,11 @@ export function spectrogramSetup(
   // invoked from a timer callback with nothing to await it), so an uncaught rejection there
   // would otherwise surface as an unhandled promise rejection instead of a normal plugin error.
   function emitAsError(error: unknown): void {
-    ctx.emit('error', error instanceof Error ? error : new Error(String(error)))
+    ctx.emit('error', toError(error))
+  }
+
+  function toError(error: unknown): Error {
+    return error instanceof Error ? error : new Error(String(error))
   }
 
   // Terminate the worker and reject in-flight requests so callers fall back to the main thread
@@ -687,7 +776,7 @@ export function spectrogramSetup(
       // (not a raw setTimeout) so a plugin destroy() while this is in flight cancels it too,
       // via disposeWorker() below being registered on ctx.scope's teardown.
       const timer =
-        workerTimeout > 0
+        settings.workerTimeout > 0
           ? ctx.scope.timeout(() => {
               if (workerPromises.has(id)) {
                 // A timed-out result can never be consumed (its id is dropped), so dispose
@@ -695,7 +784,7 @@ export function spectrogramSetup(
                 // render start a fresh worker instead of queueing behind a stuck one
                 disposeWorker(new Error('Worker timeout'))
               }
-            }, workerTimeout)
+            }, settings.workerTimeout)
           : undefined
       workerPromises.set(id, { resolve, reject, timer })
 
@@ -723,7 +812,8 @@ export function spectrogramSetup(
     const channels = effectiveSplitChannels() ? audioBuffer.numberOfChannels : 1
 
     // An explicit noverlap (including 0) is used as is; the width is only read for the automatic one
-    const requestNoverlap = noverlap ?? deriveNoverlap(fftSamples, null, audioBuffer.length, getWidth())
+    const requestNoverlap =
+      settings.noverlap ?? deriveNoverlap(settings.fftSamples, null, audioBuffer.length, getWidth())
 
     // Prepare audio data for worker
     const audioData: Float32Array[] = []
@@ -735,23 +825,24 @@ export function spectrogramSetup(
       startTime: 0,
       endTime: audioBuffer.duration,
       sampleRate: audioBuffer.sampleRate,
-      fftSamples,
-      fftSize,
-      windowFunc,
-      alpha,
+      fftSamples: settings.fftSamples,
+      fftSize: settings.fftSize,
+      windowFunc: settings.windowFunc,
+      alpha: settings.alpha,
       noverlap: requestNoverlap,
-      scale,
-      gainDB,
-      rangeDB,
-      preEmphasis,
-      autoGain,
-      dynamicCompression,
+      scale: settings.scale,
+      gainDB: settings.gainDB,
+      rangeDB: settings.rangeDB,
+      preEmphasis: settings.preEmphasis,
+      autoGain: settings.autoGain,
+      dynamicCompression: settings.dynamicCompression,
       autoGainBufferBudgetBytes: autoGainBudgetBytes,
       splitChannels: effectiveSplitChannels(),
     })
   }
 
   async function getFrequencies(audioBuffer: AudioBuffer): Promise<Uint8Array[][]> {
+    const generation = analysisGeneration
     frequencyMax = frequencyMax || audioBuffer.sampleRate / 2
     buffer = audioBuffer
 
@@ -769,12 +860,14 @@ export function spectrogramSetup(
       try {
         return await calculateFrequenciesWithWorker(audioBuffer)
       } catch (error) {
-        if (ctx.scope.disposed) return []
+        // A newer analysis terminated the worker: a supersession, not a failure
+        if (ctx.scope.disposed || generation !== analysisGeneration) return []
 
-        if (!fallbackToMainThread) {
+        if (!settings.fallbackToMainThread) {
           // Surface the failure instead of silently recomputing on the main thread, which
           // can freeze the page for long files
-          emitAsError(error)
+          analysisFailure = { generation, error: toError(error) }
+          ctx.emit('error', analysisFailure.error)
           return []
         }
         console.warn('Worker calculation failed, falling back to main thread:', error)
@@ -785,7 +878,8 @@ export function spectrogramSetup(
     const channels = effectiveSplitChannels() ? audioBuffer.numberOfChannels : 1
 
     // Same noverlap resolution as the worker request
-    const mainThreadNoverlap = noverlap ?? deriveNoverlap(fftSamples, null, audioBuffer.length, getWidth())
+    const mainThreadNoverlap =
+      settings.noverlap ?? deriveNoverlap(settings.fftSamples, null, audioBuffer.length, getWidth())
 
     const channelData: Float32Array[] = []
     for (let c = 0; c < channels; c++) {
@@ -793,17 +887,17 @@ export function spectrogramSetup(
     }
 
     const params: FrequencyParams = {
-      fftSamples,
-      fftSize,
-      windowFunc,
-      alpha,
+      fftSamples: settings.fftSamples,
+      fftSize: settings.fftSize,
+      windowFunc: settings.windowFunc,
+      alpha: settings.alpha,
       noverlap: mainThreadNoverlap,
-      scale,
-      gainDB,
-      rangeDB,
-      preEmphasis,
-      autoGain,
-      dynamicCompression,
+      scale: settings.scale,
+      gainDB: settings.gainDB,
+      rangeDB: settings.rangeDB,
+      preEmphasis: settings.preEmphasis,
+      autoGain: settings.autoGain,
+      dynamicCompression: settings.dynamicCompression,
       autoGainBufferBudgetBytes: autoGainBudgetBytes,
       sampleRate: audioBuffer.sampleRate,
     }
@@ -831,7 +925,12 @@ export function spectrogramSetup(
     const startSample = Math.floor(startTime * sampleRate)
     const endSample = Math.floor(endTime * sampleRate)
     const segmentWidth = (endTime - startTime) * getWindowedPixelsPerSecond()
-    const requestNoverlap = deriveNoverlap(fftSamples, noverlap, endSample - startSample, segmentWidth)
+    const requestNoverlap = deriveNoverlap(
+      settings.fftSamples,
+      settings.noverlap,
+      endSample - startSample,
+      segmentWidth,
+    )
 
     // Slice each channel down to just this segment's samples BEFORE postMessage. postMessage's
     // structured clone copies the whole ArrayBuffer backing a TypedArray view, not just the
@@ -863,16 +962,16 @@ export function spectrogramSetup(
       startTime: 0,
       endTime: (sliceLength + 0.5) / sampleRate,
       sampleRate,
-      fftSamples,
-      fftSize,
-      windowFunc,
-      alpha,
+      fftSamples: settings.fftSamples,
+      fftSize: settings.fftSize,
+      windowFunc: settings.windowFunc,
+      alpha: settings.alpha,
       noverlap: requestNoverlap,
-      scale,
-      gainDB,
-      rangeDB,
-      preEmphasis,
-      dynamicCompression,
+      scale: settings.scale,
+      gainDB: settings.gainDB,
+      rangeDB: settings.rangeDB,
+      preEmphasis: settings.preEmphasis,
+      dynamicCompression: settings.dynamicCompression,
       splitChannels: effectiveSplitChannels(),
     })
   }
@@ -885,7 +984,12 @@ export function spectrogramSetup(
     const endSample = Math.floor(endTime * sampleRate)
     const channels = effectiveSplitChannels() ? buffer.numberOfChannels : 1
     const segmentWidth = (endTime - startTime) * getWindowedPixelsPerSecond()
-    const requestNoverlap = deriveNoverlap(fftSamples, noverlap, endSample - startSample, segmentWidth)
+    const requestNoverlap = deriveNoverlap(
+      settings.fftSamples,
+      settings.noverlap,
+      endSample - startSample,
+      segmentWidth,
+    )
 
     const channelData: Float32Array[] = []
     for (let c = 0; c < channels; c++) {
@@ -893,16 +997,16 @@ export function spectrogramSetup(
     }
 
     const params: FrequencyParams = {
-      fftSamples,
-      fftSize,
-      windowFunc,
-      alpha,
+      fftSamples: settings.fftSamples,
+      fftSize: settings.fftSize,
+      windowFunc: settings.windowFunc,
+      alpha: settings.alpha,
       noverlap: requestNoverlap,
-      scale,
-      gainDB,
-      rangeDB,
-      preEmphasis,
-      dynamicCompression,
+      scale: settings.scale,
+      gainDB: settings.gainDB,
+      rangeDB: settings.rangeDB,
+      preEmphasis: settings.preEmphasis,
+      dynamicCompression: settings.dynamicCompression,
       sampleRate,
     }
     return computeFrequencies(channelData, params)
@@ -929,7 +1033,7 @@ export function spectrogramSetup(
         // must not touch a destroyed plugin's state - same guard as full mode's getFrequencies.
         if (ctx.scope.disposed) return []
 
-        if (!fallbackToMainThread) {
+        if (!settings.fallbackToMainThread) {
           ctx.emit('error', error instanceof Error ? error : new Error(String(error)))
           return []
         }
@@ -956,11 +1060,11 @@ export function spectrogramSetup(
           computeSegmentFrequencies: (segStart, segEnd) => calculateFrequenciesForRange(segStart, segEnd),
           renderSegment: (segment) =>
             renderFrequencySegment(segment, {
-              height,
+              height: settings.height,
               colorMap,
-              scale,
+              scale: settings.scale,
               freqFrom: buffer?.sampleRate ? buffer.sampleRate / 2 : 0,
-              freqMin: frequencyMin,
+              freqMin: settings.frequencyMin,
               freqMax: frequencyMax || (buffer?.sampleRate ? buffer.sampleRate / 2 : 0),
               canvasContainer,
               isDisposed: () => ctx.scope.disposed,
@@ -1014,19 +1118,19 @@ export function spectrogramSetup(
     frequencyMax = frequencyMax || audioData.sampleRate / 2
 
     const channels = effectiveSplitChannels() ? audioData.numberOfChannels : 1
-    wrapper.style.height = height * channels + 'px'
+    wrapper.style.height = settings.height * channels + 'px'
 
     // Clear existing data and reset progressive loading
     segmentManager?.reset()
 
     if (options.labels) {
       loadLabels(
-        options.labelsBackground,
+        currentOptions.labelsBackground,
         '12px',
         '12px',
         '',
-        options.labelsColor,
-        options.labelsHzColor || options.labelsColor,
+        currentOptions.labelsColor,
+        currentOptions.labelsHzColor || currentOptions.labelsColor,
         'center',
         channels,
       )
@@ -1096,8 +1200,11 @@ export function spectrogramSetup(
       // after - without this guard, the cache write below would land after destroy() had
       // already nulled cachedBuffer/cachedFrequencies, silently repopulating them with a
       // stale AudioBuffer reference post-teardown.
+      const generation = analysisGeneration
       const frequencies = await getFrequencies(decodedData)
       if (ctx.scope.disposed) return null
+      // Computed for options a newer analysis has replaced: never cache it
+      if (generation !== analysisGeneration) return frequencies
       if (frequencies.length > 0) {
         // Freshly computed frequency data invalidates the resampled-columns cache too:
         // drawSpectrogram keys that cache on width alone, so after a buffer change at an
@@ -1139,9 +1246,211 @@ export function spectrogramSetup(
     lastZoomLevel = 0
   }
 
+  function abortError(message: string): DOMException {
+    return new DOMException(message, 'AbortError')
+  }
+
+  function rejected(error: unknown): Promise<void> {
+    const promise = Promise.reject(error)
+    promise.catch(() => undefined)
+    return promise
+  }
+
+  function waitForDraw(generation: number | null): Promise<void> {
+    const promise = new Promise<void>((resolve, reject) => {
+      requests.push({ version: stateVersion, generation, resolve, reject })
+    })
+    // As in load(): fire-and-forget callers get no unhandled rejection, awaiting callers still do
+    promise.catch(() => undefined)
+    return promise
+  }
+
+  /** Resolves (or rejects with `error`) the waiting requests registered up to `version`. */
+  function settleRequests(
+    version: number,
+    error: Error | null,
+    filter: (request: SettingsRequest) => boolean = () => true,
+  ): void {
+    if (requests.length === 0) return
+    const settled = requests.filter((request) => request.version <= version && filter(request))
+    requests = requests.filter((request) => !settled.includes(request))
+    for (const request of settled) {
+      if (error) request.reject(error)
+      else request.resolve()
+    }
+  }
+
+  function analysisFailed(): boolean {
+    return analysisFailure !== null && analysisFailure.generation === analysisGeneration
+  }
+
+  function isRenderPending(): boolean {
+    return isRendering || cancelPendingRender !== null || cancelSettingsRedraw !== null
+  }
+
+  // A draw of `generation` that read state `version` finished: settle what it showed, or reject it
+  // with the failure its computation has already reported
+  function completeDraw(version: number, generation: number): void {
+    if (analysisFailure?.generation === generation) {
+      settleRequests(version, analysisFailure.error)
+      return
+    }
+    appliedVersion = version
+    appliedGeneration = generation
+    settleRequests(version, null)
+  }
+
+  // A thrown render: emit it once, then reject what was waiting for it. Returns the state version
+  // the failure covers, or -1 when a newer analysis (whose requests were aborted) replaced it.
+  function failDraw(generation: number, error: unknown): number {
+    if (ctx.scope.disposed || generation !== analysisGeneration) return -1
+    const version = stateVersion
+    analysisFailure = { generation, error: toError(error) }
+    ctx.emit('error', analysisFailure.error)
+    // A listener may have started a newer analysis, which carries the display requests forward
+    if (generation === analysisGeneration) settleRequests(version, analysisFailure.error)
+    return version
+  }
+
+  // A change made while a draw ran (from a 'ready' or 'error' listener) gets a draw of its own
+  function redrawIfChanged(version: number): void {
+    if (version < 0 || version === stateVersion || isRenderPending() || ctx.scope.disposed) return
+    if (analysisFailed()) {
+      settleRequests(stateVersion, null, (request) => request.generation === null)
+    } else {
+      redrawSettings()
+    }
+  }
+
+  // Redraws a display change from the retained data on the next frame. Pre-computed data is not
+  // retained, so it goes through the normal render path.
+  function redrawSettings(): void {
+    if (frequenciesDataUrl) {
+      throttledRender()
+    } else if (!cancelSettingsRedraw) {
+      cancelSettingsRedraw = ctx.scope.raf(() => {
+        cancelSettingsRedraw = null
+        fastRender()
+      })
+    }
+  }
+
+  function startAnalysis(): void {
+    analysisGeneration++
+    clearCache()
+    cancelSettingsRedraw?.()
+    cancelSettingsRedraw = null
+    const superseded = abortError('The analysis was superseded by a newer setOptions call')
+    settleRequests(
+      stateVersion,
+      superseded,
+      (request) => request.generation !== null && request.generation < analysisGeneration,
+    )
+    // The worker computes synchronously, so a busy one can only be stopped by replacing it
+    if (workerPromises.size > 0) disposeWorker(superseded)
+    if (ctx.wavesurfer?.getDecodedData()) throttledRender()
+  }
+
+  // The Nyquist frequency an automatic maximum would latch to now, or 0 when it is not known yet
+  function currentNyquist(): number {
+    const sampleRate = frequenciesDataUrl
+      ? options.sampleRate
+      : (ctx.wavesurfer?.getDecodedData() ?? buffer)?.sampleRate
+    return (sampleRate || 0) / 2
+  }
+
+  function setOptions(newOptions: SpectrogramPluginOptions): Promise<void> {
+    if (ctx.scope.disposed) return rejected(abortError('The spectrogram plugin was destroyed'))
+    if (isWindowed) {
+      console.warn(
+        'SpectrogramPlugin: setOptions() is not supported in windowed rendering mode ' +
+          '(rendering: "windowed"). Ignoring this call.',
+      )
+      return rejected(new Error('setOptions() is not supported in windowed rendering mode'))
+    }
+
+    // Validate everything before changing anything
+    const changes: Record<string, unknown> = {}
+    for (const key of Object.keys(newOptions) as OptionKey[]) {
+      const value = newOptions[key]
+      if (value === undefined) continue
+      const settable =
+        DISPLAY_KEYS.includes(key) || POLICY_KEYS.includes(key) || (!frequenciesDataUrl && ANALYSIS_KEYS.includes(key))
+      if (!settable && value !== currentOptions[key]) {
+        throw new Error(`SpectrogramPlugin: ${key} cannot be changed with setOptions()`)
+      }
+      changes[key] = value
+    }
+    const { height, frequencyMin: minimum, frequencyMax: maximum } = changes as SpectrogramPluginOptions
+    if (height !== undefined && !(Number.isFinite(height) && height >= 1)) {
+      throw new TypeError(`height must be a finite number of at least 1, got ${height}`)
+    }
+    for (const value of [minimum, maximum]) {
+      if (value !== undefined && !(Number.isFinite(value) && value >= 0)) {
+        throw new TypeError(`frequencyMin and frequencyMax must be finite non-negative numbers, got ${value}`)
+      }
+    }
+
+    const nextOptions: SpectrogramPluginOptions = { ...currentOptions, ...changes }
+    const next = resolveSettings(nextOptions)
+    if (minimum !== undefined || maximum !== undefined) {
+      // Compare with the maximum this call will draw with: an explicit one, the latched automatic
+      // one, or the current Nyquist frequency when an explicit maximum goes back to automatic
+      const effectiveMaximum = next.frequencyMax || (settings.frequencyMax ? currentNyquist() : frequencyMax)
+      if (effectiveMaximum > 0 && next.frequencyMin >= effectiveMaximum) {
+        throw new RangeError(
+          `frequencyMin (${next.frequencyMin}) must be below the maximum frequency (${effectiveMaximum})`,
+        )
+      }
+    }
+    const keys = Object.keys(changes) as OptionKey[]
+    const hasAnalysisKeys = keys.some((key) => ANALYSIS_KEYS.includes(key))
+    if (hasAnalysisKeys || changes.colorMap !== undefined) validateOptions(nextOptions)
+
+    // colorMap and splitChannels are compared as passed, everything else after defaults
+    const changed = (key: OptionKey) =>
+      key === 'colorMap' || key === 'splitChannels'
+        ? nextOptions[key] !== currentOptions[key]
+        : next[key as keyof Settings] !== settings[key as keyof Settings]
+    const displayChanged = DISPLAY_KEYS.some(changed)
+    const analysisChanged = ANALYSIS_KEYS.some(changed)
+    // Only a call with analysis options retries a failed analysis
+    const retry = hasAnalysisKeys && !analysisChanged && analysisFailed() && !isRenderPending()
+
+    if (nextOptions.colorMap !== currentOptions.colorMap) colorMap = setupColorMap(nextOptions.colorMap)
+    if (next.frequencyMax !== settings.frequencyMax) frequencyMax = next.frequencyMax
+    currentOptions = nextOptions
+    settings = next
+    if (displayChanged || analysisChanged || retry) stateVersion++
+
+    if (analysisChanged || retry) {
+      startAnalysis()
+      return waitForDraw(analysisGeneration)
+    }
+
+    const failed = analysisFailed()
+    const analysisPending = appliedGeneration !== analysisGeneration && !failed
+    const idle = !isRenderPending() && !analysisPending
+    // Failed and idle: nothing is retained to redraw, so the values apply to the next draw
+    if (failed && idle) return Promise.resolve()
+    // Nothing changed and the current options are drawn, even if another redraw is scheduled
+    if (!displayChanged && !failed && !analysisPending && appliedVersion === stateVersion) return Promise.resolve()
+    if (idle && displayChanged && !frequenciesDataUrl && !cachedFrequencies) {
+      appliedVersion = stateVersion
+      return Promise.resolve()
+    }
+    // An unchanged call joins the pending analysis and shares its outcome, including supersession;
+    // a display change is carried forward to the analysis that is drawn next
+    const joinsAnalysis = analysisPending && (hasAnalysisKeys || !displayChanged)
+    const promise = waitForDraw(joinsAnalysis ? analysisGeneration : null)
+    if (idle && displayChanged) redrawSettings()
+    return promise
+  }
+
   function throttledRender(): void {
     // Clear any pending render
     cancelPendingRender?.()
+    cancelPendingRender = null
 
     // A redraw arriving mid-render (e.g. a new file decoded while the
     // previous file's frequencies were still computing) must not be dropped:
@@ -1182,38 +1491,68 @@ export function spectrogramSetup(
   async function render(): Promise<void> {
     if (isRendering) return
     isRendering = true
+    const generation = analysisGeneration
+    analysisFailure = null
+    let version = -1
+    let failed = false
 
     try {
       if (frequenciesDataUrl) {
         await loadFrequenciesData(frequenciesDataUrl)
+        if (ctx.scope.disposed) return
+        version = drawVersion
       } else {
         const decodedData = ctx.wavesurfer?.getDecodedData()
         if (decodedData) {
           const frequencies = await getFrequenciesData()
-          if (ctx.scope.disposed || !frequencies) return
+          // After a newer analysis started, the current picture stays until its own render
+          if (ctx.scope.disposed || !frequencies || generation !== analysisGeneration) return
           // Draw what this render computed (cache hit, fresh data, or empty on failure)
           // rather than whatever the cache field holds
           drawSpectrogram(frequencies)
+          version = drawVersion
         }
       }
       lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
+    } catch (error) {
+      version = failDraw(generation, error)
+      failed = true
     } finally {
       isRendering = false
+      if (version >= 0 && !failed) completeDraw(version, generation)
       runQueuedRerender()
+      redrawIfChanged(version)
     }
   }
 
   function fastRender(): void {
-    if (isRendering || !cachedFrequencies) return
+    if (isRendering) return
+    if (!cachedFrequencies) {
+      // Nothing is retained to redraw (clearCache()): display requests resolve, and their values
+      // apply to the next draw
+      appliedVersion = stateVersion
+      settleRequests(stateVersion, null, (request) => request.generation === null)
+      return
+    }
     isRendering = true
+    const generation = analysisGeneration
+    analysisFailure = null
+    let version = -1
+    let failed = false
 
     try {
       // Use cached frequencies for fast re-render
       drawSpectrogram(cachedFrequencies)
+      version = drawVersion
       lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
+    } catch (error) {
+      version = failDraw(generation, error)
+      failed = true
     } finally {
       isRendering = false
+      if (!failed) completeDraw(version, generation)
       runQueuedRerender()
+      redrawIfChanged(version)
     }
   }
 
@@ -1261,8 +1600,8 @@ export function spectrogramSetup(
     fillImageDataQuality(data, segmentPixels, segmentWidth, bitmapHeight)
 
     // Calculate frequency scaling
-    const rMin = hzToScale(freqMin, scale) / hzToScale(freqFrom, scale)
-    const rMax = hzToScale(freqMax, scale) / hzToScale(freqFrom, scale)
+    const rMin = hzToScale(freqMin, settings.scale) / hzToScale(freqFrom, settings.scale)
+    const rMax = hzToScale(freqMax, settings.scale) / hzToScale(freqFrom, settings.scale)
     const rMax1 = Math.min(1, rMax)
 
     // Create and draw the bitmap - manage async properly
@@ -1306,6 +1645,7 @@ export function spectrogramSetup(
   // SpectrogramPluginOptions.frequenciesDataUrl. Both shapes are duck-type compatible for the
   // emptiness check below (Uint8Array and Uint8Array[] both have a numeric .length).
   function drawSpectrogram(input: Uint8Array[][] | Uint8Array[]): void {
+    drawVersion = stateVersion
     if (!input || input.length === 0 || input.every((channel) => !channel || channel.length === 0)) {
       // Nothing to draw (failed computation, or a buffer too short for a single FFT frame):
       // remove any previously drawn canvases so no stale spectrogram stays on screen
@@ -1325,7 +1665,7 @@ export function spectrogramSetup(
     clearCanvases()
 
     // Set the height to fit all channels
-    const totalHeight = height * frequenciesData.length
+    const totalHeight = settings.height * frequenciesData.length
     wrapper.style.height = totalHeight + 'px'
 
     const totalWidth = getWidth()
@@ -1369,7 +1709,7 @@ export function spectrogramSetup(
     frequencyMax = frequencyMax || freqFrom
 
     // Minimum and maximum frequency we want to draw
-    const freqMin = frequencyMin
+    const freqMin = settings.frequencyMin
     const freqMax = frequencyMax
 
     // Draw background if needed
@@ -1406,8 +1746,8 @@ export function spectrogramSetup(
           resampledData[c],
           canvasCtx,
           canvasWidth,
-          height,
-          c * height,
+          settings.height,
+          c * settings.height,
           offset,
           totalWidth,
           freqFrom,
@@ -1480,12 +1820,12 @@ export function spectrogramSetup(
 
     if (options.labels) {
       loadLabels(
-        options.labelsBackground,
+        currentOptions.labelsBackground,
         '12px',
         '12px',
         '',
-        options.labelsColor,
-        options.labelsHzColor || options.labelsColor,
+        currentOptions.labelsColor,
+        currentOptions.labelsHzColor || currentOptions.labelsColor,
         'center',
         frequenciesData.length,
       )
@@ -1506,7 +1846,7 @@ export function spectrogramSetup(
   ): void {
     if (!labelsEl) return
 
-    const frequenciesHeight = height
+    const frequenciesHeight = settings.height
     bgFill = bgFill || 'rgba(68,68,68,0)'
     fontSizeFreq = fontSizeFreq || '12px'
     fontSizeUnit = fontSizeUnit || '12px'
@@ -1522,7 +1862,7 @@ export function spectrogramSetup(
     const canvasCtx = labelsEl.getContext('2d')
     if (!canvasCtx) return
     const dispScale = window.devicePixelRatio
-    labelsEl.height = height * channels * dispScale
+    labelsEl.height = settings.height * channels * dispScale
     labelsEl.width = bgWidth * dispScale
     canvasCtx.scale(dispScale, dispScale)
 
@@ -1539,7 +1879,7 @@ export function spectrogramSetup(
         canvasCtx.textAlign = textAlign
         canvasCtx.textBaseline = 'middle'
 
-        const freq = getLabelFrequency(i, labelIndex, frequencyMin, frequencyMax, scale)
+        const freq = getLabelFrequency(i, labelIndex, settings.frequencyMin, frequencyMax, settings.scale)
         const label = freqType(freq)
         const units = unitType(freq)
         const x = 16
@@ -1719,6 +2059,11 @@ export function spectrogramSetup(
     // Clean up worker, rejecting any in-flight requests
     disposeWorker(new Error('Spectrogram plugin destroyed'))
 
+    // Reject pending setOptions() calls and stop their redraw
+    cancelSettingsRedraw?.()
+    cancelSettingsRedraw = null
+    settleRequests(Infinity, abortError('The spectrogram plugin was destroyed'))
+
     // Release the decoded buffer and caches
     cachedFrequencies = null
     cachedResampledData = null
@@ -1795,6 +2140,7 @@ export function spectrogramSetup(
     loadFrequenciesData,
     getFrequenciesData,
     clearCache,
+    setOptions,
     getLoadingProgress: () => segmentManager?.getLoadingProgress() ?? 100,
     stopProgressiveLoading: () => segmentManager?.stopProgressiveLoading(),
     restartProgressiveLoading: () => segmentManager?.restartProgressiveLoading(),
