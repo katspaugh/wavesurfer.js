@@ -318,6 +318,116 @@ describe('Renderer', () => {
     expect(renderer.getScroll()).toBe(20)
   })
 
+  test('auto-centering keeps up with a cursor moving faster than the smoothing step', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable.set(true)
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
+    // 1000 px over 2 s = 500 px/s, within the smoothed range
+    ;(renderer as any).audioData = { duration: 2 }
+    renderer.setScroll(0)
+    renderer.renderProgress(0.05, true) // cursor at 50, centre of the view
+    const before = renderer.getScroll()
+    renderer.renderProgress(0.065, true) // cursor moves 15 px, more than the 10 px step
+    expect(renderer.getScroll() - before).toBe(15)
+  })
+
+  test('auto-centering leaves the cursor centered after a forward seek during playback', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable.set(true)
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 100 })
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 1000 })
+    // 1000 px over 2 s = 500 px/s, within the smoothed range
+    ;(renderer as any).audioData = { duration: 2 }
+    renderer.setScroll(0)
+    renderer.renderProgress(0.05, true) // cursor at 50, the center of the view
+    renderer.renderProgress(0.5, true) // seek to 500, out of view: the view moves to center it
+    expect(renderer.getScroll()).toBe(450)
+  })
+
+  test('auto-centering catches up a step at a time with a cursor that starts playing off-center', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable.set(true)
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 128 })
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 1024 })
+    // 1024 px over 2 s = 512 px/s, within the smoothed range
+    ;(renderer as any).audioData = { duration: 2 }
+    renderer.setScroll(0)
+    renderer.renderProgress(96 / 1024) // paused, cursor clicked to 96, 32 px right of center
+    renderer.renderProgress(112 / 1024, true) // playing, cursor moves 16 px, now 48 px right of center
+    // The view moves at most the 10 px step more than the cursor did, not all the way to it
+    expect(renderer.getScroll()).toBe(26)
+    renderer.renderProgress(128 / 1024, true)
+    renderer.renderProgress(144 / 1024, true)
+    renderer.renderProgress(160 / 1024, true)
+    expect(renderer.getScroll()).toBe(96) // cursor at 160, the center of the view
+  })
+
+  test('auto-centering measures movement since the previous update, even one that did not scroll', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable.set(true)
+    Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 128 })
+    Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 1024 })
+    // 1024 px over 2 s = 512 px/s, within the smoothed range
+    ;(renderer as any).audioData = { duration: 2 }
+    renderer.setScroll(0)
+    renderer.renderProgress(64 / 1024, true) // cursor at 64, the center of the view
+    // Auto-scroll off for three updates of 16 px: the view stays where it is
+    ;(renderer as any).options.autoScroll = false
+    renderer.renderProgress(80 / 1024, true)
+    renderer.renderProgress(96 / 1024, true)
+    renderer.renderProgress(112 / 1024, true)
+    ;(renderer as any).options.autoScroll = true
+    renderer.renderProgress(128 / 1024, true) // cursor moves 16 px, now 64 px right of center
+    // The step counts only those 16 px, not the 64 since the last scroll
+    expect(renderer.getScroll()).toBe(26)
+  })
+
+  test('auto-centering keeps the cursor centered when zoomed out during playback', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable.set(true)
+    const container = (renderer as any).scrollContainer
+    Object.defineProperty(container, 'clientWidth', { configurable: true, value: 100 })
+    Object.defineProperty(container, 'scrollWidth', { configurable: true, value: 4096 })
+    // 4096 px over 8 s = 512 px/s, within the smoothed range
+    ;(renderer as any).audioData = { duration: 8 }
+    renderer.setScroll(0)
+    renderer.renderProgress(0.5, true) // cursor at 2048, centered: the view starts at 1998
+    // Zoomed out to 256 px/s, the cursor kept where it was on screen
+    Object.defineProperty(container, 'scrollWidth', { configurable: true, value: 2048 })
+    renderer.setScroll(974)
+    renderer.renderProgress(0.5078125, true) // cursor moves 16 px at the new zoom
+    expect(renderer.getScroll()).toBe(990) // cursor at 1040, the center of the view
+  })
+
+  test('auto-centering does not fall behind when the browser scrolls by whole pixels only', () => {
+    ;(renderer as any).options.autoScroll = true
+    ;(renderer as any).options.autoCenter = true
+    ;(renderer as any).isScrollable.set(true)
+    const container = (renderer as any).scrollContainer
+    let scrollLeft = 0
+    Object.defineProperty(container, 'scrollLeft', {
+      configurable: true,
+      get: () => scrollLeft,
+      set: (value: number) => (scrollLeft = Math.round(value)),
+    })
+    Object.defineProperty(container, 'clientWidth', { configurable: true, value: 100 })
+    Object.defineProperty(container, 'scrollWidth', { configurable: true, value: 4000 })
+    // 4000 px over 10 s = 400 px/s; at 30 updates a second the cursor moves 13.33 px each
+    ;(renderer as any).audioData = { duration: 10 }
+    renderer.renderProgress(0.5, true)
+    for (let i = 1; i <= 30; i++) {
+      renderer.renderProgress(0.5 + i / 300, true)
+    }
+    // The cursor is at 2400 after a second, within half a pixel of the center
+    expect(Math.abs(2400 - scrollLeft - 50)).toBeLessThanOrEqual(0.5)
+  })
+
   test('renderProgress updates styles', () => {
     renderer.renderProgress(0.5)
     expect((renderer as any).progressWrapper.style.width).toBe('50%')
