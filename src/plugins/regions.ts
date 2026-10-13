@@ -1029,19 +1029,40 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       }
     }
 
-    // `regionScope` is the same child scope SingleRegion itself owns (created
-    // in addRegion/enableDragSelection and passed into its constructor). Once
-    // ('remove'), the three previously hand-rolled `subscriptions`-array splice
-    // sites (virtualAppend, saveRegion, addRegion's once('ready')) are gone:
-    // everything below is torn down for free when region.remove() disposes
-    // this same scope.
-    function virtualAppend(region: Region, regionScope: Scope, container: HTMLElement, element: HTMLElement) {
-      const renderIfVisible = () => {
-        if (!ctx.wavesurfer) return
-        const clientWidth = ctx.wavesurfer.getWidth()
-        const scrollLeft = ctx.wavesurfer.getScroll()
-        const scrollWidth = container.clientWidth
-        const duration = ctx.wavesurfer.getDuration()
+    // Regions are only kept in the DOM while they intersect the viewport. A
+    // single plugin-level pass serves all of them: the viewport is measured once
+    // per scroll/zoom/resize (not once per region), each region's visibility is
+    // plain arithmetic, and the DOM changes are applied only after every region
+    // has been checked, so mounting one region never forces a layout for the
+    // next region's check. virtualAppend starts tracking a region by adding it to
+    // `virtualRegions`, which holds the tracked regions in the order tracking
+    // started (a Set keeps that order and makes removal O(1)); mounts happen in
+    // that order, so overlapping regions stack as before.
+    const virtualRegions = new Set<Region>()
+
+    type Viewport = { clientWidth: number; scrollLeft: number; scrollWidth: number; duration: number }
+
+    function readViewport(): Viewport | null {
+      if (!ctx.wavesurfer) return null
+      return {
+        clientWidth: ctx.wavesurfer.getWidth(),
+        scrollLeft: ctx.wavesurfer.getScroll(),
+        scrollWidth: regionsContainer.clientWidth,
+        duration: ctx.wavesurfer.getDuration(),
+      }
+    }
+
+    function syncVirtualRegions(candidates: Iterable<Region>) {
+      const viewport = readViewport()
+      if (!viewport) return
+      const { clientWidth, scrollLeft, scrollWidth, duration } = viewport
+
+      const toMount: HTMLElement[] = []
+      const toUnmount: HTMLElement[] = []
+      for (const region of candidates) {
+        const element = region.element
+        if (!element) continue
+
         const start = Math.round((region.start / duration) * scrollWidth)
         const width = Math.round(((region.end - region.start) / duration) * scrollWidth) || 1
 
@@ -1049,32 +1070,49 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
         const isVisible = start + width > scrollLeft && start < scrollLeft + clientWidth
 
         if (isVisible && !element.parentElement) {
-          container.appendChild(element)
+          toMount.push(element)
         } else if (!isVisible && element.parentElement && !region.isDragging) {
           // Never detach a region mid-drag: auto-scrolling can briefly push it
           // out of view, and removing it would end the gesture
-          element.remove()
+          toUnmount.push(element)
         }
       }
 
+      toUnmount.forEach((element) => element.remove())
+      toMount.forEach((element) => regionsContainer.appendChild(element))
+    }
+
+    const syncAllVirtualRegions = () => {
+      if (virtualRegions.size > 0) syncVirtualRegions(virtualRegions)
+    }
+    ctx.scope.add(ctx.wavesurfer.on('scroll', syncAllVirtualRegions))
+    ctx.scope.add(ctx.wavesurfer.on('zoom', syncAllVirtualRegions))
+    ctx.scope.add(ctx.wavesurfer.on('resize', syncAllVirtualRegions))
+
+    // `regionScope` is the same child scope SingleRegion itself owns (created
+    // in addRegion/enableDragSelection and passed into its constructor). Once
+    // ('remove'), the three previously hand-rolled `subscriptions`-array splice
+    // sites (virtualAppend, saveRegion, addRegion's once('ready')) are gone:
+    // everything below is torn down for free when region.remove() disposes
+    // this same scope.
+    function virtualAppend(region: Region, regionScope: Scope) {
       regionScope.timeout(() => {
         // Check if region was removed before this timeout executed (defensive;
         // the timeout itself is cancelled by regionScope.dispose() when the
         // region is removed first, so this should already be unreachable then).
         if (!ctx.wavesurfer || !region.element) return
-        renderIfVisible()
+        virtualRegions.add(region)
+        regionScope.add(() => virtualRegions.delete(region))
+        syncVirtualRegions([region])
 
-        regionScope.add(ctx.wavesurfer.on('scroll', renderIfVisible))
-        regionScope.add(ctx.wavesurfer.on('zoom', renderIfVisible))
-        regionScope.add(ctx.wavesurfer.on('resize', renderIfVisible))
-        regionScope.add(region.on('render', renderIfVisible))
+        regionScope.add(region.on('render', () => syncVirtualRegions([region])))
       }, 0)
     }
 
     function saveRegion(region: Region, regionScope: Scope) {
       if (!region.element) return
       regionScopes.set(region, regionScope)
-      virtualAppend(region, regionScope, regionsContainer, region.element)
+      virtualAppend(region, regionScope)
       avoidOverlapping(region)
       regions.push(region)
 

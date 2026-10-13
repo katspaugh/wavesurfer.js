@@ -71,6 +71,111 @@ describe('RegionsPlugin', () => {
     expect(region.element?.parentElement).toBeNull()
   })
 
+  describe('virtualization', () => {
+    // 10 s over a 1000 px container = 100 px per second, seen through a 100 px
+    // viewport.
+    const setupVirtual = (scroll = 0) => {
+      const wavesurfer = createWaveSurfer(10, 100, scroll)
+      const plugin = RegionsPlugin.create()
+      plugin._init(wavesurfer as any)
+      const regionsContainer = wavesurfer.getWrapper().querySelector<HTMLElement>('[part="regions-container"]')!
+      const containerWidth = jest.fn(() => 1000)
+      Object.defineProperty(regionsContainer, 'clientWidth', { configurable: true, get: containerWidth })
+      return { wavesurfer, plugin, regionsContainer, containerWidth }
+    }
+
+    test('registers one scroll, zoom and resize listener however many regions there are', () => {
+      const { wavesurfer, plugin } = setupVirtual()
+      const listeners = (event: string) => wavesurfer.on.mock.calls.filter(([type]) => type === event).length
+
+      for (let i = 0; i < 20; i++) plugin.addRegion({ start: i * 0.4, end: i * 0.4 + 0.2 })
+      jest.runOnlyPendingTimers()
+
+      // Exactly one each, registered by the plugin's setup: the regions add none
+      expect(listeners('scroll')).toBe(1)
+      expect(listeners('zoom')).toBe(1)
+      expect(listeners('resize')).toBe(1)
+    })
+
+    test('measures the viewport once per event, not once per region', () => {
+      const { wavesurfer, plugin, containerWidth } = setupVirtual()
+      for (let i = 0; i < 20; i++) plugin.addRegion({ start: i * 0.4, end: i * 0.4 + 0.2 })
+      jest.runOnlyPendingTimers()
+
+      for (const event of ['scroll', 'zoom', 'resize']) {
+        wavesurfer.getScroll.mockClear()
+        wavesurfer.getWidth.mockClear()
+        containerWidth.mockClear()
+
+        wavesurfer.emit(event)
+
+        expect(wavesurfer.getScroll).toHaveBeenCalledTimes(1)
+        expect(wavesurfer.getWidth).toHaveBeenCalledTimes(1)
+        expect(containerWidth).toHaveBeenCalledTimes(1)
+      }
+    })
+
+    test('unmounts and mounts regions in the same scroll event', () => {
+      const { wavesurfer, plugin, regionsContainer } = setupVirtual()
+      const left = plugin.addRegion({ start: 0, end: 1 })
+      const right = plugin.addRegion({ start: 8, end: 9 })
+      jest.runOnlyPendingTimers()
+      expect(left.element?.parentElement).toBe(regionsContainer)
+      expect(right.element?.parentElement).toBeNull()
+
+      wavesurfer.getScroll.mockReturnValue(800)
+      wavesurfer.emit('scroll', 8, 9, 800, 900)
+
+      expect(left.element?.parentElement).toBeNull()
+      expect(right.element?.parentElement).toBe(regionsContainer)
+    })
+
+    test('mounts regions that become visible together in creation order', () => {
+      const { wavesurfer, plugin, regionsContainer } = setupVirtual(500)
+      const regions = [
+        plugin.addRegion({ start: 0, end: 1 }),
+        plugin.addRegion({ start: 1, end: 2 }),
+        plugin.addRegion({ start: 2, end: 3 }),
+      ]
+      jest.runOnlyPendingTimers()
+      expect(regionsContainer.children).toHaveLength(0)
+
+      wavesurfer.getScroll.mockReturnValue(0)
+      wavesurfer.getWidth.mockReturnValue(1000)
+      wavesurfer.emit('resize')
+
+      expect(Array.from(regionsContainer.children)).toEqual(regions.map((region) => region.element))
+    })
+
+    test('re-evaluates visibility when the zoom changes the container width', () => {
+      const { wavesurfer, plugin, regionsContainer, containerWidth } = setupVirtual()
+      const region = plugin.addRegion({ start: 8, end: 9 })
+      jest.runOnlyPendingTimers()
+      expect(region.element?.parentElement).toBeNull()
+
+      // Zoomed out to 10 px per second: 8-9 s now sits at 80-90 px
+      containerWidth.mockReturnValue(100)
+      wavesurfer.emit('zoom', 10)
+
+      expect(region.element?.parentElement).toBe(regionsContainer)
+    })
+
+    test('stops tracking a removed region', () => {
+      const { wavesurfer, plugin, regionsContainer } = setupVirtual(800)
+      const region = plugin.addRegion({ start: 8, end: 9 })
+      jest.runOnlyPendingTimers()
+      expect(region.element?.parentElement).toBe(regionsContainer)
+
+      region.remove()
+      wavesurfer.getScroll.mockClear()
+      wavesurfer.emit('scroll', 0, 0, 0, 100)
+
+      expect(regionsContainer.children).toHaveLength(0)
+      // With nothing left to place, a scroll does not even measure the viewport
+      expect(wavesurfer.getScroll).not.toHaveBeenCalled()
+    })
+  })
+
   test('cleans up drag selection on plugin destroy', () => {
     const wavesurfer = createWaveSurfer()
     const plugin = RegionsPlugin.create()
