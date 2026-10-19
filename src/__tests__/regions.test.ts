@@ -319,10 +319,12 @@ describe('RegionsPlugin', () => {
     expect(secondRegion.content?.style.marginTop).toBe('')
     expect(thirdRegion.content?.style.marginTop).toBe('0px')
 
-    // The pass after a drag or resize schedules nothing for the opted-out region
+    // A drag or resize ends in one pass for all the labels, however many ask for it,
+    // and the opted-out region is not measured in it
     const timerCount = jest.getTimerCount()
     firstRegion.onContentBlur()
-    expect(jest.getTimerCount()).toBe(timerCount + 2)
+    firstRegion.onContentBlur()
+    expect(jest.getTimerCount()).toBe(timerCount + 1)
 
     jest.runOnlyPendingTimers()
     expect(secondRegion.content?.style.marginTop).toBe('')
@@ -1038,5 +1040,411 @@ describe('Auto-scroll while dragging, resizing, or creating a region', () => {
     const end = created[0].end
     wavesurfer.emit('scroll', 0, 0, 30, 130)
     expect(created[0].end).toBeCloseTo(end)
+  })
+})
+
+describe('Label stacking and the regions in the DOM', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    installMatchMediaStub()
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    document.body.innerHTML = ''
+    jest.clearAllMocks()
+  })
+
+  // 10 s over a 1000 px container = 100 px per second, seen through a 100 px viewport.
+  const setup = (scroll = 0) => {
+    const wavesurfer = createWaveSurfer(10, 100, scroll)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+    const regionsContainer = wavesurfer.getWrapper().querySelector<HTMLElement>('[part="regions-container"]')!
+    Object.defineProperty(regionsContainer, 'clientWidth', { configurable: true, value: 1000 })
+    return { wavesurfer, plugin, regionsContainer }
+  }
+
+  // Like a browser, a label that is not in the document has no box: it is all zeros
+  const mockLabelRect = (label: HTMLElement, rect: { left: number; top: number; width: number; height: number }) => {
+    const measured = jest.fn(() =>
+      label.isConnected
+        ? {
+            ...rect,
+            right: rect.left + rect.width,
+            bottom: rect.top + rect.height,
+            x: rect.left,
+            y: rect.top,
+            toJSON: () => rect,
+          }
+        : { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0, toJSON: () => ({}) },
+    )
+    Object.defineProperty(label, 'getBoundingClientRect', { configurable: true, value: measured })
+    return measured
+  }
+
+  test('stacks the labels of regions that were off screen when they were created, once they scroll into view', () => {
+    const { wavesurfer, plugin } = setup(0)
+    // Two labels in the way of each other, both at 8-9 s: not in view at scroll 0
+    const first = plugin.addRegion({ start: 8, end: 9, content: 'First' })
+    const second = plugin.addRegion({ start: 8.2, end: 9.2, content: 'Second' })
+    mockLabelRect(first.content!, { left: 800, top: 0, width: 60, height: 10 })
+    mockLabelRect(second.content!, { left: 820, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+
+    // Nothing in the DOM could be measured, so nothing was stacked
+    expect(first.element?.parentElement).toBeNull()
+    expect(second.content?.style.marginTop).toBe('')
+
+    wavesurfer.getScroll.mockReturnValue(750)
+    wavesurfer.emit('scroll', 7.5, 8.5, 750, 850)
+
+    expect(first.element?.parentElement).not.toBeNull()
+    expect(first.content?.style.marginTop).toBe('0px')
+    expect(second.content?.style.marginTop).toBe('12px')
+  })
+
+  test('only measures the labels of regions that are in the DOM', () => {
+    const { plugin } = setup(0)
+    const measured = []
+    for (let i = 0; i < 40; i++) {
+      const region = plugin.addRegion({ start: i * 0.25, end: i * 0.25 + 0.5, content: `r${i}` })
+      measured.push(mockLabelRect(region.content!, { left: i * 25, top: 0, width: 50, height: 10 }))
+    }
+    jest.runOnlyPendingTimers()
+
+    // The viewport shows 0-1 s: regions 0 to 3 overlap it
+    const inDom = measured.filter((_, i) => plugin.getRegions()[i].element?.parentElement)
+    expect(inDom).toHaveLength(4)
+    for (const [i, rect] of measured.entries()) {
+      expect(rect).toHaveBeenCalledTimes(plugin.getRegions()[i].element?.parentElement ? 1 : 0)
+    }
+  })
+
+  test('stacks every label in one pass, however many regions asked for it', () => {
+    const { plugin } = setup(0)
+    for (let i = 0; i < 20; i++) plugin.addRegion({ start: 0, end: 1, content: `r${i}` })
+    jest.runOnlyPendingTimers()
+
+    const timerCount = jest.getTimerCount()
+    for (const region of plugin.getRegions()) region.onContentBlur()
+    expect(jest.getTimerCount()).toBe(timerCount + 1)
+  })
+
+  test('restacks the labels in view when a region comes into view or goes out of view', () => {
+    const { wavesurfer, plugin } = setup(0)
+    const near = plugin.addRegion({ start: 0.2, end: 1.2, content: 'Near' })
+    const far = plugin.addRegion({ start: 1.5, end: 2.5, content: 'Far' })
+    const nearRect = mockLabelRect(near.content!, { left: 20, top: 0, width: 60, height: 10 })
+    mockLabelRect(far.content!, { left: 50, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+    // Only the near region is in view, so the far one has not been stacked
+    expect(near.content?.style.marginTop).toBe('0px')
+    expect(far.content?.style.marginTop).toBe('')
+
+    // Scrolling brings the far region into view as well: it is moved below the near one
+    wavesurfer.getWidth.mockReturnValue(200)
+    wavesurfer.emit('scroll', 0, 2, 0, 200)
+    expect(far.content?.style.marginTop).toBe('12px')
+
+    // And back out of view: the near label is stacked on its own again
+    nearRect.mockClear()
+    wavesurfer.getWidth.mockReturnValue(100)
+    wavesurfer.emit('scroll', 0, 1, 0, 100)
+    expect(nearRect).toHaveBeenCalledTimes(1)
+    expect(near.content?.style.marginTop).toBe('0px')
+  })
+
+  test('does not restack on a scroll that leaves the regions in the DOM as they were', () => {
+    const { wavesurfer, plugin } = setup(0)
+    const region = plugin.addRegion({ start: 0, end: 1, content: 'Label' })
+    const measured = mockLabelRect(region.content!, { left: 0, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+    measured.mockClear()
+
+    wavesurfer.getScroll.mockReturnValue(10)
+    wavesurfer.emit('scroll', 0.1, 1.1, 10, 110)
+
+    expect(measured).not.toHaveBeenCalled()
+  })
+
+  test('restacks on a zoom or resize, which change how wide the labels are', () => {
+    const { wavesurfer, plugin } = setup(0)
+    const first = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const second = plugin.addRegion({ start: 0.5, end: 1.5, content: 'Second' })
+    const firstRect = mockLabelRect(first.content!, { left: 0, top: 0, width: 60, height: 10 })
+    mockLabelRect(second.content!, { left: 70, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+    expect(second.content?.style.marginTop).toBe('0px')
+
+    // The labels are wider after a zoom, and now overlap
+    mockLabelRect(second.content!, { left: 50, top: 0, width: 60, height: 10 })
+    firstRect.mockClear()
+    wavesurfer.emit('zoom', 200)
+    expect(firstRect).toHaveBeenCalledTimes(1)
+    expect(second.content?.style.marginTop).toBe('12px')
+
+    mockLabelRect(second.content!, { left: 70, top: 0, width: 60, height: 10 })
+    wavesurfer.emit('resize')
+    expect(second.content?.style.marginTop).toBe('0px')
+  })
+
+  test('removing a region lets the labels it kept down move back up', () => {
+    const { plugin } = setup(0)
+    const first = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const second = plugin.addRegion({ start: 0.5, end: 1.5, content: 'Second' })
+    mockLabelRect(first.content!, { left: 0, top: 0, width: 60, height: 10 })
+    mockLabelRect(second.content!, { left: 30, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+    expect(second.content?.style.marginTop).toBe('12px')
+
+    first.remove()
+    jest.runOnlyPendingTimers()
+
+    expect(second.content?.style.marginTop).toBe('0px')
+  })
+
+  describe('a label that an earlier label pushed down', () => {
+    // 100 px a second, a viewport of 100 px: `near` is at 20-120 px and `second` at 50-150 px, with labels of 60
+    // px that overlap. At scroll 130 only `second` is in the DOM.
+    const arrange = () => {
+      const { wavesurfer, plugin } = setup(0)
+      const near = plugin.addRegion({ start: 0.2, end: 1.2, content: 'Near' })
+      const second = plugin.addRegion({ start: 0.5, end: 1.5, content: 'Second' })
+      mockLabelRect(near.content!, { left: 20, top: 0, width: 60, height: 10 })
+      mockLabelRect(second.content!, { left: 50, top: 0, width: 60, height: 10 })
+      jest.runOnlyPendingTimers()
+      expect(second.content?.style.marginTop).toBe('12px')
+
+      const scrollTo = (left: number) => {
+        wavesurfer.getScroll.mockReturnValue(left)
+        wavesurfer.emit('scroll', left / 100, (left + 100) / 100, left, left + 100)
+      }
+      return { wavesurfer, plugin, near, second, scrollTo }
+    }
+
+    test('stays down when the label that pushed it leaves the DOM, and when that comes back', () => {
+      const { near, second, scrollTo } = arrange()
+
+      scrollTo(130)
+      expect(near.element?.parentElement).toBeNull()
+      expect(second.element?.parentElement).not.toBeNull()
+      expect(second.content?.style.marginTop).toBe('12px')
+
+      scrollTo(0)
+      expect(near.element?.parentElement).not.toBeNull()
+      expect(second.content?.style.marginTop).toBe('12px')
+      expect(near.content?.style.marginTop).toBe('0px')
+    })
+
+    test('does not move on every scroll back and forth', () => {
+      const { second, scrollTo } = arrange()
+      const margins = new Set<string>()
+      for (const left of [130, 0, 130, 0, 130, 20, 130, 0]) {
+        scrollTo(left)
+        margins.add(second.content!.style.marginTop)
+      }
+      expect([...margins]).toEqual(['12px'])
+    })
+
+    test('is stacked from scratch by a zoom, which can change which labels overlap', () => {
+      const { wavesurfer, second, scrollTo } = arrange()
+      scrollTo(130)
+      expect(second.content?.style.marginTop).toBe('12px')
+
+      wavesurfer.emit('zoom', 200)
+      expect(second.content?.style.marginTop).toBe('0px')
+    })
+
+    test('is not kept down by how it was stacked before a zoom, if it was out of the DOM for the zoom', () => {
+      const { wavesurfer, near, second, scrollTo } = arrange()
+      // Both are out of the DOM when the zoom stacks from scratch
+      scrollTo(200)
+      expect(second.element?.parentElement).toBeNull()
+      wavesurfer.emit('zoom', 200)
+
+      // After the zoom the labels no longer overlap
+      mockLabelRect(second.content!, { left: 150, top: 0, width: 60, height: 10 })
+      scrollTo(0)
+      expect(near.element?.parentElement).not.toBeNull()
+      expect(second.content?.style.marginTop).toBe('0px')
+    })
+
+    test('moves back up when the region that pushed it is removed, or moved away', () => {
+      const { near, second, scrollTo } = arrange()
+      scrollTo(130)
+      expect(second.content?.style.marginTop).toBe('12px')
+
+      near.remove()
+      jest.runOnlyPendingTimers()
+      expect(second.content?.style.marginTop).toBe('0px')
+    })
+
+    test('goes down, once, when an earlier label that overlaps it first comes into the DOM', () => {
+      // The viewport starts at 110 px, so the first region (0-100 px) is out of the DOM and the second (20-300 px)
+      // is in it, with its label 20-80 px: off to the left of the view, but under the first label
+      const { wavesurfer, plugin } = setup(110)
+      const first = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+      const second = plugin.addRegion({ start: 0.2, end: 3, content: 'Second' })
+      mockLabelRect(first.content!, { left: 0, top: 0, width: 60, height: 10 })
+      mockLabelRect(second.content!, { left: 20, top: 0, width: 60, height: 10 })
+      jest.runOnlyPendingTimers()
+      expect(first.element?.parentElement).toBeNull()
+      expect(second.content?.style.marginTop).toBe('0px')
+
+      const scrollTo = (left: number) => {
+        wavesurfer.getScroll.mockReturnValue(left)
+        wavesurfer.emit('scroll', left / 100, (left + 100) / 100, left, left + 100)
+      }
+      scrollTo(0)
+      expect(first.element?.parentElement).not.toBeNull()
+      expect(second.content?.style.marginTop).toBe('12px')
+
+      scrollTo(110)
+      expect(first.element?.parentElement).toBeNull()
+      expect(second.content?.style.marginTop).toBe('12px')
+      scrollTo(0)
+      expect(second.content?.style.marginTop).toBe('12px')
+    })
+  })
+
+  test('moving a region restacks the labels', () => {
+    const { plugin } = setup(0)
+    const first = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const second = plugin.addRegion({ start: 0.5, end: 1.5, content: 'Second' })
+    mockLabelRect(first.content!, { left: 0, top: 0, width: 60, height: 10 })
+    mockLabelRect(second.content!, { left: 30, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+    expect(second.content?.style.marginTop).toBe('12px')
+
+    // Moved (still in view) clear of the first: its label is measured further along
+    mockLabelRect(second.content!, { left: 300, top: 0, width: 60, height: 10 })
+    second.setOptions({ start: 0.8, end: 0.95 })
+    jest.runOnlyPendingTimers()
+
+    expect(second.content?.style.marginTop).toBe('0px')
+  })
+
+  test('stacks around a label that opted back in', () => {
+    const { plugin } = setup(0)
+    const first = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const second = plugin.addRegion({ start: 0.5, end: 1.5, content: 'Second', avoidOverlapping: false })
+    mockLabelRect(first.content!, { left: 0, top: 0, width: 60, height: 10 })
+    mockLabelRect(second.content!, { left: 30, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+    expect(second.content?.style.marginTop).toBe('')
+
+    second.setOptions({ avoidOverlapping: true })
+    jest.runOnlyPendingTimers()
+
+    expect(second.content?.style.marginTop).toBe('12px')
+  })
+
+  test("removing a region's content lets the labels it kept down move back up", () => {
+    const { plugin } = setup(0)
+    const first = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const second = plugin.addRegion({ start: 0.5, end: 1.5, content: 'Second' })
+    mockLabelRect(first.content!, { left: 0, top: 0, width: 60, height: 10 })
+    mockLabelRect(second.content!, { left: 30, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+    expect(second.content?.style.marginTop).toBe('12px')
+
+    first.setContent(undefined)
+    jest.runOnlyPendingTimers()
+
+    expect(first.content).toBeUndefined()
+    expect(second.content?.style.marginTop).toBe('0px')
+  })
+
+  test('removing content restacks through render, and does not announce a content change', () => {
+    const { plugin } = setup(0)
+    const labelled = plugin.addRegion({ start: 0, end: 1, content: 'Label' })
+    const bare = plugin.addRegion({ start: 2, end: 3 })
+    const rendered = jest.fn()
+    const changed = jest.fn()
+    const bareRendered = jest.fn()
+    labelled.on('render', rendered)
+    labelled.on('content-changed', changed)
+    bare.on('render', bareRendered)
+
+    labelled.setContent(undefined)
+    bare.setContent(undefined)
+
+    // `region-content-changed` is public and has never been emitted for a removal
+    expect(rendered).toHaveBeenCalledTimes(1)
+    expect(changed).not.toHaveBeenCalled()
+    // and a region with nothing to remove has nothing to restack
+    expect(bareRendered).not.toHaveBeenCalled()
+  })
+
+  test('keeps the margins of the labels while the whole waveform is detached from the document', () => {
+    const { wavesurfer, plugin } = setup(0)
+    const first = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const second = plugin.addRegion({ start: 0.5, end: 1.5, content: 'Second' })
+    mockLabelRect(first.content!, { left: 0, top: 0, width: 60, height: 10 })
+    mockLabelRect(second.content!, { left: 30, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+    expect(second.content?.style.marginTop).toBe('12px')
+
+    // The regions are still in their container, but the container is not in the page:
+    // nothing can be measured, and a zoom or resize must not take the margins away
+    const wrapper = wavesurfer.getWrapper()
+    wrapper.remove()
+    wavesurfer.emit('zoom', 200)
+    wavesurfer.emit('resize')
+    expect(first.content?.style.marginTop).toBe('0px')
+    expect(second.content?.style.marginTop).toBe('12px')
+
+    // Back in the page, the labels are stacked from what is measured then
+    mockLabelRect(second.content!, { left: 300, top: 0, width: 60, height: 10 })
+    document.body.appendChild(wrapper)
+    wavesurfer.emit('resize')
+    expect(second.content?.style.marginTop).toBe('0px')
+  })
+
+  test('keeps the margins of the labels while nothing is laid out, as under a display: none', () => {
+    const { wavesurfer, plugin } = setup(0)
+    const first = plugin.addRegion({ start: 0, end: 1, content: 'First' })
+    const second = plugin.addRegion({ start: 0.5, end: 1.5, content: 'Second' })
+    mockLabelRect(first.content!, { left: 0, top: 0, width: 60, height: 10 })
+    mockLabelRect(second.content!, { left: 30, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+    expect(second.content?.style.marginTop).toBe('12px')
+
+    // Still in the document, but with no box: every label measures as nothing
+    const nothing = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0, toJSON: () => ({}) }
+    for (const region of [first, second]) {
+      Object.defineProperty(region.content, 'getBoundingClientRect', { configurable: true, value: () => nothing })
+    }
+    wavesurfer.emit('resize')
+    expect(first.content?.style.marginTop).toBe('0px')
+    expect(second.content?.style.marginTop).toBe('12px')
+
+    // Shown again, measured again
+    mockLabelRect(second.content!, { left: 300, top: 0, width: 60, height: 10 })
+    mockLabelRect(first.content!, { left: 0, top: 0, width: 60, height: 10 })
+    wavesurfer.emit('resize')
+    expect(second.content?.style.marginTop).toBe('0px')
+  })
+
+  test('mounts and restacks the regions once new audio has moved them', () => {
+    const { wavesurfer, plugin, regionsContainer } = setup(0)
+    // 8-9 s is off screen at 100 px per second
+    const first = plugin.addRegion({ start: 8, end: 9, content: 'First' })
+    const second = plugin.addRegion({ start: 8.2, end: 9.2, content: 'Second' })
+    mockLabelRect(first.content!, { left: 80, top: 0, width: 60, height: 10 })
+    mockLabelRect(second.content!, { left: 90, top: 0, width: 60, height: 10 })
+    jest.runOnlyPendingTimers()
+    expect(first.element?.parentElement).toBeNull()
+
+    // New audio ten times as long: the same seconds are now at 10 px per second, in view
+    wavesurfer.getDuration.mockReturnValue(100)
+    wavesurfer.emit('ready', 100)
+
+    expect(first.element?.parentElement).toBe(regionsContainer)
+    expect(second.element?.parentElement).toBe(regionsContainer)
+    expect(first.content?.style.marginTop).toBe('0px')
+    expect(second.content?.style.marginTop).toBe('12px')
   })
 })

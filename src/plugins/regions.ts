@@ -8,6 +8,7 @@ import { type BasePluginEvents } from '../base-plugin.js'
 import { definePlugin } from '../define-plugin.js'
 import EventEmitter from '../event-emitter.js'
 import createElement from '../dom.js'
+import { computeLabelMargins } from '../label-stacking.js'
 import { Scope } from '../scope.js'
 import { createDragStream } from '../reactive/drag-stream.js'
 import { effect } from '../reactive/store.js'
@@ -110,7 +111,7 @@ export type RegionParams = {
    * Move the content down when it overlaps the content of an earlier region (default: true).
    * Set to false for content you position yourself: it is not moved, it is ignored when placing
    * other regions' content, and turning it off with setOptions clears its margin-top.
-   * Turning it back on takes effect the next time labels are placed, after a drag or resize.
+   * Turning it back on places the labels again straight away (the region emits `render`).
    */
   avoidOverlapping?: boolean
 }
@@ -682,9 +683,14 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     // Remove event listeners from old content before removing it
     this.detachContentListeners()
 
+    const hadContent = !!this.content
     this.content?.remove()
     if (!content) {
       this.content = undefined
+      // The labels that one was keeping down can move back up: the plugin restacks on
+      // `render`. Not `content-changed`, which is forwarded as the public
+      // `region-content-changed` and has never been emitted for a removal
+      if (hadContent) this.emit('render')
       return
     }
     if (typeof content === 'string') {
@@ -772,6 +778,8 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     if (options.avoidOverlapping !== undefined && options.avoidOverlapping !== this.avoidOverlapping) {
       this.avoidOverlapping = options.avoidOverlapping
       if (!this.avoidOverlapping && this.content) this.content.style.removeProperty('margin-top')
+      // The plugin stacks the other labels around this one, or no longer needs to
+      this.emit('render')
     }
 
     if (options.content) {
@@ -874,12 +882,6 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
     // the onInit()-local `activeRegions`.
     let regions: Region[] = []
     let activeRegions: Region[] = []
-    // Maps a saved region to its own child scope, so avoidOverlapping's
-    // reflow timeout (below) can be scheduled on that region's scope instead
-    // of the plugin's — a removed region's pending reflow then dies with it,
-    // rather than firing (harmlessly, but pointlessly) after removal or
-    // accumulating disposers on ctx.scope during an avoidOverlappingAll burst.
-    const regionScopes = new WeakMap<Region, Scope>()
 
     const regionsContainer = createElement('div', {
       part: 'regions-container',
@@ -948,58 +950,68 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       return regions
     }
 
-    function avoidOverlapping(region: Region) {
-      if (!region.content || region.isRemoved || !region.avoidOverlapping) return
+    // Labels that would cover one another are stacked: a label moves down until
+    // it clears the earlier labels in its way, so only regions before it in the
+    // list can push it (otherwise both of two overlapping regions would move
+    // away from each other). Only a label whose region is in the DOM can be
+    // measured, and only one in the DOM can be seen, so only those take part:
+    // that is why the stacking is repeated whenever the regions in the DOM
+    // change, which also stacks the labels of regions that were off screen when
+    // they were created and scrolled into view later.
+    //
+    // Scrolling changes the regions in the DOM without changing where any region
+    // is, so a stacking that follows a scroll (`keepRaised`) starts each label
+    // from the margin it was last given: a label that an earlier label pushed
+    // down stays down when that one scrolls out of the DOM, and is not pushed
+    // down again when it scrolls back in. Anything that can change which labels
+    // overlap (a zoom or resize, new audio, a region added, moved, removed or
+    // changed) stacks from scratch.
+    let stackedMargins = new WeakMap<HTMLElement, number>()
+    function stackLabels(keepRaised = false) {
+      if (!keepRaised) stackedMargins = new WeakMap()
+      const labels: HTMLElement[] = []
+      for (const region of regions) {
+        const label = region.content
+        if (!label || region.isRemoved || !region.avoidOverlapping || !region.element?.parentElement) continue
+        // A region mounted in the regions container is still not in the page when the
+        // whole waveform is detached from the document: it has no box to measure
+        if (!label.isConnected) continue
+        labels.push(label)
+      }
+      if (labels.length === 0) return
 
-      // Schedule on the region's own scope so a removal cancels this pending
-      // reflow instead of letting it fire, or accumulate, on the plugin
-      // scope. Both call sites (avoidOverlappingAll, iterating `regions`;
-      // and saveRegion, right after `regionScopes.set`) only ever reach a
-      // region once it's been saved, so the scope is always present here —
-      // no fallback needed.
-      const scope = regionScopes.get(region)!
-      scope.timeout(() => {
-        if (!region.content || !region.avoidOverlapping) return
+      // Every label is measured with no margin, then the margins are worked out
+      // from those measurements alone: one layout for all of them
+      const previous = labels.map((label) => label.style.marginTop)
+      for (const label of labels) label.style.marginTop = '0'
+      const boxes = labels.map((label) => label.getBoundingClientRect())
 
-        // Check that the label doesn't overlap with other labels
-        // If it does, push it down until it doesn't
-        // only check regions that are before us in the list -- otherwise
-        // both overlapping regions will try to move down away from each other.
-        const div = region.content as HTMLElement
-        div.style.marginTop = '0'
-        const box = div.getBoundingClientRect()
+      // Nothing laid out -- a `display: none` somewhere above the waveform -- measures
+      // every label as nothing, and the margins it had are still the right ones
+      if (boxes.every((box) => box.width === 0 && box.height === 0)) {
+        labels.forEach((label, i) => {
+          label.style.marginTop = previous[i]
+        })
+        return
+      }
 
-        const regionIndex = regions.indexOf(region)
-        if (regionIndex < 0) return
-
-        const overlap = regions
-          .slice(0, regionIndex)
-          .filter((reg) => !reg.isRemoved)
-          .reduce<DOMRect[]>((boxes, reg) => {
-            if (reg === region || !reg.content || !reg.avoidOverlapping) return boxes
-
-            const otherBox = reg.content.getBoundingClientRect()
-            if (box.left < otherBox.right && otherBox.left < box.right) {
-              boxes.push(otherBox)
-            }
-            return boxes
-          }, [])
-          .sort((a, b) => a.top - b.top)
-          .reduce((marginTop, otherBox) => {
-            const top = box.top + marginTop
-            const bottom = top + box.height
-            if (top < otherBox.bottom && otherBox.top < bottom) {
-              return otherBox.bottom - box.top + 2
-            }
-            return marginTop
-          }, 0)
-
-        div.style.marginTop = `${overlap}px`
-      }, 10)
+      const floors = keepRaised ? labels.map((label) => stackedMargins.get(label) ?? 0) : undefined
+      const margins = computeLabelMargins(boxes, floors)
+      labels.forEach((label, i) => {
+        label.style.marginTop = `${margins[i]}px`
+        stackedMargins.set(label, margins[i])
+      })
     }
 
-    function avoidOverlappingAll() {
-      regions.forEach((region) => avoidOverlapping(region))
+    // Stacking waits a moment, and is done once however many regions asked for it
+    // in the meantime (adding thousands of regions, or removing them)
+    let cancelStacking: (() => void) | null = null
+    function requestStacking() {
+      if (cancelStacking) return
+      cancelStacking = ctx.scope.timeout(() => {
+        cancelStacking = null
+        stackLabels()
+      }, 10)
     }
 
     function adjustScroll(region: Region, direction?: AutoScrollDirection) {
@@ -1052,9 +1064,10 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       }
     }
 
-    function syncVirtualRegions(candidates: Iterable<Region>) {
+    /** Mount or unmount the candidates that need it, and say whether it changed which regions are in the DOM */
+    function syncVirtualRegions(candidates: Iterable<Region>): boolean {
       const viewport = readViewport()
-      if (!viewport) return
+      if (!viewport) return false
       const { clientWidth, scrollLeft, scrollWidth, duration } = viewport
 
       const toMount: HTMLElement[] = []
@@ -1080,14 +1093,28 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
 
       toUnmount.forEach((element) => element.remove())
       toMount.forEach((element) => regionsContainer.appendChild(element))
+      return toUnmount.length > 0 || toMount.length > 0
     }
 
-    const syncAllVirtualRegions = () => {
-      if (virtualRegions.size > 0) syncVirtualRegions(virtualRegions)
+    // Scrolling only moves the labels around when it changed which regions are in
+    // the DOM, and then only down; a zoom or resize changes every region's width,
+    // and with it how its label wraps, so stacks from scratch. Both are stacked at
+    // once, before anything is painted.
+    ctx.scope.add(
+      ctx.wavesurfer.on('scroll', () => {
+        if (virtualRegions.size > 0 && syncVirtualRegions(virtualRegions)) stackLabels(true)
+      }),
+    )
+    const syncAfterResize = () => {
+      if (virtualRegions.size === 0) return
+      syncVirtualRegions(virtualRegions)
+      stackLabels()
     }
-    ctx.scope.add(ctx.wavesurfer.on('scroll', syncAllVirtualRegions))
-    ctx.scope.add(ctx.wavesurfer.on('zoom', syncAllVirtualRegions))
-    ctx.scope.add(ctx.wavesurfer.on('resize', syncAllVirtualRegions))
+    ctx.scope.add(ctx.wavesurfer.on('zoom', syncAfterResize))
+    ctx.scope.add(ctx.wavesurfer.on('resize', syncAfterResize))
+    // New audio changes where every region is: registered after the handler above that
+    // moves the regions to the new duration, so this one sees their new positions
+    ctx.scope.add(ctx.wavesurfer.on('ready', syncAfterResize))
 
     // `regionScope` is the same child scope SingleRegion itself owns (created
     // in addRegion/enableDragSelection and passed into its constructor). Once
@@ -1105,15 +1132,19 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
         regionScope.add(() => virtualRegions.delete(region))
         syncVirtualRegions([region])
 
-        regionScope.add(region.on('render', () => syncVirtualRegions([region])))
+        regionScope.add(
+          region.on('render', () => {
+            syncVirtualRegions([region])
+            requestStacking()
+          }),
+        )
       }, 0)
     }
 
     function saveRegion(region: Region, regionScope: Scope) {
       if (!region.element) return
-      regionScopes.set(region, regionScope)
       virtualAppend(region, regionScope)
-      avoidOverlapping(region)
+      requestStacking()
       regions.push(region)
 
       regionScope.add(
@@ -1125,7 +1156,7 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
 
       regionScope.add(
         region.on('update-end', (side) => {
-          avoidOverlappingAll()
+          requestStacking()
           ctx.emit('region-updated', region, side)
         }),
       )
@@ -1150,6 +1181,7 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
 
       regionScope.add(
         region.on('content-changed', () => {
+          requestStacking()
           ctx.emit('region-content-changed', region)
         }),
       )
@@ -1161,6 +1193,8 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       // that must run in response to the event itself.
       region.once('remove', () => {
         regions = regions.filter((reg) => reg !== region)
+        // The labels it was keeping others below can move back up
+        requestStacking()
         ctx.emit('region-removed', region)
       })
 
