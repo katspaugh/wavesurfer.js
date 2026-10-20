@@ -734,7 +734,16 @@ class Renderer {
       if (!slot) return
       if (drawnIndexes[index]) return
       drawnIndexes[index] = true
-      const data = utils.sliceChannelData({ channelData, offset: slot.offset, clampedWidth: slot.width, totalWidth })
+      // The waveform only reads its slices, so they can be views of the audio rather than copies of
+      // it (which, drawn whole, copied the entire recording on every render). A custom renderFunction
+      // may write to what it is given, so it keeps getting copies.
+      const data = utils.sliceChannelData({
+        channelData,
+        offset: slot.offset,
+        clampedWidth: slot.width,
+        totalWidth,
+        readOnly: !options.renderFunction,
+      })
       this.renderSingleCanvas(data, options, slot.width, height, slot.offset, canvasContainer, progressContainer)
     }
 

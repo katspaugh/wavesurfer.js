@@ -50,7 +50,7 @@ export type WaveSurferOptions = {
   /** Pre-computed audio duration in seconds */
   duration?: number
   /** Use an existing media element instead of creating one */
-  media?: HTMLMediaElement
+  media?: HTMLMediaElement | WebAudioPlayer
   /** Whether to show default audio element controls */
   mediaControls?: boolean
   /** Play the audio on load */

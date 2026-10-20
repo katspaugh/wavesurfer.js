@@ -352,20 +352,30 @@ export function computeCanvasPlan({
   return { singleCanvasWidth, numCanvases, slots }
 }
 
+/**
+ * The part of each channel under one canvas, in proportion to where the canvas
+ * is along the waveform. These are copies, which the caller may change, unless
+ * `readOnly` says the caller only reads them: then a typed array is not copied
+ * but viewed (`subarray`), which costs nothing however long the audio is. A
+ * view shares the audio's memory, so writing to one writes to the audio.
+ */
 export function sliceChannelData({
   channelData,
   offset,
   clampedWidth,
   totalWidth,
+  readOnly = false,
 }: {
   channelData: ChannelData
   offset: number
   clampedWidth: number
   totalWidth: number
+  readOnly?: boolean
 }): ChannelData {
   return channelData.map((channel) => {
     const start = Math.floor((offset / totalWidth) * channel.length)
     const end = Math.floor(((offset + clampedWidth) / totalWidth) * channel.length)
+    if (readOnly && channel instanceof Float32Array) return channel.subarray(start, end)
     return channel.slice(start, end)
   })
 }
