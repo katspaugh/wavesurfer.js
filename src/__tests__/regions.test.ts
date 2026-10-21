@@ -1014,6 +1014,80 @@ describe('Auto-scroll while dragging, resizing, or creating a region', () => {
     expect(initialized[0].end).toBeCloseTo(end)
   })
 
+  test.each(['disable', 'destroy'] as const)('%s removes an unfinished selection and its listeners', (action) => {
+    const { plugin, wrapper, regionsContainer } = setup()
+    let pending: ReturnType<typeof plugin.addRegion> | undefined
+    const removed = jest.fn()
+    const created = jest.fn()
+    plugin.on('region-initialized', (region) => {
+      pending = region
+      region.on('remove', removed)
+    })
+    plugin.on('region-created', created)
+    const disable = plugin.enableDragSelection({ content: 'Pending', contentEditable: true })
+
+    startDrag(wrapper, 10, 20)
+    const element = pending!.element!
+    const content = pending!.content!
+    const changed = jest.fn()
+    pending!.on('content-changed', changed)
+    expect(element.parentElement).toBe(regionsContainer)
+
+    if (action === 'disable') disable()
+    else plugin.destroy()
+    disable() // A returned disposer remains safe after destruction or repeated calls.
+
+    expect(element.parentElement).toBeNull()
+    expect(pending!.element).toBeNull()
+    expect(removed).toHaveBeenCalledTimes(1)
+    expect(plugin.getRegions()).toHaveLength(0)
+    content.dispatchEvent(new Event('input'))
+    endDrag(20)
+    expect(changed).not.toHaveBeenCalled()
+    expect(created).not.toHaveBeenCalled()
+  })
+
+  test('drag selection can be enabled again after cancelling an unfinished selection', () => {
+    const { plugin, wrapper, regionsContainer } = setup()
+    Object.defineProperty(regionsContainer, 'clientWidth', { configurable: true, value: 100 })
+    const created = jest.fn()
+    plugin.on('region-created', created)
+    const disable = plugin.enableDragSelection({})
+    startDrag(wrapper, 10, 20)
+    disable()
+    endDrag(20)
+
+    const disableAgain = plugin.enableDragSelection({})
+    startDrag(wrapper, 30, 40)
+    endDrag(40)
+    jest.runOnlyPendingTimers()
+    disableAgain()
+
+    expect(created).toHaveBeenCalledTimes(1)
+    expect(plugin.getRegions()).toHaveLength(1)
+    expect(regionsContainer.children).toHaveLength(1)
+    expect(plugin.getRegions()[0].element?.parentElement).toBe(regionsContainer)
+  })
+
+  test('disabling selection preserves completed and programmatically added regions', () => {
+    const { plugin, wrapper, regionsContainer } = setup()
+    Object.defineProperty(regionsContainer, 'clientWidth', { configurable: true, value: 100 })
+    const existing = plugin.addRegion({ start: 5, end: 6 })
+    const disable = plugin.enableDragSelection({})
+    startDrag(wrapper, 10, 20)
+    endDrag(20)
+    const completed = plugin.getRegions()[1]
+
+    startDrag(wrapper, 30, 40)
+    disable()
+    endDrag(40)
+    jest.runOnlyPendingTimers()
+
+    expect(plugin.getRegions()).toEqual([existing, completed])
+    expect(existing.element?.isConnected).toBe(true)
+    expect(completed.element?.isConnected).toBe(true)
+  })
+
   test('container scroll during drag-creation keeps growing the region', () => {
     const { wavesurfer, plugin, wrapper } = setup()
     const created: Array<{ start: number; end: number }> = []

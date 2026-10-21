@@ -219,6 +219,48 @@ describe('WaveSurfer Regions plugin tests', () => {
     })
   })
 
+  it('should discard an unfinished selection when disabled and allow a new selection', () => {
+    cy.window().then((win) => {
+      const regions = win.wavesurfer.getActivePlugins()[0]
+      const wrapper = win.wavesurfer.getWrapper()
+      const container = wrapper.querySelector('[part="regions-container"]')
+      const { left, top, width } = wrapper.getBoundingClientRect()
+      const created = cy.spy().as('created')
+      regions.on('region-created', created)
+      let pending
+      regions.on('region-initialized', (region) => {
+        pending = region
+      })
+      const startDrag = () => {
+        wrapper.dispatchEvent(new win.PointerEvent('pointerdown', { clientX: left + width * 0.1, clientY: top + 10 }))
+        win.dispatchEvent(new win.PointerEvent('pointermove', { clientX: left + width * 0.3, clientY: top + 10 }))
+      }
+      const endDrag = () => {
+        win.dispatchEvent(new win.PointerEvent('pointerup', { clientX: left + width * 0.3, clientY: top + 10 }))
+      }
+
+      const disable = regions.enableDragSelection({ content: 'Selection' })
+      startDrag()
+      const abandonedElement = pending.element
+      expect(container.contains(abandonedElement)).to.be.true
+      disable()
+      disable()
+      endDrag()
+      expect(abandonedElement.isConnected).to.be.false
+      expect(pending.element).to.be.null
+      expect(regions.getRegions()).to.have.length(0)
+      expect(created).not.to.have.been.called
+
+      const disableAgain = regions.enableDragSelection({ content: 'Selection' })
+      startDrag()
+      endDrag()
+      disableAgain()
+      expect(created).to.have.been.calledOnce
+      expect(regions.getRegions()).to.have.length(1)
+      expect(regions.getRegions()[0].element).not.to.be.null
+    })
+  })
+
   it('should listen to clicks on a region', () => {
     cy.window().then((win) => {
       const regionsPlugin = win.wavesurfer.getActivePlugins()[0]
