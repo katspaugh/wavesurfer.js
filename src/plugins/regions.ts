@@ -1239,7 +1239,8 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
 
     /**
      * Enable creation of regions by dragging on an empty space on the waveform.
-     * Returns a function to disable the drag selection.
+     * Returns a function to disable the drag selection and remove any unfinished region.
+     * Completed regions are preserved.
      */
     function enableDragSelection(options: Omit<RegionParams, 'start' | 'end'>, threshold = 3): () => void {
       const wrapper = ctx.wavesurfer?.getWrapper()
@@ -1250,6 +1251,16 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
       let regionScope: Scope | null = null
       let startX = 0
       let startTime = 0
+
+      const discardRegion = () => {
+        const pendingRegion = region
+        region = null
+        // remove() also detaches the element and clears event listeners;
+        // disposing only the scope leaves an untracked region in the DOM.
+        pendingRegion?.remove()
+        regionScope?.dispose()
+        regionScope = null
+      }
 
       const dragStream = createDragStream(wrapper, { threshold })
 
@@ -1280,7 +1291,7 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
           // matching 'end' arrived — e.g. an aborted or superseded drag).
           // Dispose it now rather than leaving it retained until the plugin
           // itself is destroyed.
-          regionScope?.dispose()
+          discardRegion()
           unsubscribeScroll?.()
           unsubscribeScroll = null
 
@@ -1360,6 +1371,7 @@ const RegionsPlugin = definePlugin<RegionsPluginOptions | Record<string, never>,
         // keep mutating the abandoned region until the plugin is destroyed.
         unsubscribeScroll?.()
         unsubscribeScroll = null
+        discardRegion()
       })
     }
 
