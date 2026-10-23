@@ -279,7 +279,7 @@ describe('Renderer', () => {
     Object.defineProperty((renderer as any).scrollContainer, 'scrollWidth', { configurable: true, value: 100 })
     Object.defineProperty((renderer as any).scrollContainer, 'clientWidth', { configurable: true, value: 50 })
     renderer.renderProgress(0)
-    ;(renderer as any).scrollIntoView(0.8)
+    ;(renderer as any).scrollIntoView(0.8, 1)
     expect(renderer.getScroll()).toBeGreaterThanOrEqual(0)
   })
 

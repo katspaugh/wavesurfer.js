@@ -939,7 +939,7 @@ class Renderer {
     this.reRender()
   }
 
-  private scrollIntoView(progress: number, isPlaying = false, previousProgress?: number) {
+  private scrollIntoView(progress: number, duration: number, isPlaying = false, previousProgress?: number) {
     const { scrollLeft, scrollWidth, clientWidth } = this.scrollContainer
     const progressWidth = progress * scrollWidth
     const startEdge = scrollLeft
@@ -964,12 +964,6 @@ class Renderer {
       // Keep the cursor centered when playing
       const center = progressWidth - viewStart - middle
       if (isPlaying && this.options.autoCenter && center > 0) {
-        const duration = this.audioData?.duration
-        if (duration === undefined || duration <= 0) {
-          this.scrollContainer.scrollLeft += center
-          return
-        }
-
         const pixelsPerSecond = scrollWidth / duration
         if (pixelsPerSecond <= LOW_ZOOM_PIXELS_PER_SECOND_THRESHOLD) {
           // At most the smoothing step, or where the cursor has moved further
@@ -1000,7 +994,7 @@ class Renderer {
 
     // Only scroll if we have valid audio data to prevent race conditions during loading
     if (this.isScrollable.value && this.options.autoScroll && this.audioData && this.audioData.duration > 0) {
-      this.scrollIntoView(progress, isPlaying, previousProgress)
+      this.scrollIntoView(progress, this.audioData.duration, isPlaying, previousProgress)
     }
   }
 
