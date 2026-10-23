@@ -88,6 +88,25 @@ describe('Renderer normalization', () => {
     renderer.destroy()
   })
 
+  it('treats maxPeak: 0 as unset and normalizes against the global peak', async () => {
+    // calculateVerticalScale ignores a maxPeak of 0 and measures the slice it
+    // is given, so 0 must be replaced by the global peak like a missing value
+    const buffer = createAudioBuffer([
+      [0.1, -0.4, 0.2],
+      [0.3, 0.8, -0.5],
+    ])
+    const renderer = new Renderer({ container, normalize: true, maxPeak: 0, fillParent: true })
+    stubLayout(renderer)
+    await renderer.render(buffer)
+
+    const calls = (utils.calculateVerticalScale as jest.Mock).mock.calls
+    expect(calls.length).toBeGreaterThan(0)
+    for (const [args] of calls) {
+      expect(args.maxPeak).toBeCloseTo(0.8)
+    }
+    renderer.destroy()
+  })
+
   it('leaves a user-provided maxPeak untouched', async () => {
     const buffer = createAudioBuffer([[0.1, -0.4, 0.2]])
     const renderer = new Renderer({ container, normalize: true, maxPeak: 1, fillParent: true })

@@ -821,8 +821,10 @@ class Renderer {
     // the peak from a slice would scale a quiet chunk to full height --
     // visible amplitude jumps at every canvas seam. The global peak also
     // spans all drawn channels (not just channel 0), so a hotter second
-    // channel can no longer overflow its half of the canvas.
-    if (options.normalize && options.maxPeak == null) {
+    // channel can no longer overflow its half of the canvas. A maxPeak of 0
+    // counts as unset, as it does in calculateVerticalScale, which would
+    // otherwise measure each slice itself.
+    if (options.normalize && !options.maxPeak) {
       options = { ...options, maxPeak: utils.calculateGlobalPeak(channelData) }
     }
 
