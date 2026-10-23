@@ -1,5 +1,4 @@
 import EnvelopePlugin from '../plugins/envelope.js'
-import { Scope } from '../scope.js'
 import { createEmitter } from './helpers/create-emitter.js'
 import { installMatchMediaStub } from './helpers/match-media.js'
 import { mockSvgGeometry } from './helpers/svg-geometry.js'
@@ -38,49 +37,42 @@ describe('EnvelopePlugin leak fixes', () => {
     jest.restoreAllMocks()
   })
 
-  // ADAPTED: the pre-port test read `anyPlugin.polylineSubscriptions.length`
-  // directly. That array is now a child Scope (`ctx.scope.child()`),
-  // disposed and replaced — not accumulated — on every 'decode' (see
-  // envelope.ts:initPolyline). Scope has no size/length introspection by
-  // design, so we pin the same "replace, don't accumulate" contract one
-  // level down: spy on Scope.prototype.child (the mechanism itself, not an
-  // envelope.ts private) and assert firing 'decode' twice disposes the
-  // first child scope before/when creating the second, rather than leaving
-  // both live.
-  it('does not accumulate polyline subscriptions across re-inits of the polyline', () => {
-    const childSpy = jest.spyOn(Scope.prototype, 'child')
+  // The listeners a polyline registers (dblclick to add a point, the touch
+  // long-press) live on the Polyline's own Scope, which its destroy()
+  // disposes. Each 'decode' replaces the polyline, so the previous one's SVG
+  // and listeners must go, rather than accumulate.
+  const POLYLINE_EVENTS = ['dblclick', 'touchstart', 'touchmove', 'touchend']
+  const removedEvents = (spy: jest.SpyInstance) => spy.mock.calls.map(([type]) => type)
+
+  it('does not accumulate polyline listeners across re-inits of the polyline', () => {
     const ws = createWaveSurfer()
     const plugin = EnvelopePlugin.create({ points: [] })
     plugin._init(ws as any)
 
     ws.emit('decode', 10)
-    const firstPolylineScope = childSpy.mock.results[childSpy.mock.results.length - 1].value as Scope
+    const firstSvg = ws.getWrapper().querySelector('svg') as SVGSVGElement
+    const removeSpy = jest.spyOn(firstSvg, 'removeEventListener')
 
     ws.emit('decode', 10)
-    const secondPolylineScope = childSpy.mock.results[childSpy.mock.results.length - 1].value as Scope
 
-    expect(firstPolylineScope).not.toBe(secondPolylineScope)
-    expect(firstPolylineScope.disposed).toBe(true) // replaced, not accumulated
-    expect(secondPolylineScope.disposed).toBe(false)
+    expect(removedEvents(removeSpy)).toEqual(expect.arrayContaining(POLYLINE_EVENTS))
+    expect(firstSvg.isConnected).toBe(false)
+    expect(ws.getWrapper().querySelectorAll('svg')).toHaveLength(1)
   })
 
-  // ADAPTED: same underlying data-structure change as above. The pre-port
-  // test checked `polylineSubscriptions.length` goes from >0 to 0 across
-  // plugin.destroy(); the equivalent here is the current polyline child
-  // scope transitioning from live to disposed.
-  it('drains polyline subscriptions on plugin destroy', () => {
-    const childSpy = jest.spyOn(Scope.prototype, 'child')
+  it('removes the current polyline and its listeners on plugin destroy', () => {
     const ws = createWaveSurfer()
     const plugin = EnvelopePlugin.create({ points: [] })
     plugin._init(ws as any)
 
     ws.emit('decode', 10)
-    const currentPolylineScope = childSpy.mock.results[childSpy.mock.results.length - 1].value as Scope
-    expect(currentPolylineScope.disposed).toBe(false)
+    const svg = ws.getWrapper().querySelector('svg') as SVGSVGElement
+    const removeSpy = jest.spyOn(svg, 'removeEventListener')
 
     plugin.destroy()
 
-    expect(currentPolylineScope.disposed).toBe(true)
+    expect(removedEvents(removeSpy)).toEqual(expect.arrayContaining(POLYLINE_EVENTS))
+    expect(svg.isConnected).toBe(false)
   })
 
   // ADAPTED: `anyPlugin.polyline.svg` no longer exists (`polyline` is a

@@ -374,11 +374,6 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
 
     const points: EnvelopePoint[] = options?.points || []
     let polyline: Polyline | null = null
-    // A child scope dedicated to the current polyline's event subscriptions.
-    // Disposed and replaced (not accumulated) every time initPolyline() runs
-    // (e.g. on every 'decode'), so listeners never pile up across repeated
-    // re-inits.
-    let polylineScope = ctx.scope.child()
     let volume = 1
     let clearEmitPointsTimeout: (() => void) | null = null
 
@@ -426,12 +421,10 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
     }
 
     function initPolyline() {
-      // Drop the previous polyline's listeners before replacing it, instead
-      // of accumulating a fresh set of 4 on every decode.
-      polylineScope.dispose()
+      // Drop the previous polyline (and with it its own listeners, which its
+      // destroy() disposes) before replacing it on every decode
       polyline?.destroy()
       polyline = null
-      polylineScope = ctx.scope.child()
 
       if (!ctx.wavesurfer) return
 
@@ -545,10 +538,9 @@ const EnvelopePlugin = definePlugin<EnvelopePluginOptions, EnvelopePluginEvents,
     )
 
     // No destroy() override exists anymore — teardown IS scope disposal.
-    // polylineScope (a child of ctx.scope) is disposed automatically as part
-    // of that tree, but `polyline` itself must be explicitly destroyed and
-    // nulled out here so a post-destroy Api call (addPoint/removePoint/...)
-    // can't reach a torn-down Polyline instance.
+    // `polyline` must be explicitly destroyed and nulled out here so a
+    // post-destroy Api call (addPoint/removePoint/...) can't reach a
+    // torn-down Polyline instance.
     ctx.scope.add(() => {
       polyline?.destroy()
       polyline = null
