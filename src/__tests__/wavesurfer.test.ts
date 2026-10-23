@@ -1038,6 +1038,26 @@ describe('WebAudio backend composition', () => {
       ;(globalThis as any).AudioContext = originalAudioContext
     }
   })
+
+  test('setPlaybackRate() and setMuted() reach getState() with the WebAudio backend', () => {
+    const { MockAudioContext } = makeMockAudioContext()
+    const originalAudioContext = (globalThis as any).AudioContext
+    ;(globalThis as any).AudioContext = MockAudioContext
+    try {
+      const ws = WaveSurfer.create({ container: document.createElement('div'), backend: 'WebAudio' })
+      expect(ws.getState().playbackRate.value).toBe(1)
+      expect(ws.getState().muted.value).toBe(false)
+
+      ws.setPlaybackRate(2)
+      ws.setMuted(true)
+
+      expect(ws.getState().playbackRate.value).toBe(2)
+      expect(ws.getState().muted.value).toBe(true)
+      ws.destroy()
+    } finally {
+      ;(globalThis as any).AudioContext = originalAudioContext
+    }
+  })
 })
 
 describe('terminal destroy: mutating APIs are no-ops', () => {
