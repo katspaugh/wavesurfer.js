@@ -596,3 +596,38 @@ describe('seeking events', () => {
     expect(events).toEqual(['seeking', 'seeked', 'timeupdate'])
   })
 })
+
+describe('rate and mute events', () => {
+  test('changing playbackRate emits ratechange, and setting the same rate does not', () => {
+    const { audioContext } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+    const onRateChange = jest.fn()
+    player.on('ratechange', onRateChange)
+
+    player.playbackRate = 2
+    expect(onRateChange).toHaveBeenCalledTimes(1)
+    expect(player.playbackRate).toBe(2)
+
+    player.playbackRate = 2
+    expect(onRateChange).toHaveBeenCalledTimes(1)
+  })
+
+  test('changing muted emits volumechange, and setting the same value does not', () => {
+    const { audioContext } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+    const onVolumeChange = jest.fn()
+    player.on('volumechange', onVolumeChange)
+
+    // An HTMLMediaElement reports a mute change through 'volumechange', which
+    // is the event Player's muted-state bridge listens for
+    player.muted = true
+    expect(onVolumeChange).toHaveBeenCalledTimes(1)
+    expect(player.muted).toBe(true)
+
+    player.muted = true
+    expect(onVolumeChange).toHaveBeenCalledTimes(1)
+
+    player.muted = false
+    expect(onVolumeChange).toHaveBeenCalledTimes(2)
+  })
+})
