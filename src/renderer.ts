@@ -685,13 +685,7 @@ class Renderer {
     canvasContainer.appendChild(canvas)
 
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-
-    if (options.renderFunction) {
-      ctx.fillStyle = this.convertColorValues(options.waveColor, ctx)
-      options.renderFunction(data, ctx)
-    } else {
-      this.renderWaveform(data, options, ctx)
-    }
+    this.renderWaveform(data, options, ctx)
 
     // Draw a progress canvas
     if (canvas.width > 0 && canvas.height > 0) {
