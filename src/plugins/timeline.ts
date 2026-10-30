@@ -353,14 +353,15 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
     // Get reactive state
     const { duration } = ctx.state
 
-    // React to duration changes and redraw events to initialize timeline
+    // React to duration changes and redraw events to initialize timeline. A
+    // subscription, not an effect: an effect would also run now, and the
+    // initial build is done once, at the end of setup
     ctx.scope.add(
-      effect(() => {
-        const dur = duration.value
+      duration.subscribe((dur) => {
         if (dur > 0 || opts.duration) {
           initTimeline()
         }
-      }, [duration]),
+      }),
     )
 
     ctx.scope.add(ctx.wavesurfer.on('redraw', () => initTimeline()))
