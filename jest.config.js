@@ -1,3 +1,5 @@
+import { createDefaultEsmPreset } from 'ts-jest'
+
 // Two projects (Jest 29's `projects` + `--selectProjects <displayName>`, see
 // https://jestjs.io/docs/configuration#projects-arraystring--projectconfig):
 //   - 'default': every existing test EXCEPT gc-leaks.test.ts. This is what `yarn test:unit`
@@ -21,7 +23,7 @@
 // a project with zero registered instances of it, so this file's gating instead surfaces as
 // Jest's own "no configured project" / no matching tests error in that case - still not silent).
 const sharedProjectConfig = {
-  preset: 'ts-jest/presets/default-esm',
+  ...createDefaultEsmPreset({ tsconfig: 'tsconfig.test.json' }),
   testEnvironment: 'jsdom',
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
@@ -33,12 +35,6 @@ const sharedProjectConfig = {
     // individual suites no longer need their own `jest.mock('web-worker:./spectrogram-worker.ts',
     // ..., { virtual: true })` — see helpers/spectrogram-worker-mock.ts.
     '^web-worker:\\./spectrogram-worker\\.ts$': '<rootDir>/src/__tests__/helpers/spectrogram-worker-mock.ts',
-  },
-  globals: {
-    'ts-jest': {
-      useESM: true,
-      tsconfig: 'tsconfig.test.json',
-    },
   },
 }
 
