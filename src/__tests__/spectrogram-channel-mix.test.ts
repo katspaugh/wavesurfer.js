@@ -92,6 +92,44 @@ describe('SpectrogramPlugin with splitChannels: false mixes all channels', () =>
     expect(Array.from(audioData[0])).toEqual(Array.from(right.subarray(2000, 4000), (value) => value / 2))
   })
 
+  it('full mode, worker: averages every channel of a buffer with more than two', () => {
+    const internals = createPlugin({ splitChannels: false, useWebWorker: true })
+    const levels = [0.5, 0.25, -0.125]
+    const channels = levels.map((level) => new Float32Array(SAMPLE_RATE).fill(level))
+    const buffer = {
+      sampleRate: SAMPLE_RATE,
+      length: SAMPLE_RATE,
+      duration: 1,
+      numberOfChannels: channels.length,
+      getChannelData: (channel: number) => channels[channel],
+    } as unknown as AudioBuffer
+    internals.getFrequencies(buffer).catch(() => undefined)
+
+    const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
+    const { audioData } = worker.postMessage.mock.calls[0][0]
+
+    expect(audioData.length).toBe(1)
+    expect(audioData[0].length).toBe(SAMPLE_RATE)
+    audioData[0].forEach((value: number) => expect(value).toBeCloseTo((0.5 + 0.25 - 0.125) / 3, 6))
+  })
+
+  it('windowed mode, worker: still posts a segment-sized copy of each channel with splitChannels: true', () => {
+    const internals = createPlugin({ rendering: 'windowed', splitChannels: true, useWebWorker: true })
+    const { buffer, left, right } = makeRightOnlyBuffer()
+    internals.buffer = buffer
+    internals.windowed.calculateFrequenciesWithWorker(0.25, 0.5).catch(() => undefined)
+
+    const worker = mockWorkerInstances[mockWorkerInstances.length - 1]
+    const { audioData } = worker.postMessage.mock.calls[0][0]
+
+    expect(audioData.length).toBe(2)
+    expect(Array.from(audioData[0])).toEqual(Array.from(left.subarray(2000, 4000)))
+    expect(Array.from(audioData[1])).toEqual(Array.from(right.subarray(2000, 4000)))
+    // A copy, not a view: postMessage clones the whole backing buffer of a view
+    expect(audioData[1].buffer).not.toBe(right.buffer)
+    expect(audioData[1].buffer.byteLength).toBe(2000 * Float32Array.BYTES_PER_ELEMENT)
+  })
+
   it('still analyzes each channel separately with splitChannels: true', async () => {
     const internals = createPlugin({ splitChannels: true, useWebWorker: false })
     const { buffer } = makeRightOnlyBuffer()
