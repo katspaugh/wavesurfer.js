@@ -44,6 +44,51 @@ import { type BasePluginEvents } from './base-plugin.js'
 import { type PluginContext } from './define-plugin.js'
 import createElement, { isHTMLElement } from './dom.js'
 
+/**
+ * The channel data a spectrogram analyzes for the sample range [startSample, endSample): one
+ * entry per channel when split, otherwise a single entry with every channel averaged down to
+ * mono (a mono buffer passes through unmixed). A segment is copied with slice() when `copy` is
+ * set (for postMessage, which clones the whole backing buffer of a view), otherwise viewed with
+ * subarray(); a mixed channel is always a fresh, segment-sized array.
+ */
+function getAnalysisChannels(
+  audioBuffer: AudioBuffer,
+  split: boolean,
+  startSample = 0,
+  endSample?: number,
+  copy = false,
+): Float32Array[] {
+  const whole = startSample === 0 && endSample === undefined
+  const segment = (data: Float32Array) =>
+    copy ? data.slice(startSample, endSample) : whole ? data : data.subarray(startSample, endSample)
+
+  if (split) {
+    const channels: Float32Array[] = []
+    for (let c = 0; c < audioBuffer.numberOfChannels; c++) {
+      channels.push(segment(audioBuffer.getChannelData(c)))
+    }
+    return channels
+  }
+
+  const first = audioBuffer.getChannelData(0)
+  const channelCount = audioBuffer.numberOfChannels
+  if (channelCount <= 1) {
+    return [segment(first)]
+  }
+
+  const mixed = new Float32Array(first.subarray(startSample, endSample).length)
+  for (let c = 0; c < channelCount; c++) {
+    const data = audioBuffer.getChannelData(c).subarray(startSample, endSample)
+    for (let i = 0; i < mixed.length; i++) {
+      mixed[i] += data[i]
+    }
+  }
+  for (let i = 0; i < mixed.length; i++) {
+    mixed[i] /= channelCount
+  }
+  return [mixed]
+}
+
 // The worker constructor is injected (see spectrogramSetup's WorkerCtor param) rather than
 // imported directly here: `import ... from 'web-worker:./spectrogram-worker.ts'`
 // (rollup-plugin-web-worker-loader's scheme) needs to be a relative path from the IMPORTING
@@ -190,7 +235,10 @@ export type SpectrogramPluginOptions = {
    * - roseus: From https://github.com/dofuuz/roseus/blob/main/roseus/cmap/roseus.py
    */
   colorMap?: number[][] | 'gray' | 'igray' | 'roseus'
-  /** Render a spectrogram for each channel independently when true. */
+  /**
+   * Render a spectrogram for each channel independently when true. When false, all channels are
+   * averaged down to one and shown as a single spectrogram.
+   */
   splitChannels?: boolean
   /**
    * URL with pre-computed spectrogram JSON data, the data must be a Uint8Array[][].
@@ -809,17 +857,12 @@ export function spectrogramSetup(
       throw new Error('Worker not available')
     }
 
-    const channels = effectiveSplitChannels() ? audioBuffer.numberOfChannels : 1
-
     // An explicit noverlap (including 0) is used as is; the width is only read for the automatic one
     const requestNoverlap =
       settings.noverlap ?? deriveNoverlap(settings.fftSamples, null, audioBuffer.length, getWidth())
 
     // Prepare audio data for worker
-    const audioData: Float32Array[] = []
-    for (let c = 0; c < channels; c++) {
-      audioData.push(audioBuffer.getChannelData(c))
-    }
+    const audioData = getAnalysisChannels(audioBuffer, effectiveSplitChannels())
 
     return postWorkerRequest(audioData, {
       startTime: 0,
@@ -875,16 +918,11 @@ export function spectrogramSetup(
       }
     }
 
-    const channels = effectiveSplitChannels() ? audioBuffer.numberOfChannels : 1
-
     // Same noverlap resolution as the worker request
     const mainThreadNoverlap =
       settings.noverlap ?? deriveNoverlap(settings.fftSamples, null, audioBuffer.length, getWidth())
 
-    const channelData: Float32Array[] = []
-    for (let c = 0; c < channels; c++) {
-      channelData.push(audioBuffer.getChannelData(c))
-    }
+    const channelData = getAnalysisChannels(audioBuffer, effectiveSplitChannels())
 
     const params: FrequencyParams = {
       fftSamples: settings.fftSamples,
@@ -921,7 +959,6 @@ export function spectrogramSetup(
     }
 
     const sampleRate = buffer.sampleRate
-    const channels = effectiveSplitChannels() ? buffer.numberOfChannels : 1
     const startSample = Math.floor(startTime * sampleRate)
     const endSample = Math.floor(endTime * sampleRate)
     const segmentWidth = (endTime - startTime) * getWindowedPixelsPerSecond()
@@ -943,10 +980,7 @@ export function spectrogramSetup(
     // here are shifted to be relative to the slice (0..sliceDuration) rather than absolute
     // offsets into the full buffer, since the slice no longer contains samples before
     // startSample.
-    const audioData: Float32Array[] = []
-    for (let c = 0; c < channels; c++) {
-      audioData.push(buffer.getChannelData(c).slice(startSample, endSample))
-    }
+    const audioData = getAnalysisChannels(buffer, effectiveSplitChannels(), startSample, endSample, true)
 
     // The slice is exactly (endSample - startSample) samples long, but a plain
     // `sliceLength / sampleRate` division doesn't reliably round-trip back through the worker's
@@ -982,7 +1016,6 @@ export function spectrogramSetup(
     const sampleRate = buffer.sampleRate
     const startSample = Math.floor(startTime * sampleRate)
     const endSample = Math.floor(endTime * sampleRate)
-    const channels = effectiveSplitChannels() ? buffer.numberOfChannels : 1
     const segmentWidth = (endTime - startTime) * getWindowedPixelsPerSecond()
     const requestNoverlap = deriveNoverlap(
       settings.fftSamples,
@@ -991,10 +1024,7 @@ export function spectrogramSetup(
       segmentWidth,
     )
 
-    const channelData: Float32Array[] = []
-    for (let c = 0; c < channels; c++) {
-      channelData.push(buffer.getChannelData(c).subarray(startSample, endSample))
-    }
+    const channelData = getAnalysisChannels(buffer, effectiveSplitChannels(), startSample, endSample)
 
     const params: FrequencyParams = {
       fftSamples: settings.fftSamples,
