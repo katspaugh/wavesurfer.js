@@ -54,12 +54,13 @@ export type MinimapPluginEvents = BasePluginEvents & {
 // event stream — no side effects beyond re-emitting under the same name.
 // 'click', 'drag' and 'ready' are handled manually below because they carry
 // extra logic (seeking the main waveform, debounced drag-to-seek, syncing
-// the minimap position) in addition to forwarding.
+// the minimap position) in addition to forwarding. 'destroy' is not
+// forwarded: the forwarders are always removed before the nested instance
+// is destroyed (see destroyMinimap), and the plugin emits its own 'destroy'.
 const FORWARDED_MINI_EVENTS: Array<keyof MinimapPluginEvents & string> = [
   'audioprocess',
   'dblclick',
   'decode',
-  'destroy',
   'dragend',
   'dragstart',
   'interaction',
@@ -192,11 +193,11 @@ const MinimapPlugin = definePlugin<MinimapPluginOptions, MinimapPluginEvents, ob
     }
 
     // Dispose the current bridge scope FIRST (unsubscribing the mini
-    // wavesurfer's event forwarders, including its 'destroy' forwarder),
-    // THEN destroy the nested instance, THEN replace miniScope with a fresh
-    // child. This order means the nested instance's own 'destroy' event
-    // fires with no forwarder listening, so recreating the minimap (e.g. on
-    // 'decode') never re-emits the plugin's own 'destroy' event.
+    // wavesurfer's event forwarders), THEN destroy the nested instance, THEN
+    // replace miniScope with a fresh child. This order means the nested
+    // instance's own 'destroy' event fires with nothing of ours listening, so
+    // recreating the minimap (e.g. on 'decode') never re-emits the plugin's
+    // own 'destroy' event.
     function destroyMinimap() {
       const mini = miniWavesurfer
       miniWavesurfer = null
