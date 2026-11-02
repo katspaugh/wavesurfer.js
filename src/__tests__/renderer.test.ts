@@ -1,4 +1,5 @@
 import Renderer from '../renderer.js'
+import type { WaveSurferOptions } from '../wavesurfer.js'
 
 declare global {
   interface Window {
@@ -87,6 +88,69 @@ describe('Renderer', () => {
     const [el, shadow] = (renderer as any).initHtml()
     expect(el.shadowRoot).toBe(shadow)
     expect(shadow.querySelector('.scroll')).not.toBeNull()
+  })
+
+  const initialHeightCases: [Partial<WaveSurferOptions>, number, string][] = [
+    [{}, 0, '128px'],
+    [{ height: 50 }, 0, '50px'],
+    [{ height: 240 }, 0, '240px'],
+    [{ height: 'auto' }, 100, '100px'],
+    [{ height: 'auto' }, 0, '128px'],
+    [{ height: 'auto', splitChannels: [{ overlay: false }] }, 200, '200px'],
+  ]
+
+  test('initHtml keeps style text constant across heights', () => {
+    const styleText = (renderer.getWrapper().getRootNode() as ShadowRoot).querySelector('style')!.textContent!
+
+    for (const [options, parentHeight] of initialHeightCases) {
+      const otherContainer = document.createElement('div')
+      Object.defineProperty(otherContainer, 'clientHeight', { configurable: true, get: () => parentHeight })
+      document.body.appendChild(otherContainer)
+      const otherRenderer = new Renderer({ ...options, container: otherContainer })
+      try {
+        const shadow = otherRenderer.getWrapper().getRootNode() as ShadowRoot
+        expect(shadow.querySelector('style')?.textContent).toBe(styleText)
+      } finally {
+        otherRenderer.destroy()
+        otherContainer.remove()
+      }
+    }
+
+    const canvasesRule = styleText.match(/:host \.canvases \{([^}]*)\}/)?.[1]
+    expect(canvasesRule).toBeDefined()
+    expect(canvasesRule).not.toContain('min-height')
+  })
+
+  test.each(initialHeightCases)(
+    'initHtml sets initial min-height for %j with parent height %i to %s',
+    (options, parentHeight, minHeight) => {
+      renderer.destroy()
+      Object.defineProperty(container, 'clientHeight', { configurable: true, get: () => parentHeight })
+      renderer = new Renderer({ ...options, container })
+
+      expect(renderer.getWrapper().querySelector<HTMLElement>('.canvases')?.style.minHeight).toBe(minHeight)
+    },
+  )
+
+  test('initHtml measures auto height before appending the renderer', () => {
+    renderer.destroy()
+    Object.defineProperty(container, 'clientHeight', {
+      configurable: true,
+      get: () => (container.children.length === 0 ? 100 : 300),
+    })
+    renderer = new Renderer({ container, height: 'auto' })
+
+    expect(renderer.getWrapper().querySelector<HTMLElement>('.canvases')?.style.minHeight).toBe('100px')
+  })
+
+  test('initHtml preserves the nonce without changing style text', () => {
+    const styleText = (renderer.getWrapper().getRootNode() as ShadowRoot).querySelector('style')!.textContent
+    renderer.destroy()
+    renderer = new Renderer({ container, cspNonce: 'abc' })
+
+    const style = (renderer.getWrapper().getRootNode() as ShadowRoot).querySelector('style')
+    expect(style?.getAttribute('nonce')).toBe('abc')
+    expect(style?.textContent).toBe(styleText)
   })
 
   test('getHeight calculates values', () => {

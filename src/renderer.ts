@@ -342,7 +342,6 @@ class Renderer {
           z-index: 2;
         }
         :host .canvases {
-          min-height: ${this.getHeight(this.options.height, this.options.splitChannels)}px;
           pointer-events: none;
         }
         :host .canvases > div {
@@ -386,6 +385,10 @@ class Renderer {
         </div>
       </div>
     `
+
+    // Set min-height through CSSOM so the style text stays constant and a CSP hash can allow it.
+    const canvasWrapper = shadow.querySelector('.canvases') as HTMLElement
+    canvasWrapper.style.minHeight = `${this.getHeight(this.options.height, this.options.splitChannels)}px`
 
     return [div, shadow]
   }
