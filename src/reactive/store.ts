@@ -212,8 +212,6 @@ export function computed<T>(fn: () => T, dependencies?: Signal<any>[]): Computed
     dispose,
   }
 
-  // Duck-typed disposal used by event-streams' cleanup()
-  Object.defineProperty(readonly, '_cleanup', { value: dispose, enumerable: false })
   // Debug-only: number of live result subscribers, for leak tests. Not part
   // of the public ComputedSignal interface.
   Object.defineProperty(readonly, '_subscriberCount', { value: () => resultUnsubs.size, enumerable: false })
