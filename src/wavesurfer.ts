@@ -726,8 +726,6 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
         }
         const onProgress = (percentage: number) => this.emit('loading', percentage)
         blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
-        // Guard: bail if a newer load started or the instance was destroyed
-        if (loadScope.disposed) return this.bailedLoadOutcome(loadScope)
         const overriddenMimeType = this.options.blobMimeType
         if (overriddenMimeType) {
           blob = new Blob([blob], { type: overriddenMimeType })
@@ -780,9 +778,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
         this.webAudioPlayer.duration = audioDuration
       }
 
-      if (!loadScope.disposed) {
-        this.wavesurferActions.setLoadPhase('decoding')
-      }
+      this.wavesurferActions.setLoadPhase('decoding')
 
       // Decode the audio data or use user-provided peaks
       if (channelData) {
