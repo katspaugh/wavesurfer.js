@@ -169,6 +169,29 @@ function topLabel(): string {
   return calls[calls.length - 1][0]
 }
 
+describe('SpectrogramPlugin getOptions', () => {
+  it('returns a snapshot of the current options', async () => {
+    const h = createPlugin({ height: 180, frequencyMin: 100 })
+    await firstDraw()
+    expect(h.plugin.getOptions()).toEqual({
+      useWebWorker: true,
+      scale: 'linear',
+      height: 180,
+      frequencyMin: 100,
+    })
+
+    const options = h.plugin.getOptions()
+    options.height = 1
+    expect(h.plugin.getOptions().height).toBe(180)
+
+    const updated = h.plugin.setOptions({ height: 250 })
+    nextFrame()
+    await flush()
+    await updated
+    expect(h.plugin.getOptions().height).toBe(250)
+  })
+})
+
 describe('SpectrogramPlugin setOptions in full rendering mode', () => {
   it('redraws a height change from the retained data on the next frame, without a new analysis', async () => {
     const h = createPlugin()
