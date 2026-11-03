@@ -388,6 +388,8 @@ export type Api = {
    * lives in segmentManager instead; see loadFrequenciesData's doc comment for why.
    */
   clearCache: () => void
+  /** Get a shallow copy of the current plugin options. */
+  getOptions: () => SpectrogramPluginOptions
   /**
    * Change options without re-creating the plugin. The promise resolves once the change has been
    * drawn (after that draw's 'ready' event). Not supported in 'windowed' rendering mode, where it
@@ -2189,6 +2191,7 @@ export function spectrogramSetup(
     loadFrequenciesData,
     getFrequenciesData,
     clearCache,
+    getOptions: () => ({ ...currentOptions }),
     setOptions,
     getLoadingProgress: () => segmentManager?.getLoadingProgress() ?? 100,
     stopProgressiveLoading: () => segmentManager?.stopProgressiveLoading(),
