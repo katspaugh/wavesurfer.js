@@ -334,11 +334,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     const wasPlaying = !this.paused
     if (wasPlaying) this._pause()
     this._playbackRate = value
+    // _play() starts a new buffer node at the new rate; while paused, the
+    // next _play() does
     if (wasPlaying) this._play()
-
-    if (this.bufferNode) {
-      this.bufferNode.playbackRate.value = value
-    }
 
     // Like an HTMLMediaElement, report a change of rate: Player's
     // playback-rate state is only updated from this event
