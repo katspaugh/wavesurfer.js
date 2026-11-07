@@ -174,22 +174,13 @@ const TimelinePlugin = definePlugin<TimelinePluginOptions, TimelinePluginEvents,
         return 10
       } else if (pxPerSec * 5 >= 25) {
         return 6
-      } else if (pxPerSec * 15 >= 25) {
-        return 4
       }
       return 4
     }
 
     // Return the cadence of notches that get labels in the secondary color.
     function defaultSecondaryLabelInterval(pxPerSec: number): number {
-      if (pxPerSec >= 25) {
-        return 5
-      } else if (pxPerSec * 5 >= 25) {
-        return 2
-      } else if (pxPerSec * 15 >= 25) {
-        return 2
-      }
-      return 2
+      return pxPerSec >= 25 ? 5 : 2
     }
 
     // Append all notches first, then measure them in one pass (a single layout),
