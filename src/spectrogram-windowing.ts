@@ -94,8 +94,9 @@ const PROGRESSIVE_SEGMENT_SECONDS = 30
 const PROGRESSIVE_CALL_MAX_SPAN_SECONDS = 35
 // Viewport-driven (non-fill-container) segments target this pixel width.
 const VIEWPORT_SEGMENT_PIXEL_WIDTH = 15000
-// Short audio (<= this many seconds, and narrower than the container) renders as one segment
-// filling the whole container instead of being chopped into windowed segments.
+// Short audio (<= this many seconds, and no wider than the container) is drawn at the
+// container's scale, and not chopped into fixed-width windowed segments: a request for the whole
+// of it is one segment, filling the container.
 const FILL_CONTAINER_MAX_DURATION_SECONDS = 60
 const PROGRESSIVE_LOADING_START_DELAY_MS = 1000
 const PROGRESSIVE_LOADING_STEP_DELAY_MS = 2000
@@ -255,6 +256,15 @@ export class SegmentManager {
       segmentDuration = VIEWPORT_SEGMENT_PIXEL_WIDTH / pixelsPerSec
     }
 
+    // Where a segment goes is where its own time range lies on the waveform. Filling the
+    // container, the recording is drawn across the container's width (stretched to it, where it
+    // is narrower), so that is the scale. A segment is not always the whole recording even then:
+    // the container is as wide as the recording whenever it scrolls, so a recording of a minute
+    // or less that scrolls also fills it, and its segments are the parts in view. Drawing each
+    // across the whole container stretched a few seconds over all of it, every such segment on
+    // top of the one before.
+    const drawnPxPerSec = shouldFillContainer ? containerWidth / totalAudioDuration : pixelsPerSec
+
     // Check coverage first to avoid duplicate work
     const uncoveredRanges = this.findUncoveredTimeRanges(startTime, endTime)
     if (uncoveredRanges.length === 0) return
@@ -311,8 +321,8 @@ export class SegmentManager {
           const segment: FrequencySegment = {
             startTime: segmentStart,
             endTime: segmentEnd,
-            startPixel: shouldFillContainer ? 0 : segmentStart * pixelsPerSec,
-            endPixel: shouldFillContainer ? containerWidth : segmentEnd * pixelsPerSec,
+            startPixel: segmentStart * drawnPxPerSec,
+            endPixel: segmentEnd * drawnPxPerSec,
             frequencies,
             pixelsPerSecond: pixelsPerSec,
           }
@@ -362,14 +372,27 @@ export class SegmentManager {
       const visibleStartTime = scrollLeft / pixelsPerSec
       const visibleEndTime = (scrollLeft + viewportWidth) / pixelsPerSec
 
-      const visibleDuration = visibleEndTime - visibleStartTime
+      // From the viewport's width alone, not visibleEndTime - visibleStartTime: that difference
+      // changes in its last bits as the view scrolls, and the window below is snapped to
+      // multiples of the buffer, which must be the same from one scroll position to the next
+      // for the windows' edges to meet.
+      const visibleDuration = viewportWidth / pixelsPerSec
       let bufferTimeSeconds = Math.min(VIEWPORT_BUFFER_MAX_SECONDS, visibleDuration * 0.5)
       if (visibleDuration > VIEWPORT_BUFFER_LARGE_VISIBLE_DURATION_SECONDS) {
         bufferTimeSeconds = VIEWPORT_BUFFER_FALLBACK_SECONDS
       }
 
-      const windowStartTime = Math.max(0, visibleStartTime - bufferTimeSeconds)
-      const windowEndTime = Math.min(totalAudioDuration, visibleEndTime + bufferTimeSeconds)
+      let windowStartTime = Math.max(0, visibleStartTime - bufferTimeSeconds)
+      let windowEndTime = Math.min(totalAudioDuration, visibleEndTime + bufferTimeSeconds)
+
+      // Out to whole multiples of the buffer, so that as playback (or a scroll) moves the view a
+      // few pixels at a time, the window takes in a buffer's worth at a time rather than a
+      // sliver each frame: every sliver was a segment of its own, a computation and a canvas
+      // each, often only a few FFT frames wide.
+      if (bufferTimeSeconds > 0) {
+        windowStartTime = Math.floor(windowStartTime / bufferTimeSeconds) * bufferTimeSeconds
+        windowEndTime = Math.min(totalAudioDuration, Math.ceil(windowEndTime / bufferTimeSeconds) * bufferTimeSeconds)
+      }
 
       await this.generateSegments(windowStartTime, windowEndTime)
       if (this.deps.isDisposed()) return

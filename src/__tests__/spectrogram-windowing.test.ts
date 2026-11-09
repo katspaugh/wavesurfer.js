@@ -886,3 +886,93 @@ describe('SegmentManager zoom changes', () => {
     expect([...manager.segments.values()].map((segment) => segment.pixelsPerSecond)).toEqual([400])
   })
 })
+
+describe('SegmentManager with a short recording that scrolls', () => {
+  // A recording of under a minute, so drawn at the container's scale, but at 344 px/s it is
+  // 13583 px wide, the container is as wide, and it scrolls through a 711 px viewport
+  const DURATION = 39.484
+  const PX_PER_SEC = 344
+  const WIDTH = Math.ceil(DURATION * PX_PER_SEC)
+  const VIEWPORT = 711
+
+  function makeScrolling(scroll: { left: number }) {
+    return new SegmentManager(
+      makeDeps({
+        getWidth: () => WIDTH,
+        getPixelsPerSecond: () => PX_PER_SEC,
+        getBufferDuration: () => DURATION,
+        getScrollLeft: () => scroll.left,
+        getViewportWidth: () => VIEWPORT,
+      }),
+    )
+  }
+
+  const inOrder = (manager: SegmentManager) => [...manager.segments.values()].sort((a, b) => a.startTime - b.startTime)
+
+  it('draws each segment where its own time range lies, not across the whole container', async () => {
+    const scroll = { left: 0 }
+    const manager = makeScrolling(scroll)
+    await manager.renderVisibleWindow()
+    scroll.left = 1600
+    await manager.renderVisibleWindow()
+
+    const segments = inOrder(manager)
+    expect(segments.length).toBeGreaterThan(1)
+    const scale = WIDTH / DURATION
+    for (const segment of segments) {
+      expect(segment.startPixel).toBeCloseTo(segment.startTime * scale, 6)
+      expect(segment.endPixel).toBeCloseTo(segment.endTime * scale, 6)
+      expect(segment.endPixel - segment.startPixel).toBeLessThan(WIDTH / 2)
+    }
+    // Laid end to end, not each over the one before
+    for (let i = 1; i < segments.length; i++) {
+      expect(segments[i].startPixel).toBeCloseTo(segments[i - 1].endPixel, 6)
+    }
+  })
+
+  it('takes the view in a buffer at a time as playback moves it a few pixels a frame', async () => {
+    const scroll = { left: 0 }
+    const manager = makeScrolling(scroll)
+    for (; scroll.left <= 3000; scroll.left += 6) await manager.renderVisibleWindow()
+
+    // Half the viewport's duration either side: each segment is at least that, not a sliver
+    // of the few pixels the view moved since the last frame
+    const buffer = VIEWPORT / PX_PER_SEC / 2
+    const segments = inOrder(manager)
+    expect(segments.length).toBeLessThanOrEqual(12)
+    for (const segment of segments) {
+      expect(segment.endTime - segment.startTime).toBeGreaterThan(buffer * 0.99)
+    }
+    for (let i = 1; i < segments.length; i++) {
+      expect(segments[i].startTime).toBe(segments[i - 1].endTime)
+    }
+  })
+
+  it('places the rest of a recording zoomed out to fit beside the part already drawn', async () => {
+    const pxPerSec = 18 // 711 px of 39.484 s, a little under the viewport
+    const manager = new SegmentManager(
+      makeDeps({
+        getWidth: () => VIEWPORT,
+        getPixelsPerSecond: () => pxPerSec,
+        getBufferDuration: () => DURATION,
+        getViewportWidth: () => VIEWPORT,
+      }),
+    )
+    manager.segments.set('drawn', { ...makeSegment(0, 3), startPixel: 0, endPixel: 54, pixelsPerSecond: pxPerSec })
+
+    await manager.renderVisibleWindow()
+
+    const [, rest] = inOrder(manager)
+    expect(rest.startTime).toBe(3)
+    expect(rest.startPixel).toBeCloseTo((3 * VIEWPORT) / DURATION, 6)
+    expect(rest.endPixel).toBeCloseTo(VIEWPORT, 6)
+  })
+
+  it('still fills the container with one segment where the recording is stretched across it', async () => {
+    // 5 s at 100 px/s is 500 px, stretched across a 1000 px container
+    const manager = new SegmentManager(makeDeps({ getBufferDuration: () => 5 }))
+    await manager.renderVisibleWindow()
+
+    expect(inOrder(manager).map((s) => [s.startTime, s.endTime, s.startPixel, s.endPixel])).toEqual([[0, 5, 0, 1000]])
+  })
+})

@@ -955,6 +955,16 @@ export function spectrogramSetup(
     return computeWindowedPixelsPerSecond(ctx.wavesurfer?.options.minPxPerSec, buffer?.duration ?? null, getWidth())
   }
 
+  // Where a segment's samples are read up to: a frame (fftSamples) past its end, where the audio
+  // has that much. Each FFT frame starts inside the segment but reads fftSamples samples on from
+  // there, so a slice that stops at the segment's end has no frames for its last fftSamples, and
+  // the frames it has are stretched across its whole width - each segment drawn a little early,
+  // more so the shorter it is or the further in the zoom. Read on, its frames reach its end, as
+  // full rendering's do (which stop a frame short only at the end of the audio).
+  function segmentReadEnd(audio: AudioBuffer, endSample: number): number {
+    return Math.min(audio.length, endSample + settings.fftSamples)
+  }
+
   async function calculateFrequenciesWithWorkerRange(startTime: number, endTime: number): Promise<Uint8Array[][]> {
     if (!buffer || !worker) {
       throw new Error('Worker not available')
@@ -971,7 +981,8 @@ export function spectrogramSetup(
       segmentWidth,
     )
 
-    // Slice each channel down to just this segment's samples BEFORE postMessage. postMessage's
+    // Slice each channel down to just this segment's samples (and the frame read past its end -
+    // see segmentReadEnd) BEFORE postMessage. postMessage's
     // structured clone copies the whole ArrayBuffer backing a TypedArray view, not just the
     // range the view exposes - so posting buffer.getChannelData(c) directly (a view over the
     // ENTIRE decoded channel) would clone the whole file on every segment request, however
@@ -982,9 +993,10 @@ export function spectrogramSetup(
     // here are shifted to be relative to the slice (0..sliceDuration) rather than absolute
     // offsets into the full buffer, since the slice no longer contains samples before
     // startSample.
-    const audioData = getAnalysisChannels(buffer, effectiveSplitChannels(), startSample, endSample, true)
+    const readEnd = segmentReadEnd(buffer, endSample)
+    const audioData = getAnalysisChannels(buffer, effectiveSplitChannels(), startSample, readEnd, true)
 
-    // The slice is exactly (endSample - startSample) samples long, but a plain
+    // The slice is exactly (readEnd - startSample) samples long, but a plain
     // `sliceLength / sampleRate` division doesn't reliably round-trip back through the worker's
     // own `Math.floor(endTime * sampleRate)` - division then re-multiplication by the same
     // sampleRate can land a hair under the true value (verified: sampleRate=8000, len=1015 ->
@@ -993,7 +1005,7 @@ export function spectrogramSetup(
     // before dividing pushes the float comfortably past the true boundary without ever reaching
     // the next one, so the worker's floor reliably recovers the exact slice length (brute-force
     // verified: 0 mismatches across 9 common sample rates x 5000 lengths).
-    const sliceLength = endSample - startSample
+    const sliceLength = readEnd - startSample
     return postWorkerRequest(audioData, {
       startTime: 0,
       endTime: (sliceLength + 0.5) / sampleRate,
@@ -1026,7 +1038,8 @@ export function spectrogramSetup(
       segmentWidth,
     )
 
-    const channelData = getAnalysisChannels(buffer, effectiveSplitChannels(), startSample, endSample)
+    const readEnd = segmentReadEnd(buffer, endSample)
+    const channelData = getAnalysisChannels(buffer, effectiveSplitChannels(), startSample, readEnd)
 
     const params: FrequencyParams = {
       fftSamples: settings.fftSamples,
