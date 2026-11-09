@@ -90,7 +90,8 @@ class Player {
       this.media.autoplay = true
     }
     // Speed
-    if (options.playbackRate != null) {
+    const { playbackRate } = options
+    if (playbackRate != null) {
       // Registered on mediaScope like every other media listener: with an
       // external media element that never fires 'canplay', an unregistered
       // one-shot listener would survive destroy().
@@ -98,9 +99,7 @@ class Player {
         this.onMediaEvent(
           'canplay',
           () => {
-            if (options.playbackRate != null) {
-              this.media.playbackRate = options.playbackRate
-            }
+            this.media.playbackRate = playbackRate
           },
           { once: true },
         ),
