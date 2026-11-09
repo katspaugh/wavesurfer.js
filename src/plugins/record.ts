@@ -180,10 +180,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
           }
         }
 
-        if (!this.dataWindow) {
-          this.dataWindow = new Float32Array(windowSize)
-        }
-
+        // Zero-filled, so the first tick (no window yet) needs no copy
         const tempArray = new Float32Array(windowSize)
 
         if (this.dataWindow && this.dataWindow.length > 0) {
