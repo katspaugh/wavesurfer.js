@@ -41,10 +41,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   private playStartTime = 0
   private playbackPosition = 0
   private _muted = false
-  // The user's volume, remembered across mute: while muted the gain is 0 but
-  // `volume` keeps reporting this, like HTMLMediaElement.volume. Starts at 1,
-  // the default gain of a freshly created GainNode.
-  private _volume = 1
+  // The volume to restore on unmute. Only meaningful while muted: the gain is 0
+  // then, but `volume` keeps reporting this, like HTMLMediaElement.volume. While
+  // unmuted the gain node's own value is the single source of truth.
+  private volumeBeforeMute = 1
   private _playbackRate = 1
   private _duration: number | undefined = undefined
   private buffer: AudioBuffer | null = null
@@ -374,18 +374,18 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this._duration = value
   }
 
-  /** Apply the effective gain: silent while muted, the user's volume otherwise */
-  private applyGain() {
-    this.gainNode.gain.value = this._muted ? 0 : this._volume
-  }
-
   get volume() {
-    return this._volume
+    // Unmuted, read the gain node itself -- an app may also write `gain.value`
+    // directly via getGainNode(), and that must stay in sync with what is reported
+    return this._muted ? this.volumeBeforeMute : this.gainNode.gain.value
   }
   set volume(value) {
-    // While muted this only updates the remembered volume; it takes effect on unmute
-    this._volume = value
-    this.applyGain()
+    if (this._muted) {
+      // Stay silent; the new volume takes effect on unmute
+      this.volumeBeforeMute = value
+    } else {
+      this.gainNode.gain.value = value
+    }
     this.emit('volumechange')
   }
 
@@ -398,7 +398,12 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
 
     // Mute through the gain value rather than by disconnecting the gain node,
     // so routing an app attached via getGainNode() (e.g. filters) survives
-    this.applyGain()
+    if (value) {
+      this.volumeBeforeMute = this.gainNode.gain.value
+      this.gainNode.gain.value = 0
+    } else {
+      this.gainNode.gain.value = this.volumeBeforeMute
+    }
 
     // An HTMLMediaElement reports a mute change as 'volumechange', the event
     // Player reads its muted state from

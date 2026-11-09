@@ -653,6 +653,23 @@ describe('volume and mute through the gain value', () => {
     expect(gainNode.gain.value).toBe(1)
   })
 
+  test('a gain value the app wrote directly is reported, and survives a mute cycle', () => {
+    const { audioContext, gainNode } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+
+    // Apps reach the node through getGainNode() and may set the gain themselves
+    player.getGainNode().gain.value = 0.3
+    expect(player.volume).toBe(0.3)
+
+    player.muted = true
+    expect(gainNode.gain.value).toBe(0)
+    expect(player.volume).toBe(0.3)
+
+    player.muted = false
+    expect(gainNode.gain.value).toBe(0.3)
+    expect(player.volume).toBe(0.3)
+  })
+
   test('mute/unmute never rewires the gain node, so custom routing survives (#4429)', () => {
     const { audioContext, gainNode } = createMockAudioContext()
     const player = new WebAudioPlayer(audioContext)
