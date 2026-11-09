@@ -25,6 +25,7 @@ import {
   AUTO_GAIN_BUFFER_BUDGET_BYTES,
   paintColumnPixels,
   getCanvasPixelRatio,
+  efficientResample,
 } from './spectrogram-render-utils.js'
 import { computeFrequencies, type FrequencyParams } from './spectrogram-frequencies.js'
 // Windowed rendering strategy: segment map, eviction, uncovered-range
@@ -1962,77 +1963,6 @@ export function spectrogramSetup(
         canvasCtx.fillText(label, x, y)
       }
     }
-  }
-
-  function resampleChannel(oldMatrix: Uint8Array[], targetWidth: number): Uint8Array[] {
-    const oldColumns = oldMatrix.length
-    const freqBins = oldMatrix[0]?.length || 0
-
-    // Fast path for no resampling needed
-    if (oldColumns === targetWidth || targetWidth === 0) {
-      return oldMatrix
-    }
-
-    const ratio = oldColumns / targetWidth
-
-    // Always use quality resampling for accurate spectrograms
-    const newMatrix: Uint8Array[] = new Array(targetWidth)
-
-    if (ratio >= 1) {
-      // Downsampling with proper averaging
-      for (let i = 0; i < targetWidth; i++) {
-        const start = Math.floor(i * ratio)
-        const end = Math.min(Math.ceil((i + 1) * ratio), oldColumns)
-        const count = end - start
-
-        // Always create new column to avoid reference issues
-        const column = new Uint8Array(freqBins)
-        if (count === 1) {
-          // Single source column - copy data
-          column.set(oldMatrix[start])
-        } else {
-          // Average multiple source columns
-          for (let k = 0; k < freqBins; k++) {
-            let sum = 0
-            for (let j = start; j < end; j++) {
-              sum += oldMatrix[j][k]
-            }
-            column[k] = Math.round(sum / count)
-          }
-        }
-        newMatrix[i] = column
-      }
-    } else {
-      // Upsampling with linear interpolation for quality
-      for (let i = 0; i < targetWidth; i++) {
-        const srcIndex = i * ratio
-        const leftIndex = Math.floor(srcIndex)
-        const rightIndex = Math.min(leftIndex + 1, oldColumns - 1)
-        const weight = srcIndex - leftIndex
-
-        const column = new Uint8Array(freqBins)
-
-        if (weight === 0 || leftIndex === rightIndex) {
-          // Exact match or at boundary - use nearest neighbor
-          column.set(oldMatrix[leftIndex])
-        } else {
-          // Linear interpolation for better quality
-          const leftColumn = oldMatrix[leftIndex]
-          const rightColumn = oldMatrix[rightIndex]
-          const invWeight = 1 - weight
-          for (let k = 0; k < freqBins; k++) {
-            column[k] = Math.round(leftColumn[k] * invWeight + rightColumn[k] * weight)
-          }
-        }
-        newMatrix[i] = column
-      }
-    }
-
-    return newMatrix
-  }
-
-  function efficientResample(frequenciesData: Uint8Array[][], targetWidth: number): Uint8Array[][] {
-    return frequenciesData.map((channelFreq) => resampleChannel(channelFreq, targetWidth))
   }
 
   function fillImageDataQuality(
