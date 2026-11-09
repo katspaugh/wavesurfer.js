@@ -177,15 +177,10 @@ const HoverPlugin = definePlugin<HoverPluginOptions, HoverPluginEvents, object>(
           wrapper.style.transform = ''
         }
       }
+      // scope.listen also removes the listener when the plugin is destroyed
       transitionEndCleanup = ctx.scope.listen(wrapper, 'transitionend', onTransitionEnd, { once: true })
     }, [pointerLeave]),
   )
-  ctx.scope.add(() => {
-    if (transitionEndCleanup) {
-      transitionEndCleanup()
-      transitionEndCleanup = null
-    }
-  })
 
   // When zoom or scroll happens, re-run the pointer move logic with the last known mouse position
   const onUpdate = () => {
