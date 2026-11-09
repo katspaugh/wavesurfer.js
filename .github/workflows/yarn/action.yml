@@ -5,16 +5,22 @@ description: 'Install node modules'
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-node@v3.6.0
+    - uses: actions/setup-node@v4
       with:
         node-version: 20
 
     - name: Yarn cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: '**/node_modules'
         key: node-modules-${{ hashFiles('**/yarn.lock') }}
 
+    # --frozen-lockfile: fail if yarn.lock is out of date with package.json.
+    # (`--immutable` is the Yarn Berry spelling; Yarn 1, which this repo pins
+    # via `packageManager`, silently ignores it.)
+    # --ignore-scripts: skip the `prepare` script, which would run a full
+    # `yarn build` on every install. Jobs that need `dist/` (e2e, release)
+    # build explicitly; the e2e job also runs `cypress install` itself.
     - name: Yarn install
       shell: bash
-      run: yarn install --immutable
+      run: yarn install --frozen-lockfile --ignore-scripts
