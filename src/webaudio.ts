@@ -41,6 +41,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   private playStartTime = 0
   private playbackPosition = 0
   private _muted = false
+  // The user's volume, remembered across mute: while muted the gain is 0 but
+  // `volume` keeps reporting this, like HTMLMediaElement.volume. Starts at 1,
+  // the default gain of a freshly created GainNode.
+  private _volume = 1
   private _playbackRate = 1
   private _duration: number | undefined = undefined
   private buffer: AudioBuffer | null = null
@@ -370,11 +374,18 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     this._duration = value
   }
 
+  /** Apply the effective gain: silent while muted, the user's volume otherwise */
+  private applyGain() {
+    this.gainNode.gain.value = this._muted ? 0 : this._volume
+  }
+
   get volume() {
-    return this.gainNode.gain.value
+    return this._volume
   }
   set volume(value) {
-    this.gainNode.gain.value = value
+    // While muted this only updates the remembered volume; it takes effect on unmute
+    this._volume = value
+    this.applyGain()
     this.emit('volumechange')
   }
 
@@ -385,11 +396,9 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     if (this._muted === value) return
     this._muted = value
 
-    if (this._muted) {
-      this.gainNode.disconnect()
-    } else {
-      this.gainNode.connect(this.audioContext.destination)
-    }
+    // Mute through the gain value rather than by disconnecting the gain node,
+    // so routing an app attached via getGainNode() (e.g. filters) survives
+    this.applyGain()
 
     // An HTMLMediaElement reports a mute change as 'volumechange', the event
     // Player reads its muted state from
@@ -400,7 +409,12 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     return /^(audio|video)\//.test(mimeType)
   }
 
-  /** Get the GainNode used to play the audio. Can be used to attach filters. */
+  /**
+   * Get the GainNode used to play the audio. Can be used to attach filters.
+   *
+   * Volume and mute are applied through this node's `gain.value` (0 while muted),
+   * never by changing its connections, so custom routing set up on it is preserved.
+   */
   public getGainNode(): GainNode {
     return this.gainNode
   }
