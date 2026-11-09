@@ -188,6 +188,10 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
   // destroy-triggered abort or a real failure. WeakSet so a superseded
   // scope isn't kept alive once nothing else references it.
   private supersededLoadScopes = new WeakSet<Scope>()
+  // The scope of the load() currently running, cleared when that load
+  // settles (a superseded load leaves it to the newer one). replacePeaks()
+  // reads it to stay out of an in-flight load's way.
+  private pendingLoadScope: Scope | null = null
   // destroy() is terminal: once true, load()/loadBlob() reject and
   // registerPlugin() throws. Create a new instance instead of reusing a
   // destroyed one.
@@ -677,6 +681,7 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
     this.loadScope?.dispose()
     const loadScope = this.scope.child()
     this.loadScope = loadScope
+    this.pendingLoadScope = loadScope
 
     // The pipeline below -- starting with the 'load' emit -- can throw or
     // reject when this load is superseded by a newer load() (e.g. an aborted
@@ -837,6 +842,8 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
         throw err
       }
       return 'superseded'
+    } finally {
+      if (this.pendingLoadScope === loadScope) this.pendingLoadScope = null
     }
     return undefined
   }
@@ -885,6 +892,28 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
    */
   public loadBlob(blob: Blob, channelData?: WaveSurferOptions['peaks'], duration?: number): Promise<void> {
     return this.classifyLoadResult(this.loadAudio('', blob, channelData, duration))
+  }
+
+  /**
+   * Swap in new pre-decoded peaks and duration and re-render, without a load:
+   * no 'load'/'decode'/'ready' events, no load phase or load scope change,
+   * and the media source and playback are left alone. For live previews that
+   * redraw many times a second (the Record plugin's mic waveform).
+   * Returns false and does nothing after destroy() or while a load() is in
+   * flight, so a preview frame never interleaves with a real load.
+   * Throws (changing nothing) on empty peaks or a non-positive duration.
+   * @internal
+   */
+  public replacePeaks(channelData: Array<Float32Array | number[]>, duration: number): boolean {
+    if (this.isDestroyed || this.pendingLoadScope) return false
+    const decodedData = Decoder.createBuffer(channelData, duration)
+    this.decodedData = decodedData
+    // A source-less WebAudioPlayer reports the duration it is given (see loadAudio)
+    if (this.webAudioPlayer && !this.player.getSrc()) this.webAudioPlayer.duration = duration
+    this.wavesurferActions.setPeaks(channelData)
+    this.wavesurferActions.setAudioBuffer(decodedData)
+    this.renderer.render(decodedData)
+    return true
   }
 
   /** Zoom the waveform by a given pixels-per-second factor */

@@ -147,6 +147,8 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
     let sampleIdx = -1
     let monitorStartTime = performance.now()
+    // Whether the next frame must go through a real load() (see drawWaveform)
+    let needsLoad = true
 
     if (this.wavesurfer) {
       // Snapshot only the keys this session overrides (below, and minPxPerSec
@@ -198,19 +200,18 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
           }
         }
 
-        // Zero-filled, so the first tick (no window yet) needs no copy
-        const tempArray = new Float32Array(windowSize)
-
-        if (this.dataWindow && this.dataWindow.length > 0) {
-          // Shift old data to the left, dropping the oldest sample
-          const keepLength = windowSize - 1
-          const oldData = this.dataWindow.slice(-keepLength)
-          tempArray.set(oldData, 0)
+        if (this.dataWindow?.length === windowSize) {
+          // Shift old data to the left in place, dropping the oldest sample.
+          // Safe to mutate: the renderer draws synchronously and every tick
+          // re-renders from this array anyway.
+          this.dataWindow.copyWithin(0, 1)
+        } else {
+          // Zero-filled, so the first tick (no window yet) needs no copy
+          this.dataWindow = new Float32Array(windowSize)
         }
 
         // Add new peak value at the end
-        tempArray[windowSize - 1] = maxValue
-        this.dataWindow = tempArray
+        this.dataWindow[windowSize - 1] = maxValue
       } else if (this.options.continuousWaveform) {
         // Continuous waveform
         if (!this.dataWindow) {
@@ -252,30 +253,44 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       // Render the waveform
       if (this.wavesurfer) {
         const totalDuration = (this.dataWindow?.length ?? 0) / FPS
+        const duration = this.options.scrollingWaveform ? this.options.scrollingWaveformWindow || 0 : totalDuration
         const cursorTime = this.isRecording() && this.options.continuousWaveform ? sampleIdx / FPS : 0
-        this.wavesurfer
-          .load(
-            '',
-            [this.dataWindow],
-            this.options.scrollingWaveform ? this.options.scrollingWaveformWindow : totalDuration,
-          )
-          .then(() => {
-            if (this.wavesurfer && this.options.continuousWaveform) {
-              this.wavesurfer.setTime(cursorTime)
+        const afterRender = () => {
+          if (this.wavesurfer && this.options.continuousWaveform) {
+            this.wavesurfer.setTime(cursorTime)
 
-              if (!this.wavesurfer.options.minPxPerSec) {
-                this.wavesurfer.setOptions({
-                  minPxPerSec: this.wavesurfer.getWidth() / this.wavesurfer.getDuration(),
-                })
-              }
+            if (!this.wavesurfer.options.minPxPerSec) {
+              this.wavesurfer.setOptions({
+                minPxPerSec: this.wavesurfer.getWidth() / this.wavesurfer.getDuration(),
+              })
             }
-          })
-          .catch((err) => {
-            // Rapid re-renders supersede each other; a superseded load()
-            // rejects with AbortError by design -- not an error here.
-            if (err instanceof DOMException && err.name === 'AbortError') return
-            console.error('Error rendering real-time recording data:', err)
-          })
+          }
+        }
+        const onRenderError = (err: unknown) => console.error('Error rendering real-time recording data:', err)
+
+        if (needsLoad) {
+          // The session's first frame is a real load(): it clears a previous
+          // recording's media source, pauses playback and gives the app one
+          // round of load/decode/ready for the preview.
+          needsLoad = false
+          this.wavesurfer
+            .load('', [this.dataWindow], duration)
+            .then(afterRender)
+            .catch((err) => {
+              // Superseded by a newer load() -- not an error here
+              if (err instanceof DOMException && err.name === 'AbortError') return
+              onRenderError(err)
+            })
+        } else {
+          // Later frames only swap the peaks: a full load() 100 times a
+          // second would flood the app with load/decode/ready events. Skipped
+          // (false) while a load() is in flight.
+          try {
+            if (this.wavesurfer.replacePeaks([this.dataWindow], duration)) afterRender()
+          } catch (err) {
+            onRenderError(err)
+          }
+        }
       }
     }
 
