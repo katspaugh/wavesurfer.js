@@ -826,6 +826,92 @@ export function getLabelFrequency(
   return scaleToHz(scaleMin + (index / labelIndex) * (scaleMax - scaleMin), scale)
 }
 
+export type FrequencyLabelsOptions = {
+  /** Background fill per channel row (default: 'rgba(68,68,68,0)') */
+  bgFill: string | undefined
+  /** Font size of the frequency values (default: '12px') */
+  fontSizeFreq: string
+  /** Font size of the units (default: '12px') */
+  fontSizeUnit: string
+  /** Font family (default: 'Helvetica') */
+  fontType: string
+  /** Color of the frequency values (default: '#fff') */
+  textColorFreq: string | undefined
+  /** Color of the units (default: '#fff') */
+  textColorUnit: string | undefined
+  /** (default: 'center') */
+  textAlign: CanvasTextAlign
+  /** Number of channel rows to label */
+  channels: number
+  /** Height of one channel row in CSS pixels */
+  height: number
+  /** Frequency range shown, bottom to top, in Hz */
+  frequencyMin: number
+  frequencyMax: number
+  scale: 'linear' | 'logarithmic' | 'mel' | 'bark' | 'erb'
+}
+
+/**
+ * Draw the frequency axis labels onto the labels canvas: resizes its backing store to
+ * height * channels rows at window.devicePixelRatio, then paints each channel row's background
+ * and its frequency/unit labels.
+ */
+export function drawFrequencyLabels(labelsEl: HTMLCanvasElement, opts: FrequencyLabelsOptions): void {
+  const { channels, frequencyMin, frequencyMax, scale } = opts
+  const frequenciesHeight = opts.height
+  const bgFill = opts.bgFill || 'rgba(68,68,68,0)'
+  const fontSizeFreq = opts.fontSizeFreq || '12px'
+  const fontSizeUnit = opts.fontSizeUnit || '12px'
+  const fontType = opts.fontType || 'Helvetica'
+  const textColorFreq = opts.textColorFreq || '#fff'
+  const textColorUnit = opts.textColorUnit || '#fff'
+  const textAlign = opts.textAlign || 'center'
+  const bgWidth = 55
+  const getMaxY = frequenciesHeight || 512
+  const labelIndex = 5 * (getMaxY / 256)
+
+  // prepare canvas element for labels
+  const canvasCtx = labelsEl.getContext('2d')
+  if (!canvasCtx) return
+  const dispScale = window.devicePixelRatio
+  labelsEl.height = opts.height * channels * dispScale
+  labelsEl.width = bgWidth * dispScale
+  canvasCtx.scale(dispScale, dispScale)
+
+  for (let c = 0; c < channels; c++) {
+    // for each channel
+    // fill background: one row-height rect per channel. (fillRect's 4th argument is a
+    // HEIGHT, not an end coordinate - the historical `(1 + c) * getMaxY` overdrew every
+    // row below channel c, double-painting a translucent background per extra channel.)
+    canvasCtx.fillStyle = bgFill
+    canvasCtx.fillRect(0, c * getMaxY, bgWidth, getMaxY)
+
+    // render labels
+    for (let i = 0; i <= labelIndex; i++) {
+      canvasCtx.textAlign = textAlign
+      canvasCtx.textBaseline = 'middle'
+
+      const freq = getLabelFrequency(i, labelIndex, frequencyMin, frequencyMax, scale)
+      const label = freqType(freq)
+      const units = unitType(freq)
+      const x = 16
+      let y = (1 + c) * getMaxY - (i / labelIndex) * getMaxY
+
+      // Make sure label remains in view
+      y = Math.min(Math.max(y, c * getMaxY + 10), (1 + c) * getMaxY - 10)
+
+      // unit label
+      canvasCtx.fillStyle = textColorUnit
+      canvasCtx.font = fontSizeUnit + ' ' + fontType
+      canvasCtx.fillText(units, x + 24, y)
+      // freq label
+      canvasCtx.fillStyle = textColorFreq
+      canvasCtx.font = fontSizeFreq + ' ' + fontType
+      canvasCtx.fillText(label, x, y)
+    }
+  }
+}
+
 /**
  * Create wrapper click handler for relative position calculation
  */

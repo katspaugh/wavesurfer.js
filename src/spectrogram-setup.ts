@@ -18,14 +18,12 @@
 import {
   hzToScale,
   setupColorMap,
-  getLabelFrequency,
-  freqType,
-  unitType,
   createWrapperClickHandler,
   AUTO_GAIN_BUFFER_BUDGET_BYTES,
   paintColumnPixels,
   getCanvasPixelRatio,
   efficientResample,
+  drawFrequencyLabels,
 } from './spectrogram-render-utils.js'
 import { computeFrequencies, type FrequencyParams } from './spectrogram-frequencies.js'
 // Windowed rendering strategy: segment map, eviction, uncovered-range
@@ -1911,58 +1909,20 @@ export function spectrogramSetup(
   ): void {
     if (!labelsEl) return
 
-    const frequenciesHeight = settings.height
-    bgFill = bgFill || 'rgba(68,68,68,0)'
-    fontSizeFreq = fontSizeFreq || '12px'
-    fontSizeUnit = fontSizeUnit || '12px'
-    fontType = fontType || 'Helvetica'
-    textColorFreq = textColorFreq || '#fff'
-    textColorUnit = textColorUnit || '#fff'
-    textAlign = textAlign || 'center'
-    const bgWidth = 55
-    const getMaxY = frequenciesHeight || 512
-    const labelIndex = 5 * (getMaxY / 256)
-
-    // prepare canvas element for labels
-    const canvasCtx = labelsEl.getContext('2d')
-    if (!canvasCtx) return
-    const dispScale = window.devicePixelRatio
-    labelsEl.height = settings.height * channels * dispScale
-    labelsEl.width = bgWidth * dispScale
-    canvasCtx.scale(dispScale, dispScale)
-
-    for (let c = 0; c < channels; c++) {
-      // for each channel
-      // fill background: one row-height rect per channel. (fillRect's 4th argument is a
-      // HEIGHT, not an end coordinate - the historical `(1 + c) * getMaxY` overdrew every
-      // row below channel c, double-painting a translucent background per extra channel.)
-      canvasCtx.fillStyle = bgFill
-      canvasCtx.fillRect(0, c * getMaxY, bgWidth, getMaxY)
-
-      // render labels
-      for (let i = 0; i <= labelIndex; i++) {
-        canvasCtx.textAlign = textAlign
-        canvasCtx.textBaseline = 'middle'
-
-        const freq = getLabelFrequency(i, labelIndex, settings.frequencyMin, frequencyMax, settings.scale)
-        const label = freqType(freq)
-        const units = unitType(freq)
-        const x = 16
-        let y = (1 + c) * getMaxY - (i / labelIndex) * getMaxY
-
-        // Make sure label remains in view
-        y = Math.min(Math.max(y, c * getMaxY + 10), (1 + c) * getMaxY - 10)
-
-        // unit label
-        canvasCtx.fillStyle = textColorUnit
-        canvasCtx.font = fontSizeUnit + ' ' + fontType
-        canvasCtx.fillText(units, x + 24, y)
-        // freq label
-        canvasCtx.fillStyle = textColorFreq
-        canvasCtx.font = fontSizeFreq + ' ' + fontType
-        canvasCtx.fillText(label, x, y)
-      }
-    }
+    drawFrequencyLabels(labelsEl, {
+      bgFill,
+      fontSizeFreq,
+      fontSizeUnit,
+      fontType,
+      textColorFreq,
+      textColorUnit,
+      textAlign,
+      channels,
+      height: settings.height,
+      frequencyMin: settings.frequencyMin,
+      frequencyMax,
+      scale: settings.scale,
+    })
   }
 
   function fillImageDataQuality(
