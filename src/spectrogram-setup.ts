@@ -26,6 +26,7 @@ import {
   drawFrequencyLabels,
 } from './spectrogram-render-utils.js'
 import { computeFrequencies, type FrequencyParams } from './spectrogram-frequencies.js'
+import { createSpectrogramWorkerClient, type WorkerRequest } from './spectrogram-worker-client.js'
 // Windowed rendering strategy: segment map, eviction, uncovered-range
 // detection and progressive loading live in this shared, host-agnostic module so the
 // `rendering: 'windowed'` path here and the deprecated spectrogram-windowed.ts shim (which
@@ -282,14 +283,6 @@ export type SpectrogramPluginEvents = BasePluginEvents & {
 const isPowerOfTwo = (value: number) => Number.isInteger(value) && value >= 2 && Number.isInteger(Math.log2(value))
 
 const MAX_NODES = 10
-
-type WorkerRequest = {
-  resolve: (value: Uint8Array[][]) => void
-  reject: (reason: unknown) => void
-  // Cancel function from ctx.scope.timeout(), not a raw timer id -- see postWorkerRequest.
-  timer?: () => void
-}
-type WorkerFrequenciesMessage = { type: string; id: string; result?: Uint8Array[][]; error?: string }
 
 /** A pending setOptions() call, settled by the first draw that read its state */
 type SettingsRequest = {
@@ -572,9 +565,13 @@ export function spectrogramSetup(
 
   // ---- Mutable render/cache/worker state (closure-owned, replaces the pre-port instance fields) ----
   let buffer: AudioBuffer | null = null
-  let worker: Worker | null = null
-  let workerConstructionFailed = false
-  const workerPromises = new Map<string, WorkerRequest>()
+  // The worker, its pending requests and its timeouts (ctx.scope.timeout, so destroy() cancels
+  // them); its dispose() is registered on ctx.scope's teardown below
+  const workerClient = createSpectrogramWorkerClient({
+    WorkerCtor,
+    getTimeout: () => settings.workerTimeout,
+    setTimer: (callback, ms) => ctx.scope.timeout(callback, ms),
+  })
 
   let cachedFrequencies: Uint8Array[][] | null = null
   let cachedResampledData: Uint8Array[][] | null = null
@@ -738,123 +735,8 @@ export function spectrogramSetup(
     return error instanceof Error ? error : new Error(String(error))
   }
 
-  // Terminate the worker and reject in-flight requests so callers fall back to the main thread
-  // immediately instead of waiting out the worker timeout (or hanging when it is disabled)
-  function disposeWorker(error: Error): void {
-    if (worker) {
-      worker.terminate()
-      worker = null
-    }
-    workerPromises.forEach((promise) => {
-      promise.timer?.()
-      promise.reject(error)
-    })
-    workerPromises.clear()
-  }
-
-  function initializeWorker(): void {
-    // Skip worker initialization in SSR environments (Next.js server-side), or if the host
-    // entry point didn't provide a worker constructor at all.
-    if (typeof window === 'undefined' || typeof Worker === 'undefined' || !WorkerCtor) {
-      console.warn('Worker not available in this environment, using main thread calculation')
-      return
-    }
-
-    try {
-      // Create worker using the injected worker constructor
-      worker = new WorkerCtor()
-
-      worker.onmessage = (e: MessageEvent<WorkerFrequenciesMessage>) => {
-        const { type, id, result, error } = e.data
-
-        if (type === 'frequenciesResult') {
-          const promise = workerPromises.get(id)
-          if (promise) {
-            workerPromises.delete(id)
-            promise.timer?.()
-            if (error) {
-              promise.reject(new Error(error))
-            } else {
-              // The worker protocol guarantees exactly one of result/error is set
-              promise.resolve(result as Uint8Array[][])
-            }
-          }
-        }
-      }
-
-      worker.onerror = (error: ErrorEvent) => {
-        console.warn('Spectrogram worker error, falling back to main thread:', error)
-        disposeWorker(new Error('Worker error'))
-      }
-
-      worker.onmessageerror = (event: MessageEvent) => {
-        console.warn('Spectrogram worker message error, falling back to main thread:', event)
-        disposeWorker(new Error('Worker message error'))
-      }
-    } catch (error) {
-      console.warn('Failed to initialize worker, falling back to main thread:', error)
-      worker = null
-      // Construction failure (e.g. CSP worker-src denial) is permanent for this environment:
-      // latch it so computations don't retry it, unlike runtime failures of a live worker
-      workerConstructionFailed = true
-    }
-  }
-
-  // Shared low-level worker RPC: both the full-buffer path (calculateFrequenciesWithWorker)
-  // and the windowed per-segment path (calculateFrequenciesWithWorkerRange, below) post a
-  // 'calculateFrequencies' message and race it against workerTimeout (now configurable in
-  // BOTH rendering modes - Phase-1 windowed had this hard-coded at 30000ms, a divergence
-  // this unification removes).
-  function postWorkerRequest(
-    audioData: Float32Array[],
-    workerOptions: Record<string, unknown>,
-  ): Promise<Uint8Array[][]> {
-    if (!worker) {
-      throw new Error('Worker not available')
-    }
-    // Narrow to a local const: TS can't prove `worker` stays non-null inside the Promise
-    // executor below (it's a mutable closure variable), and this avoids a non-null assertion.
-    const activeWorker = worker
-
-    // Generate unique ID for this request
-    const id = `${Date.now()}_${Math.random()}`
-
-    // Create promise for worker response
-    return new Promise<Uint8Array[][]>((resolve, reject) => {
-      // Set timeout to avoid hanging; workerTimeout === 0 disables it. Uses ctx.scope.timeout
-      // (not a raw setTimeout) so a plugin destroy() while this is in flight cancels it too,
-      // via disposeWorker() below being registered on ctx.scope's teardown.
-      const timer =
-        settings.workerTimeout > 0
-          ? ctx.scope.timeout(() => {
-              if (workerPromises.has(id)) {
-                // A timed-out result can never be consumed (its id is dropped), so dispose
-                // the worker too: this stops the abandoned computation and lets the next
-                // render start a fresh worker instead of queueing behind a stuck one
-                disposeWorker(new Error('Worker timeout'))
-              }
-            }, settings.workerTimeout)
-          : undefined
-      workerPromises.set(id, { resolve, reject, timer })
-
-      // Send message to worker; if dispatch fails synchronously, settle and clean up immediately
-      try {
-        activeWorker.postMessage({
-          type: 'calculateFrequencies',
-          id,
-          audioData,
-          options: workerOptions,
-        })
-      } catch (error) {
-        timer?.()
-        workerPromises.delete(id)
-        reject(error)
-      }
-    })
-  }
-
   async function calculateFrequenciesWithWorker(audioBuffer: AudioBuffer): Promise<Uint8Array[][]> {
-    if (!worker) {
+    if (!workerClient.worker) {
       throw new Error('Worker not available')
     }
 
@@ -865,7 +747,7 @@ export function spectrogramSetup(
     // Prepare audio data for worker
     const audioData = getAnalysisChannels(audioBuffer, effectiveSplitChannels())
 
-    return postWorkerRequest(audioData, {
+    return workerClient.post(audioData, {
       startTime: 0,
       endTime: audioBuffer.duration,
       sampleRate: audioBuffer.sampleRate,
@@ -893,14 +775,20 @@ export function spectrogramSetup(
     // Use worker if enabled and available; a worker disposed after a runtime failure is
     // re-created on the next computation (construction failures are latched as permanent)
     // ctx.scope.disposed guards against recreating a worker for a plugin that's already been
-    // destroyed: destroy()'s teardown (ctx.scope.add, above) runs disposeWorker() once and
+    // destroyed: destroy()'s teardown (ctx.scope.add, above) runs workerClient.dispose() once and
     // relies on that being the LAST worker this plugin ever owns - a worker built here after
     // that teardown already ran would never be terminated (nothing re-registers a fresh
     // teardown for it after the scope has already disposed), a permanent live-Worker leak.
-    if (useWebWorker && !worker && !workerConstructionFailed && !ctx.scope.disposed && typeof Worker !== 'undefined') {
-      initializeWorker()
+    if (
+      useWebWorker &&
+      !workerClient.worker &&
+      !workerClient.constructionFailed &&
+      !ctx.scope.disposed &&
+      typeof Worker !== 'undefined'
+    ) {
+      workerClient.initialize()
     }
-    if (useWebWorker && worker) {
+    if (useWebWorker && workerClient.worker) {
       try {
         return await calculateFrequenciesWithWorker(audioBuffer)
       } catch (error) {
@@ -965,7 +853,7 @@ export function spectrogramSetup(
   }
 
   async function calculateFrequenciesWithWorkerRange(startTime: number, endTime: number): Promise<Uint8Array[][]> {
-    if (!buffer || !worker) {
+    if (!buffer || !workerClient.worker) {
       throw new Error('Worker not available')
     }
 
@@ -1005,7 +893,7 @@ export function spectrogramSetup(
     // the next one, so the worker's floor reliably recovers the exact slice length (brute-force
     // verified: 0 mismatches across 9 common sample rates x 5000 lengths).
     const sliceLength = readEnd - startSample
-    return postWorkerRequest(audioData, {
+    return workerClient.post(audioData, {
       startTime: 0,
       endTime: (sliceLength + 0.5) / sampleRate,
       sampleRate,
@@ -1062,18 +950,24 @@ export function spectrogramSetup(
     // A worker disposed after a runtime failure is re-created on the next computation
     // (construction failures are latched as permanent) - same policy as full mode.
     // ctx.scope.disposed guards against recreating a worker for a plugin that's already been
-    // destroyed: destroy()'s teardown (ctx.scope.add, above) runs disposeWorker() once and
+    // destroyed: destroy()'s teardown (ctx.scope.add, above) runs workerClient.dispose() once and
     // relies on that being the LAST worker this plugin ever owns - a worker built here after
     // that teardown already ran would never be terminated (nothing re-registers a fresh
     // teardown for it after the scope has already disposed), a permanent live-Worker leak.
-    if (useWebWorker && !worker && !workerConstructionFailed && !ctx.scope.disposed && typeof Worker !== 'undefined') {
-      initializeWorker()
+    if (
+      useWebWorker &&
+      !workerClient.worker &&
+      !workerClient.constructionFailed &&
+      !ctx.scope.disposed &&
+      typeof Worker !== 'undefined'
+    ) {
+      workerClient.initialize()
     }
-    if (worker) {
+    if (workerClient.worker) {
       try {
         return await calculateFrequenciesWithWorkerRange(startTime, endTime)
       } catch (error) {
-        // A worker rejection reaching here after teardown (destroy() -> disposeWorker())
+        // A worker rejection reaching here after teardown (destroy() -> workerClient.dispose())
         // must not touch a destroyed plugin's state - same guard as full mode's getFrequencies.
         if (ctx.scope.disposed) return []
 
@@ -1396,7 +1290,7 @@ export function spectrogramSetup(
       (request) => request.generation !== null && request.generation < analysisGeneration,
     )
     // The worker computes synchronously, so a busy one can only be stopped by replacing it
-    if (workerPromises.size > 0) disposeWorker(superseded)
+    if (workerClient.pending.size > 0) workerClient.dispose(superseded)
     if (ctx.wavesurfer?.getDecodedData()) throttledRender()
   }
 
@@ -2005,13 +1899,13 @@ export function spectrogramSetup(
 
   // Initialize worker if enabled
   if (useWebWorker) {
-    initializeWorker()
+    workerClient.initialize()
   }
 
   // ---- Teardown (replaces the pre-port destroy() override) ----
   ctx.scope.add(() => {
     // Clean up worker, rejecting any in-flight requests
-    disposeWorker(new Error('Spectrogram plugin destroyed'))
+    workerClient.dispose(new Error('Spectrogram plugin destroyed'))
 
     // Reject pending setOptions() calls and stop their redraw
     cancelSettingsRedraw?.()
@@ -2045,10 +1939,10 @@ export function spectrogramSetup(
       buffer = value
     },
     get worker() {
-      return worker
+      return workerClient.worker
     },
     get workerPromises() {
-      return workerPromises
+      return workerClient.pending
     },
     get cachedFrequencies() {
       return cachedFrequencies
