@@ -462,6 +462,42 @@ describe('WebAudioPlayer', () => {
       expect(signals[0].aborted).toBe(true)
     })
 
+    test('destroy does not close a caller-supplied AudioContext', () => {
+      const { audioContext, gainNode, bufferSource } = createMockAudioContext()
+      const close = jest.fn(() => Promise.resolve())
+      ;(audioContext as unknown as { close: jest.Mock }).close = close
+      const player = new WebAudioPlayer(audioContext)
+      player.play()
+
+      player.destroy()
+
+      // The caller owns the context (it may be shared), so it stays open...
+      expect(close).not.toHaveBeenCalled()
+      // ...but the player still tears down its own nodes
+      expect(bufferSource.stop).toHaveBeenCalled()
+      expect(bufferSource.disconnect).toHaveBeenCalled()
+      expect(gainNode.disconnect).toHaveBeenCalled()
+    })
+
+    test('destroy closes an AudioContext the player created itself', () => {
+      const { audioContext, gainNode } = createMockAudioContext()
+      const close = jest.fn(() => Promise.resolve())
+      ;(audioContext as unknown as { close: jest.Mock }).close = close
+      const originalAudioContext = (globalThis as any).AudioContext
+      ;(globalThis as any).AudioContext = jest.fn(() => audioContext)
+      try {
+        const player = new WebAudioPlayer()
+        expect((globalThis as any).AudioContext).toHaveBeenCalledTimes(1)
+
+        player.destroy()
+
+        expect(close).toHaveBeenCalledTimes(1)
+        expect(gainNode.disconnect).toHaveBeenCalled()
+      } finally {
+        ;(globalThis as any).AudioContext = originalAudioContext
+      }
+    })
+
     test('a stale fetch does not apply its decoded buffer when the same URL was set again (A -> B -> A)', async () => {
       const { audioContext } = createMockAudioContext()
       ;(audioContext.decodeAudioData as jest.Mock).mockResolvedValue(createMockBuffer(1))
