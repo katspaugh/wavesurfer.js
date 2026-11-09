@@ -146,18 +146,19 @@ describe('WindowedSpectrogramPlugin worker error handling', () => {
 
   it('slices channel data to the segment range before postMessage instead of cloning the whole buffer', async () => {
     // makeBuffer() is LENGTH (4096) samples at SAMPLE_RATE (8000) = 0.512s total. Requesting
-    // just [0, 0.25) must postMessage only floor(0.25 * 8000) = 2000 samples per channel, not
-    // getChannelData()'s full 4096-sample view - postMessage's structured clone copies the
-    // WHOLE ArrayBuffer backing a TypedArray view (not just the viewed range), so posting the
-    // full-length view directly would clone the entire decoded channel on every segment
-    // request, however small the segment.
+    // just [0, 0.25) must postMessage only floor(0.25 * 8000) = 2000 samples per channel, and
+    // the one frame (fftSamples, 512 by default) read past them, not getChannelData()'s full
+    // 4096-sample view - postMessage's structured clone copies the WHOLE ArrayBuffer backing a
+    // TypedArray view (not just the viewed range), so posting the full-length view directly
+    // would clone the entire decoded channel on every segment request, however small the
+    // segment.
     const { internals, worker } = createPlugin()
     const promise = internals.windowed.calculateFrequenciesWithWorker(0, 0.25)
     promise.catch(() => undefined)
 
     expect(worker.postMessage).toHaveBeenCalledTimes(1)
     const { audioData, options } = worker.postMessage.mock.calls[0][0]
-    expect(audioData[0].length).toBe(2000)
+    expect(audioData[0].length).toBe(2000 + 512)
     // The worker still re-subarrays internally using options.startTime/endTime (same protocol
     // as the full-buffer path) - since the data it now receives IS the slice, those must be
     // shifted to be relative to it (0..sliceDuration), not the original absolute [0, 0.25).
@@ -166,7 +167,7 @@ describe('WindowedSpectrogramPlugin worker error handling', () => {
     // `Math.floor(options.endTime * options.sampleRate)` (spectrogram-worker.ts's
     // calculateFrequencies) - that must land exactly on the slice's true length, not just
     // "close to" it. See the adversarial-pairs test below for why this can't be `toBeCloseTo`.
-    expect(Math.floor(options.endTime * options.sampleRate)).toBe(2000)
+    expect(Math.floor(options.endTime * options.sampleRate)).toBe(2000 + 512)
   })
 
   it('reconstructs the exact slice length across the endTime float round-trip, for pairs where a naive division drops the last sample', async () => {
@@ -187,7 +188,9 @@ describe('WindowedSpectrogramPlugin worker error handling', () => {
     ]
 
     for (const [len, sampleRate] of adversarialPairs) {
-      const data = new Float32Array(len + 10) // padding so the segment sits strictly inside the buffer
+      // Exactly `len` samples: a segment reads a frame past its own end where the audio has one,
+      // so here, at the end of the audio, the slice is the segment's `len` samples alone
+      const data = new Float32Array(len)
       const buffer = createFakeAudioBuffer(data, { sampleRate })
 
       const plugin: any = WindowedSpectrogram.create({ useWebWorker: true, noverlap: 256, scale: 'linear' })

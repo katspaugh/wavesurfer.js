@@ -89,7 +89,8 @@ describe('SpectrogramPlugin with splitChannels: false mixes all channels', () =>
     const { audioData } = worker.postMessage.mock.calls[0][0]
 
     expect(audioData.length).toBe(1)
-    expect(Array.from(audioData[0])).toEqual(Array.from(right.subarray(2000, 4000), (value) => value / 2))
+    // The segment's samples, and the frame (fftSamples, 512 by default) read past its end
+    expect(Array.from(audioData[0])).toEqual(Array.from(right.subarray(2000, 4000 + 512), (value) => value / 2))
   })
 
   it('full mode, worker: averages every channel of a buffer with more than two', () => {
@@ -123,11 +124,12 @@ describe('SpectrogramPlugin with splitChannels: false mixes all channels', () =>
     const { audioData } = worker.postMessage.mock.calls[0][0]
 
     expect(audioData.length).toBe(2)
-    expect(Array.from(audioData[0])).toEqual(Array.from(left.subarray(2000, 4000)))
-    expect(Array.from(audioData[1])).toEqual(Array.from(right.subarray(2000, 4000)))
+    // The segment's samples, and the frame (fftSamples, 512 by default) read past its end
+    expect(Array.from(audioData[0])).toEqual(Array.from(left.subarray(2000, 4000 + 512)))
+    expect(Array.from(audioData[1])).toEqual(Array.from(right.subarray(2000, 4000 + 512)))
     // A copy, not a view: postMessage clones the whole backing buffer of a view
     expect(audioData[1].buffer).not.toBe(right.buffer)
-    expect(audioData[1].buffer.byteLength).toBe(2000 * Float32Array.BYTES_PER_ELEMENT)
+    expect(audioData[1].buffer.byteLength).toBe((2000 + 512) * Float32Array.BYTES_PER_ELEMENT)
   })
 
   it('still analyzes each channel separately with splitChannels: true', async () => {

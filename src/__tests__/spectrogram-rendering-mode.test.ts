@@ -484,6 +484,7 @@ describe('windowed mode splitChannels fallback', () => {
     internals.buffer = {
       sampleRate: 8000,
       duration: 1,
+      length: 8000,
       numberOfChannels: 2,
       getChannelData: () => new Float32Array(8000),
     }
@@ -491,6 +492,38 @@ describe('windowed mode splitChannels fallback', () => {
     const frequencies = await internals.windowed.calculateFrequenciesMainThread(0, 0.5)
 
     expect(frequencies.length).toBe(2)
+    expect(frequencies[0].length).toBeGreaterThan(0)
+  })
+})
+
+describe('windowed segment frames', () => {
+  // A segment's FFT frames start inside it, but each reads fftSamples on from there. Sliced at
+  // the segment's end, its last fftSamples had no frames, and the frames it had were stretched
+  // across its whole width: each segment drawn a little early, by up to a frame at its end.
+  function create(length: number) {
+    const plugin: any = SpectrogramPlugin.create({
+      rendering: 'windowed',
+      useWebWorker: false,
+      fftSamples: 512,
+      noverlap: 256,
+      scale: 'linear',
+    })
+    plugin._init(createFakeWaveSurfer())
+    const internals = plugin.__spectrogramInternalsForTests()
+    internals.buffer = createFakeAudioBuffer(new Float32Array(length))
+    return internals.windowed
+  }
+
+  it('computes frames all the way to the end of a segment the audio runs on past', async () => {
+    // [0, 0.25) at 8 kHz is 2000 samples. A frame every 256 samples starts at 0, 256, ..., 1792:
+    // 8 of them, where only the 6 starting by 1280 fit their 512 samples inside the segment.
+    const frequencies = await create(4096).calculateFrequenciesMainThread(0, 0.25)
+    expect(frequencies[0].length).toBe(8)
+  })
+
+  it('stops a frame short at the end of the audio, as full rendering does', async () => {
+    const frequencies = await create(2000).calculateFrequenciesMainThread(0, 0.25)
+    expect(frequencies[0].length).toBe(6)
   })
 })
 
