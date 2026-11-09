@@ -121,7 +121,6 @@ const MinimapPlugin = definePlugin<MinimapPluginOptions, MinimapPluginEvents, ob
 
     let miniWavesurfer: WaveSurfer | null = null
     let miniScope = ctx.scope.child()
-    let isInitializing = false
     // Cancel function for the pending debounced-seek timeout, registered on
     // ctx.scope (not miniScope) so it survives a minimap reinit (e.g. on
     // 'decode') and is only ever cancelled explicitly below.
@@ -210,17 +209,10 @@ const MinimapPlugin = definePlugin<MinimapPluginOptions, MinimapPluginEvents, ob
     }
 
     function initMinimap() {
-      // Prevent concurrent initialization
-      if (isInitializing) return
-      isInitializing = true
-
       destroyMinimap()
 
       const data = ctx.wavesurfer.getDecodedData()
-      if (!data) {
-        isInitializing = false
-        return
-      }
+      if (!data) return
 
       const peaks = []
       for (let i = 0; i < data.numberOfChannels; i++) {
@@ -267,9 +259,6 @@ const MinimapPlugin = definePlugin<MinimapPluginOptions, MinimapPluginEvents, ob
           ctx.emit('ready')
         }),
       )
-
-      // Reset flag after initialization completes
-      isInitializing = false
     }
 
     // Final teardown: tear down the nested wavesurfer the same way a
