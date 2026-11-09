@@ -149,8 +149,26 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     let monitorStartTime = performance.now()
 
     if (this.wavesurfer) {
-      this.originalOptions ??= {
-        ...this.wavesurfer.options,
+      // Snapshot only the keys this session overrides (below, and minPxPerSec
+      // in the continuous-mode render callback), so the restore on stop
+      // neither reverts options the app changed meanwhile nor re-applies
+      // load-time options (peaks, duration, audioRate...) that setOptions()
+      // acts on.
+      // Keys are written even when their value is undefined, so the restore
+      // also clears a value the session set on a previously unset key.
+      if (!this.originalOptions) {
+        const { options } = this.wavesurfer
+        const snapshot: Partial<WaveSurferOptions> = { interact: options.interact }
+        if (this.options.scrollingWaveform) {
+          snapshot.cursorWidth = options.cursorWidth
+          snapshot.normalize = options.normalize
+          snapshot.maxPeak = options.maxPeak
+        }
+        // Only overridden when unset (see drawWaveform)
+        if (this.options.continuousWaveform && !options.minPxPerSec) {
+          snapshot.minPxPerSec = options.minPxPerSec
+        }
+        this.originalOptions = snapshot
       }
 
       this.wavesurfer.options.interact = false
@@ -376,8 +394,9 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     // listeners across mic sessions, not about suppressing a spurious event.
     this.unsubscribeTrackEnded.forEach((unsubscribe) => unsubscribe())
     this.unsubscribeTrackEnded = []
-    // renderMicStream() hijacked the host's options (interact, and in
-    // scrolling mode cursorWidth/normalize/maxPeak); restore them when the
+    // renderMicStream() hijacked the host's options (interact, in scrolling
+    // mode cursorWidth/normalize/maxPeak, in continuous mode an unset
+    // minPxPerSec); restore just those keys when the
     // mic session ends. The record-end render path also restores (whichever
     // runs first wins; the other is a no-op) -- but without this, a
     // preview-only startMic() -> stopMic() or a renderRecordedAudio: false

@@ -270,6 +270,102 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
     plugin.destroy()
   })
 
+  describe('option restore on stopMic (only the keys the plugin overrides)', () => {
+    const createHost = (options: Record<string, unknown>) => ({
+      options,
+      getWidth: () => 500,
+      getDuration: () => 5,
+      load: jest.fn().mockResolvedValue(undefined),
+      setTime: jest.fn(),
+      setOptions: jest.fn((opts: Record<string, unknown>): void => {
+        Object.assign(options, opts)
+      }),
+    })
+
+    it('keeps an option the app changed during the mic session', async () => {
+      const plugin = RecordPlugin.create({ scrollingWaveform: true })
+      const wavesurfer = createHost({ interact: true, cursorWidth: 2, waveColor: 'blue', height: 100 })
+      plugin._init(wavesurfer as never)
+
+      await plugin.startMic()
+      wavesurfer.setOptions({ waveColor: 'red', height: 200 })
+      plugin.stopMic()
+
+      expect(wavesurfer.options.waveColor).toBe('red')
+      expect(wavesurfer.options.height).toBe(200)
+      plugin.destroy()
+    })
+
+    it('restores every overridden key to its pre-session value, including previously unset keys', async () => {
+      const plugin = RecordPlugin.create({ scrollingWaveform: true })
+      // normalize and maxPeak are not set at all before the session
+      const wavesurfer = createHost({ interact: true, cursorWidth: 2 })
+      plugin._init(wavesurfer as never)
+
+      await plugin.startMic()
+      expect(wavesurfer.options).toMatchObject({ interact: false, cursorWidth: 0, normalize: true, maxPeak: 1 })
+      plugin.stopMic()
+
+      expect(wavesurfer.options.interact).toBe(true)
+      expect(wavesurfer.options.cursorWidth).toBe(2)
+      expect(wavesurfer.options.normalize).toBeUndefined()
+      expect(wavesurfer.options.maxPeak).toBeUndefined()
+      plugin.destroy()
+    })
+
+    it('restores the minPxPerSec the continuous waveform set, and only that', async () => {
+      let drawWaveform!: () => void
+      const intervalSpy = jest.spyOn(global, 'setInterval').mockImplementation(((callback: () => void) => {
+        drawWaveform = callback
+        return 1
+      }) as typeof setInterval)
+      const plugin = RecordPlugin.create({ continuousWaveform: true, continuousWaveformDuration: 5 })
+      const wavesurfer = createHost({ interact: true, minPxPerSec: 0, cursorWidth: 2 })
+      plugin._init(wavesurfer as never)
+
+      try {
+        await plugin.startMic()
+        drawWaveform()
+        await flushMicrotasks()
+        expect(wavesurfer.options.minPxPerSec).toBe(100)
+        // Not overridden in continuous mode, so an app change survives
+        wavesurfer.setOptions({ cursorWidth: 3 })
+
+        plugin.stopMic()
+        expect(wavesurfer.options.minPxPerSec).toBe(0)
+        expect(wavesurfer.options.interact).toBe(true)
+        expect(wavesurfer.options.cursorWidth).toBe(3)
+      } finally {
+        plugin.destroy()
+        intervalSpy.mockRestore()
+      }
+    })
+
+    it('does not pass load-time options (peaks, duration, audioRate, mediaControls) to the restore', async () => {
+      const plugin = RecordPlugin.create({ scrollingWaveform: true })
+      const wavesurfer = createHost({
+        interact: true,
+        cursorWidth: 2,
+        peaks: [[0.1, 0.2]],
+        duration: 10,
+        audioRate: 1.5,
+        mediaControls: true,
+      })
+      plugin._init(wavesurfer as never)
+
+      await plugin.startMic()
+      wavesurfer.setOptions.mockClear()
+      plugin.stopMic()
+
+      expect(wavesurfer.setOptions).toHaveBeenCalledTimes(1)
+      const restored = wavesurfer.setOptions.mock.calls[0][0]
+      expect(Object.keys(restored).sort()).toEqual(['cursorWidth', 'interact', 'maxPeak', 'normalize'])
+      expect(restored).not.toHaveProperty('peaks')
+      expect(restored).not.toHaveProperty('duration')
+      plugin.destroy()
+    })
+  })
+
   it('does not deliver the old session record-end into a re-initialized lifecycle, but still redelivers to snapshotted listeners', async () => {
     const plugin = RecordPlugin.create()
     const oldLifecycleEnd = jest.fn()
