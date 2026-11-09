@@ -3,23 +3,28 @@ import WaveSurfer from '../wavesurfer.js'
 import { installMatchMediaStub } from './helpers/match-media.js'
 
 describe('RecordPlugin teardown', () => {
-  it('emits record-end BEFORE listeners are cleared on destroy', () => {
-    const plugin = RecordPlugin.create()
-    const onEnd = jest.fn()
-    plugin.on('record-end', onEnd)
-
-    // Simulate an active recorder whose stop() triggers the browser's
-    // onstop handler synchronously, which in real code emits 'record-end'.
-    const anyPlugin = plugin as any
-    anyPlugin.mediaRecorder = {
-      state: 'recording',
-      stop: () => anyPlugin.emit('record-end', new Blob()),
-      stream: { getTracks: () => [] },
+  it('emits record-end BEFORE listeners are cleared on destroy', async () => {
+    // An active recorder whose stop() runs the onstop handler synchronously,
+    // so the 'record-end' it emits happens inside destroy() itself.
+    class SyncStopMediaRecorder extends MockMediaRecorder {
+      stop() {
+        this.state = 'inactive'
+        this.onstop?.()
+      }
     }
+    const restoreMocks = installRecordingMocks(SyncStopMediaRecorder)
+    try {
+      const plugin = RecordPlugin.create()
+      const onEnd = jest.fn()
+      plugin.on('record-end', onEnd)
+      await plugin.startRecording()
 
-    plugin.destroy()
+      plugin.destroy()
 
-    expect(onEnd).toHaveBeenCalledTimes(1)
+      expect(onEnd).toHaveBeenCalledTimes(1)
+    } finally {
+      restoreMocks()
+    }
   })
 
   it('record-progress works after destroy + re-init', () => {
@@ -27,27 +32,27 @@ describe('RecordPlugin teardown', () => {
     plugin.destroy()
     plugin._init({} as never)
 
-    const anyPlugin = plugin as any
+    const internals = plugin.__recordInternalsForTests()
     const onProgress = jest.fn()
     plugin.on('record-progress', onProgress)
 
-    // onInit() (run by _init() above) recreates frameScheduler bound to the
-    // fresh post-destroy scope; start()'s synchronous first tick reaches the
-    // plugin's tick handler and emits 'record-progress'.
-    anyPlugin.frameScheduler.start(anyPlugin.handleTick)
+    // _init() above set up a fresh lifecycle, with a frame scheduler bound to
+    // the fresh post-destroy scope; start()'s synchronous first tick reaches
+    // the plugin's tick handler and emits 'record-progress'.
+    internals.frameScheduler.start(internals.tick)
 
     expect(onProgress).toHaveBeenCalled()
   })
 
   it('stops the frame scheduler on plugin destroy', () => {
     const plugin = RecordPlugin.create()
-    const anyPlugin = plugin as any
-    anyPlugin.frameScheduler.start(jest.fn())
-    expect(anyPlugin.frameScheduler.running).toBe(true)
+    const { frameScheduler } = plugin.__recordInternalsForTests()
+    frameScheduler.start(jest.fn())
+    expect(frameScheduler.running).toBe(true)
 
     plugin.destroy()
 
-    expect(anyPlugin.frameScheduler.running).toBe(false)
+    expect(frameScheduler.running).toBe(false)
   })
 
   it('destroy is idempotent', () => {
@@ -141,6 +146,35 @@ function createFakeMicStream(tracks: MockMediaStreamTrack[] = [new MockMediaStre
   } as unknown as MediaStream
 }
 
+/** Install the browser recording APIs as mocks; returns a function that restores the originals */
+function installRecordingMocks(Recorder: typeof MockMediaRecorder = MockMediaRecorder) {
+  const originalAudioContext = global.AudioContext
+  const originalMediaRecorder = global.MediaRecorder
+  const originalMediaDevices = Object.getOwnPropertyDescriptor(navigator, 'mediaDevices')
+  const originalCreateObjectURL = URL.createObjectURL
+  const originalRevokeObjectURL = URL.revokeObjectURL
+  global.AudioContext = MockAudioContext as unknown as typeof AudioContext
+  global.MediaRecorder = Recorder as unknown as typeof MediaRecorder
+  Object.defineProperty(navigator, 'mediaDevices', {
+    configurable: true,
+    writable: true,
+    value: { getUserMedia: jest.fn().mockResolvedValue(createFakeMicStream()) },
+  })
+  URL.createObjectURL = jest.fn(() => 'blob:mock-url')
+  URL.revokeObjectURL = jest.fn()
+  return () => {
+    global.AudioContext = originalAudioContext
+    global.MediaRecorder = originalMediaRecorder
+    if (originalMediaDevices) {
+      Object.defineProperty(navigator, 'mediaDevices', originalMediaDevices)
+    } else {
+      delete (navigator as unknown as Record<string, unknown>).mediaDevices
+    }
+    URL.createObjectURL = originalCreateObjectURL
+    URL.revokeObjectURL = originalRevokeObjectURL
+  }
+}
+
 const flushMicrotasks = async () => {
   await Promise.resolve()
   await Promise.resolve()
@@ -229,7 +263,8 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
     plugin.on('record-start', onStart)
 
     await plugin.startRecording()
-    const firstRecorder = (plugin as unknown as { mediaRecorder: MockMediaRecorder }).mediaRecorder
+    const recorderOf = () => plugin.__recordInternalsForTests().mediaRecorder as unknown as MockMediaRecorder
+    const firstRecorder = recorderOf()
     // The first session produces a chunk
     firstRecorder.ondataavailable?.({ data: new Blob(['old-session-chunk']) })
 
@@ -240,7 +275,7 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
 
     expect(onStart).toHaveBeenCalledTimes(2)
     expect(onEnd).not.toHaveBeenCalled()
-    expect((plugin as unknown as { mediaRecorder: MockMediaRecorder }).mediaRecorder).not.toBe(firstRecorder)
+    expect(recorderOf()).not.toBe(firstRecorder)
 
     // The new session's final blob must not contain the old session's chunk
     plugin.stopRecording()
@@ -392,6 +427,88 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
     plugin.destroy()
   })
 
+  it('redelivers the final blob only to record-end listeners still subscribed at destroy (on, once, un)', async () => {
+    const plugin = RecordPlugin.create()
+    const kept = jest.fn()
+    const firedOnce = jest.fn()
+    const removedByUn = jest.fn()
+    const removedByUnsubscribe = jest.fn()
+    const pendingOnce = jest.fn()
+    plugin.on('record-end', kept)
+    plugin.once('record-end', firedOnce)
+    plugin.on('record-end', removedByUn)
+    const unsubscribe = plugin.on('record-end', removedByUnsubscribe)
+
+    await plugin.startRecording()
+    plugin.stopRecording()
+    await flushMicrotasks()
+    expect(firedOnce).toHaveBeenCalledTimes(1)
+
+    plugin.un('record-end', removedByUn)
+    unsubscribe()
+    plugin.once('record-end', pendingOnce)
+
+    await plugin.startRecording()
+    plugin.destroy()
+    await flushMicrotasks()
+
+    expect(kept).toHaveBeenCalledTimes(2)
+    expect(firedOnce).toHaveBeenCalledTimes(1)
+    expect(removedByUn).toHaveBeenCalledTimes(1)
+    expect(removedByUnsubscribe).toHaveBeenCalledTimes(1)
+    expect(pendingOnce).toHaveBeenCalledTimes(1)
+    expect(pendingOnce.mock.calls[0][0]).toBeInstanceOf(Blob)
+  })
+
+  it('stops the mic as a record-end listener, in subscription order with the app listeners', async () => {
+    const plugin = RecordPlugin.create()
+    const streamSeen: Record<string, boolean> = {}
+    const micIsLive = () => plugin.__recordInternalsForTests().stream !== null
+    plugin.on('record-end', () => (streamSeen.before = micIsLive()))
+
+    await plugin.startRecording()
+    plugin.on('record-end', () => (streamSeen.after = micIsLive()))
+    plugin.stopRecording()
+    await flushMicrotasks()
+
+    // Subscribed before startMic(): runs before the plugin's own mic teardown
+    expect(streamSeen).toEqual({ before: true, after: false })
+    plugin.destroy()
+  })
+
+  it('keeps the constructor-time session when registered after startMic()', async () => {
+    const track = new MockMediaStreamTrack()
+    ;(navigator.mediaDevices.getUserMedia as jest.Mock).mockResolvedValue(createFakeMicStream([track]))
+    const plugin = RecordPlugin.create()
+    await plugin.startMic()
+
+    // The first _init() adopts the lifecycle the constructor set up
+    const options: Record<string, unknown> = { interact: true }
+    plugin._init({ options, setOptions: jest.fn((opts) => Object.assign(options, opts)) } as never)
+    expect(plugin.__recordInternalsForTests().stream).not.toBeNull()
+
+    plugin.stopMic()
+    expect(track.stop).toHaveBeenCalled()
+    expect(plugin.__recordInternalsForTests().stream).toBeNull()
+    plugin.destroy()
+  })
+
+  it('does not deliver the old session record-data-available into a re-initialized lifecycle', async () => {
+    const plugin = RecordPlugin.create()
+    await plugin.startRecording()
+    const oldRecorder = plugin.__recordInternalsForTests().mediaRecorder as unknown as MockMediaRecorder
+    plugin.destroy()
+
+    plugin._init({} as never)
+    const onData = jest.fn()
+    plugin.on('record-data-available', onData)
+    oldRecorder.ondataavailable?.({ data: new Blob(['late-chunk']) })
+    await flushMicrotasks()
+
+    expect(onData).not.toHaveBeenCalled()
+    plugin.destroy()
+  })
+
   it('stops the granted tracks when destroy + re-init happens during a pending getUserMedia', async () => {
     let grantStream!: (stream: MediaStream) => void
     ;(navigator.mediaDevices.getUserMedia as jest.Mock).mockImplementation(
@@ -402,18 +519,20 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
     )
 
     const plugin = RecordPlugin.create()
-    const renderMicStreamSpy = jest.spyOn(plugin, 'renderMicStream')
+    // renderMicStream()'s first step: the stream must not be attached to anything
+    const createSourceSpy = jest.spyOn(MockAudioContext.prototype, 'createMediaStreamSource')
 
     const micPromise = plugin.startMic()
     plugin.destroy()
-    plugin._init({} as never) // resets `destroyed` -- the captured scope stays disposed
+    plugin._init({} as never) // a fresh lifecycle -- the request's own scope stays disposed
 
     const trackStop = jest.fn()
     grantStream({ getTracks: () => [{ stop: trackStop }] } as unknown as MediaStream)
 
     await expect(micPromise).rejects.toThrow(/destroyed/)
     expect(trackStop).toHaveBeenCalled()
-    expect(renderMicStreamSpy).not.toHaveBeenCalled()
+    expect(createSourceSpy).not.toHaveBeenCalled()
+    createSourceSpy.mockRestore()
     plugin.destroy()
   })
 
@@ -428,7 +547,7 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
       await plugin.startRecording()
 
       now = 1_500
-      ;(plugin as any).handleTick()
+      plugin.__recordInternalsForTests().tick()
       expect(plugin.getDuration()).toBe(500)
 
       plugin.pauseRecording()
@@ -440,7 +559,7 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
       expect(onProgress).toHaveBeenLastCalledWith(500)
 
       now = 16_600
-      ;(plugin as any).handleTick()
+      plugin.__recordInternalsForTests().tick()
       expect(plugin.getDuration()).toBe(600)
     } finally {
       plugin.destroy()
@@ -791,7 +910,7 @@ describe('RecordPlugin capture device loss (track "ended")', () => {
     expect(onEnd).not.toHaveBeenCalled()
     expect(onEndedExternally).not.toHaveBeenCalled()
     expect(track.hasEndedListeners).toBe(false)
-    expect((plugin as unknown as { stream: MediaStream | null }).stream).toBeNull()
+    expect(plugin.__recordInternalsForTests().stream).toBeNull()
     plugin.destroy()
   })
 
@@ -840,19 +959,26 @@ describe('RecordPlugin startMic destroyed during pending getUserMedia', () => {
     })
 
     const plugin = RecordPlugin.create()
-    const renderMicStreamSpy = jest.spyOn(plugin, 'renderMicStream')
+    // renderMicStream()'s first step: an AudioContext for the stream
+    const originalAudioContext = global.AudioContext
+    const audioContextCtor = jest.fn()
+    global.AudioContext = audioContextCtor as unknown as typeof AudioContext
 
-    const micPromise = plugin.startMic()
-    plugin.destroy()
+    try {
+      const micPromise = plugin.startMic()
+      plugin.destroy()
 
-    const trackStop = jest.fn()
-    grantStream({ getTracks: () => [{ stop: trackStop }] } as unknown as MediaStream)
+      const trackStop = jest.fn()
+      grantStream({ getTracks: () => [{ stop: trackStop }] } as unknown as MediaStream)
 
-    await expect(micPromise).rejects.toThrow(/destroyed/)
-    // The mic must actually be released -- otherwise the tab's recording
-    // indicator stays on forever with nothing left to stop it.
-    expect(trackStop).toHaveBeenCalled()
-    // And nothing may attach the stream to the post-destroy fresh scope.
-    expect(renderMicStreamSpy).not.toHaveBeenCalled()
+      await expect(micPromise).rejects.toThrow(/destroyed/)
+      // The mic must actually be released -- otherwise the tab's recording
+      // indicator stays on forever with nothing left to stop it.
+      expect(trackStop).toHaveBeenCalled()
+      // And nothing may attach the stream to the post-destroy fresh scope.
+      expect(audioContextCtor).not.toHaveBeenCalled()
+    } finally {
+      global.AudioContext = originalAudioContext
+    }
   })
 })
