@@ -1,5 +1,5 @@
 // Verification script run automatically at the end of `npm run build` (and therefore
-// `prepublishOnly`), and available standalone as `npm run verify-exports`: resolves every
+// `prepare`, which npm runs on publish), and available standalone as `npm run verify-exports`: resolves every
 // concrete example the exports map should serve against real files on disk, for both
 // the "import"+"types" and "require" conditions, and exits non-zero if any target is
 // missing -- so a broken package.json#exports entry fails the build instead of shipping.
