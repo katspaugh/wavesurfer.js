@@ -33,9 +33,16 @@ function setWebAudioSessionPlayback() {
  * Note: This class does not manage blob: URLs. If you pass a blob: URL to setSrc(),
  * you are responsible for revoking it when done. The Player class (player.ts) handles
  * blob URL lifecycle management automatically.
+ *
+ * AudioContext ownership: if no AudioContext is passed to the constructor, the player
+ * creates its own and closes it in destroy(). A caller-supplied AudioContext is never
+ * closed by the player -- the caller owns it (it may be shared with other players or
+ * an app's own audio graph) and is responsible for closing it.
  */
 class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   private audioContext: AudioContext
+  // Whether the constructor created audioContext itself (and destroy() must close it)
+  private ownsAudioContext: boolean
   private gainNode: GainNode
   private bufferNode: AudioBufferSourceNode | null = null
   private playStartTime = 0
@@ -64,6 +71,7 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   constructor(audioContext?: AudioContext) {
     super()
     setWebAudioSessionPlayback()
+    this.ownsAudioContext = !audioContext
     this.audioContext = audioContext || new AudioContext()
     this.gainNode = this.audioContext.createGain()
     this.gainNode.connect(this.audioContext.destination)
@@ -121,9 +129,11 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     // Disconnect gain node
     this.gainNode.disconnect()
 
-    // Close audio context (returns a promise, catch rejection if already closed)
-    // Guard with typeof check for mock environments where close may not exist
-    if (typeof this.audioContext.close === 'function') {
+    // Close the audio context, but only if this player created it: a
+    // caller-supplied context may be shared and stays open (the caller owns it).
+    // close() returns a promise; catch the rejection if already closed. Guard
+    // with a typeof check for mock environments where close may not exist.
+    if (this.ownsAudioContext && typeof this.audioContext.close === 'function') {
       Promise.resolve(this.audioContext.close.call(this.audioContext)).catch(() => undefined)
     }
 
