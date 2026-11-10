@@ -4,7 +4,7 @@ This document gives a condensed view of the project structure and build process 
 
 ## Project Structure
 
-- **`src/`** – TypeScript source files for the library. The entry point is [`wavesurfer.ts`](../src/wavesurfer.ts). Other files implement features such as the player, plugins, and utilities.
+- **`src/`** – TypeScript source files for the library. The entry point is [`wavesurfer.ts`](src/wavesurfer.ts). Other files implement features such as the player, plugins, and utilities.
   - **`src/scope.ts`** – `Scope`, the disposal-tree primitive (listeners, timers, observers, signal subscriptions, child lifetimes) that every `destroy()` in the codebase is expressed with.
   - **`src/reactive/`** – the signal store (`store.ts`: `signal`/`computed`/`effect`/`batch`, always-disposable) plus stream primitives (`event-streams.ts`, `drag-stream.ts`, `scroll-stream.ts`) that wrap DOM events as composable, scope-owned subscriptions.
   - **`src/state/`** – `WaveSurferState`/`WaveSurferActions` (`wavesurfer-state.ts`), the centralized reactive state returned by `wavesurfer.getState()`.

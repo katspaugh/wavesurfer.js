@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -55,14 +55,34 @@ jobs:
             echo "Version $NEW_VERSION is already published, skipping the release"
           fi
 
-      - uses: actions/setup-node@v3
+      # Writes the npm registry auth config that `npm publish` uses below.
+      # Same Node version as the shared yarn action and the rest of CI.
+      - uses: actions/setup-node@v4
         if: ${{ steps.version.outputs.version }}
         with:
-          node-version: '16.x'
+          node-version: 20
           registry-url: 'https://registry.npmjs.org'
 
       - uses: ./.github/workflows/yarn
         if: ${{ steps.version.outputs.version }}
+
+      # The PR workflows (lint, unit tests) only check the PR head. Check the
+      # exact commit that is about to be published before it goes to npm.
+      - name: Lint
+        if: ${{ steps.version.outputs.version }}
+        run: yarn lint
+
+      - name: Typecheck
+        if: ${{ steps.version.outputs.version }}
+        run: yarn typecheck
+
+      - name: Unit tests
+        if: ${{ steps.version.outputs.version }}
+        run: yarn test:unit
+
+      - name: GC leak tests
+        if: ${{ steps.version.outputs.version }}
+        run: yarn test:leaks
 
       - name: Publish to NPM
         if: ${{ steps.version.outputs.version }}
@@ -78,7 +98,7 @@ jobs:
 
       - name: GitHub release
         if: ${{ steps.version.outputs.version }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         id: create_release
         with:
           draft: false

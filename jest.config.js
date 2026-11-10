@@ -25,6 +25,9 @@ import { createDefaultEsmPreset } from 'ts-jest'
 const sharedProjectConfig = {
   ...createDefaultEsmPreset({ tsconfig: 'tsconfig.test.json' }),
   testEnvironment: 'jsdom',
+  // Silences jsdom's "Not implemented: HTMLMediaElement.prototype.pause/load" console noise for
+  // every suite in both projects -- see the file's own comment.
+  setupFiles: ['<rootDir>/src/__tests__/helpers/jsdom-media-stubs.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     // rollup-plugin-web-worker-loader's virtual module scheme (see src/web-worker-loader.d.ts)
@@ -47,16 +50,19 @@ const leaksProject = {
 
 export default {
   collectCoverage: true,
-  collectCoverageFrom: ['src/**/*.ts'],
+  // Library source only: test suites and their shared helpers (src/**/__tests__/**) and ambient
+  // declaration files are not code under test, and counting them skews the global numbers
+  // (gc-leaks.test.ts alone, never run by the 'default' project, reported 0% of ~380 lines).
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/__tests__/**', '!src/**/*.d.ts'],
   // Ratchet, set just below the current global numbers: raise as coverage
   // improves, never lower. Global (not per-file) on purpose — moving code
   // between files shouldn't trip it.
   coverageThreshold: {
     global: {
-      statements: 72,
-      branches: 58,
-      functions: 73,
-      lines: 74,
+      statements: 87,
+      branches: 76,
+      functions: 87,
+      lines: 89,
     },
   },
   projects: [

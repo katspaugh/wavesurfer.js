@@ -98,6 +98,38 @@ describe('WaveSurfer public methods', () => {
     expect(ws.getMediaElement()!.controls).toBe(true)
   })
 
+  test('setOptions({ duration }) before any audio is decoded stores the option without throwing', () => {
+    const ws = createWs()
+    expect(() => ws.setOptions({ duration: 5 })).not.toThrow()
+    expect(ws.options.duration).toBe(5)
+    expect(ws.getDecodedData()).toBeNull()
+    expect(getRenderer().setOptions).toHaveBeenCalledWith(ws.options)
+  })
+
+  test('setOptions({ duration }) keeps all channels at full resolution and applies the new duration', () => {
+    const ws = createWs()
+    const length = 10_000
+    const channels = [0, 1, 2].map((c) => Float32Array.from({ length }, (_, i) => Math.sin(i / (c + 1)) / 2))
+    ;(ws as any).decodedData = {
+      duration: 2,
+      numberOfChannels: channels.length,
+      getChannelData: (i: number) => channels[i],
+    }
+    const media = ws.getMediaElement()!
+    Object.defineProperty(media, 'duration', { configurable: true, value: Infinity })
+
+    ws.setOptions({ duration: 5 })
+
+    const decoded = ws.getDecodedData()!
+    expect(decoded.numberOfChannels).toBe(3)
+    for (let i = 0; i < channels.length; i++) {
+      expect(decoded.getChannelData(i)).toHaveLength(length)
+      expect(Array.from(decoded.getChannelData(i))).toEqual(Array.from(channels[i]))
+    }
+    expect(decoded.duration).toBe(5)
+    expect(ws.getDuration()).toBe(5)
+  })
+
   test('registerPlugin adds and removes plugin', () => {
     const ws = createWs()
     class TestPlugin extends BasePlugin<{ destroy: [] }, {}> {}

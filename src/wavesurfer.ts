@@ -553,8 +553,16 @@ class WaveSurfer extends EventEmitter<WaveSurferEvents> {
   public setOptions(options: Partial<WaveSurferOptions>) {
     if (this.isDestroyed) return
     this.options = Object.assign({}, this.options, options)
-    if (options.duration && !options.peaks) {
-      this.decodedData = Decoder.createBuffer(this.exportPeaks(), options.duration)
+    if (options.duration && !options.peaks && this.decodedData) {
+      // Rebuild the buffer from the existing decoded data with the new duration, keeping
+      // every channel at its full resolution (exportPeaks() would downsample and drop channels).
+      // Without decoded data there is nothing to rebuild: the option is just stored.
+      const { numberOfChannels } = this.decodedData
+      const channelData: Float32Array[] = []
+      for (let i = 0; i < numberOfChannels; i++) {
+        channelData.push(this.decodedData.getChannelData(i))
+      }
+      this.decodedData = Decoder.createBuffer(channelData, options.duration)
       this.wavesurferActions.setAudioBuffer(this.decodedData)
     }
     if (options.peaks && options.duration) {

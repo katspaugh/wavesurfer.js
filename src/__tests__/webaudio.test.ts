@@ -462,6 +462,42 @@ describe('WebAudioPlayer', () => {
       expect(signals[0].aborted).toBe(true)
     })
 
+    test('destroy does not close a caller-supplied AudioContext', () => {
+      const { audioContext, gainNode, bufferSource } = createMockAudioContext()
+      const close = jest.fn(() => Promise.resolve())
+      ;(audioContext as unknown as { close: jest.Mock }).close = close
+      const player = new WebAudioPlayer(audioContext)
+      player.play()
+
+      player.destroy()
+
+      // The caller owns the context (it may be shared), so it stays open...
+      expect(close).not.toHaveBeenCalled()
+      // ...but the player still tears down its own nodes
+      expect(bufferSource.stop).toHaveBeenCalled()
+      expect(bufferSource.disconnect).toHaveBeenCalled()
+      expect(gainNode.disconnect).toHaveBeenCalled()
+    })
+
+    test('destroy closes an AudioContext the player created itself', () => {
+      const { audioContext, gainNode } = createMockAudioContext()
+      const close = jest.fn(() => Promise.resolve())
+      ;(audioContext as unknown as { close: jest.Mock }).close = close
+      const originalAudioContext = (globalThis as any).AudioContext
+      ;(globalThis as any).AudioContext = jest.fn(() => audioContext)
+      try {
+        const player = new WebAudioPlayer()
+        expect((globalThis as any).AudioContext).toHaveBeenCalledTimes(1)
+
+        player.destroy()
+
+        expect(close).toHaveBeenCalledTimes(1)
+        expect(gainNode.disconnect).toHaveBeenCalled()
+      } finally {
+        ;(globalThis as any).AudioContext = originalAudioContext
+      }
+    })
+
     test('a stale fetch does not apply its decoded buffer when the same URL was set again (A -> B -> A)', async () => {
       const { audioContext } = createMockAudioContext()
       ;(audioContext.decodeAudioData as jest.Mock).mockResolvedValue(createMockBuffer(1))
@@ -629,5 +665,115 @@ describe('rate and mute events', () => {
 
     player.muted = false
     expect(onVolumeChange).toHaveBeenCalledTimes(2)
+  })
+
+  test('setting volume emits volumechange', () => {
+    const { audioContext } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+    const onVolumeChange = jest.fn()
+    player.on('volumechange', onVolumeChange)
+
+    player.volume = 0.5
+    expect(onVolumeChange).toHaveBeenCalledTimes(1)
+    expect(player.volume).toBe(0.5)
+  })
+})
+
+describe('volume and mute through the gain value', () => {
+  test('starts at the default gain volume, unmuted', () => {
+    const { audioContext, gainNode } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+
+    expect(player.volume).toBe(1)
+    expect(player.muted).toBe(false)
+    expect(gainNode.gain.value).toBe(1)
+  })
+
+  test('a gain value the app wrote directly is reported, and survives a mute cycle', () => {
+    const { audioContext, gainNode } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+
+    // Apps reach the node through getGainNode() and may set the gain themselves
+    player.getGainNode().gain.value = 0.3
+    expect(player.volume).toBe(0.3)
+
+    player.muted = true
+    expect(gainNode.gain.value).toBe(0)
+    expect(player.volume).toBe(0.3)
+
+    player.muted = false
+    expect(gainNode.gain.value).toBe(0.3)
+    expect(player.volume).toBe(0.3)
+  })
+
+  test('mute/unmute never rewires the gain node, so custom routing survives (#4429)', () => {
+    const { audioContext, gainNode } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+    // The app reroutes the gain node through its own filter
+    gainNode.connect.mockClear()
+    gainNode.disconnect.mockClear()
+
+    player.muted = true
+    player.muted = false
+    player.muted = true
+    player.volume = 0.3
+    player.muted = false
+
+    expect(gainNode.disconnect).not.toHaveBeenCalled()
+    expect(gainNode.connect).not.toHaveBeenCalled()
+  })
+
+  test('gain is 0 while muted and restored to the volume on unmute', () => {
+    const { audioContext, gainNode } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+    player.volume = 0.7
+
+    player.muted = true
+    expect(gainNode.gain.value).toBe(0)
+
+    player.muted = false
+    expect(gainNode.gain.value).toBe(0.7)
+  })
+
+  test('volume keeps reporting the user volume while muted', () => {
+    const { audioContext } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+    player.volume = 0.4
+
+    player.muted = true
+
+    expect(player.volume).toBe(0.4)
+  })
+
+  test('setting volume while muted stays silent and applies on unmute', () => {
+    const { audioContext, gainNode } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+    const onVolumeChange = jest.fn()
+    player.muted = true
+    player.on('volumechange', onVolumeChange)
+
+    player.volume = 0.25
+    expect(onVolumeChange).toHaveBeenCalledTimes(1)
+    expect(player.volume).toBe(0.25)
+    expect(gainNode.gain.value).toBe(0)
+
+    player.muted = false
+    expect(onVolumeChange).toHaveBeenCalledTimes(2)
+    expect(gainNode.gain.value).toBe(0.25)
+  })
+
+  test('removeAttribute resets volume to 0 and unmutes', () => {
+    const { audioContext, gainNode } = createMockAudioContext()
+    const player = new WebAudioPlayer(audioContext)
+    player.volume = 0.6
+    player.muted = true
+
+    player.removeAttribute('muted')
+    expect(player.muted).toBe(false)
+    expect(gainNode.gain.value).toBe(0.6)
+
+    player.removeAttribute('volume')
+    expect(player.volume).toBe(0)
+    expect(gainNode.gain.value).toBe(0)
   })
 })
