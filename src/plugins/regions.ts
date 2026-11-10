@@ -363,9 +363,8 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
     }
   }
 
-  private initElement(): HTMLElement | null {
-    if (this.isRemoved) return null
-
+  // Only called from the constructor, before a region can be removed
+  private initElement(): HTMLElement {
     const isMarker = this.start === this.end
 
     let elementTop = 0
