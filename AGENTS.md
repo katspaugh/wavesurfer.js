@@ -13,7 +13,7 @@ Run ALL of these after making changes, in this order (approximate timings on a t
 
 1. `yarn lint` — ESLint, check-only (~8s). Use `yarn lint:fix` to auto-fix, then review the diff it makes.
 2. `yarn typecheck` — type-checks both the library and the test files (~6s).
-3. `yarn test:unit` — Jest unit tests, ~580 tests (~20s). Coverage thresholds are enforced; if they fail, add tests rather than lowering the thresholds.
+3. `yarn test:unit` — Jest unit tests, about a thousand (~25s). Coverage thresholds are enforced; if they fail, add tests rather than lowering the thresholds.
 4. `yarn test:leaks` — GC leak harness (~25s). **Mandatory when touching `scope.ts`, any `destroy()` path, plugin teardown, or the reactive layer**; cheap enough to always run.
 5. `yarn build` — full build incl. `verify-exports` (~30s). Required when touching public types, exports, or `rollup.config.js`.
 
