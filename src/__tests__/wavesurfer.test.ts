@@ -1117,3 +1117,122 @@ describe('terminal destroy: mutating APIs are no-ops', () => {
     expect(ws.options.height).not.toBe(300)
   })
 })
+
+describe('replacePeaks (internal live-preview render path)', () => {
+  const loadPeaks = async (ws: WaveSurfer) => {
+    await ws.load('', [[0, 0.5, 1]], 1)
+  }
+
+  test('swaps in new peaks and duration without load/decode/ready or a load-state change', async () => {
+    // No media: the source-less <audio> reports no duration, so getDuration()
+    // falls back to the decoded data, as in a mic preview
+    const ws = WaveSurfer.create({ container: document.createElement('div') })
+    await loadPeaks(ws)
+    const events: string[] = []
+    ws.on('load', () => events.push('load'))
+    ws.on('decode', () => events.push('decode'))
+    ws.on('ready', () => events.push('ready'))
+    const renderer = getRenderer()
+    renderer.render.mockClear()
+    const loadScope = (ws as any).loadScope
+    const media = ws.getMediaElement() as HTMLMediaElement
+    const pauseSpy = jest.spyOn(media, 'pause')
+
+    for (let i = 1; i <= 3; i++) {
+      const peaks = [new Float32Array([0, i / 10])]
+      expect(ws.replacePeaks(peaks, i * 2)).toBe(true)
+
+      const decoded = ws.getDecodedData()!
+      expect(decoded.duration).toBe(i * 2)
+      expect(Array.from(decoded.getChannelData(0))).toEqual(Array.from(peaks[0]))
+      expect(ws.getDuration()).toBe(i * 2)
+      expect(ws.getState().audioBuffer.value).toBe(decoded)
+      expect(ws.getState().peaks.value).toBe(peaks)
+      expect(renderer.render).toHaveBeenLastCalledWith(decoded)
+    }
+
+    expect(renderer.render).toHaveBeenCalledTimes(3)
+    expect(events).toEqual([])
+    expect(ws.getState().loadPhase.value).toBe('ready')
+    expect((ws as any).loadScope).toBe(loadScope)
+    expect(pauseSpy).not.toHaveBeenCalled()
+    ws.destroy()
+  })
+
+  test('is skipped (returns false) while a load() is in flight, and works again once it settles', async () => {
+    const originalFetch = global.fetch
+    // Pending until aborted, like a real fetch
+    global.fetch = jest.fn(
+      (_url: unknown, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')))
+        }),
+    )
+    const ws = WaveSurfer.create({ container: document.createElement('div') })
+    try {
+      await loadPeaks(ws)
+      const renderer = getRenderer()
+      renderer.render.mockClear()
+
+      // A real load is fetching: a preview frame must not hand it a stale
+      // decoded buffer (its duration fallback would read it) or peaks state
+      const pending = ws.load('http://x/a.mp3')
+      expect(ws.replacePeaks([[0, 1]], 5)).toBe(false)
+      expect(ws.getDecodedData()).toBeNull()
+      expect(ws.getState().peaks.value).toBeNull()
+      expect(renderer.render).not.toHaveBeenCalled()
+
+      // Superseded by a newer peaks load: once that one settles, frames render again
+      await loadPeaks(ws)
+      await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
+      expect(ws.replacePeaks([[0, 1]], 5)).toBe(true)
+      expect(ws.getDuration()).toBe(5)
+    } finally {
+      ws.destroy()
+      global.fetch = originalFetch
+    }
+  })
+
+  test('is a no-op after destroy()', async () => {
+    const ws = WaveSurfer.create({ container: document.createElement('div') })
+    await loadPeaks(ws)
+    const renderer = getRenderer()
+    renderer.render.mockClear()
+    ws.destroy()
+
+    expect(ws.replacePeaks([[0, 1]], 5)).toBe(false)
+    expect(ws.getDecodedData()).toBeNull()
+    expect(renderer.render).not.toHaveBeenCalled()
+  })
+
+  test('throws on invalid data without changing the current waveform', async () => {
+    const decoderModule = jest.requireMock('../decoder.js').default
+    const ws = WaveSurfer.create({ container: document.createElement('div') })
+    await loadPeaks(ws)
+    const decoded = ws.getDecodedData()
+    decoderModule.createBuffer.mockImplementationOnce(() => {
+      throw new Error('duration must be greater than 0')
+    })
+
+    expect(() => ws.replacePeaks([[0, 1]], 0)).toThrow('duration must be greater than 0')
+    expect(ws.getDecodedData()).toBe(decoded)
+    ws.destroy()
+  })
+
+  test('keeps getDuration() in step under the WebAudio backend', async () => {
+    const { MockAudioContext } = makeMockAudioContext()
+    const originalAudioContext = (globalThis as any).AudioContext
+    ;(globalThis as any).AudioContext = MockAudioContext
+    try {
+      const ws = WaveSurfer.create({ container: document.createElement('div'), backend: 'WebAudio' })
+      await loadPeaks(ws)
+      expect(ws.getDuration()).toBe(1)
+
+      ws.replacePeaks([[0, 1]], 4)
+      expect(ws.getDuration()).toBe(4)
+      ws.destroy()
+    } finally {
+      ;(globalThis as any).AudioContext = originalAudioContext
+    }
+  })
+})

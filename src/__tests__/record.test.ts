@@ -1,4 +1,6 @@
 import RecordPlugin from '../plugins/record.js'
+import WaveSurfer from '../wavesurfer.js'
+import { installMatchMediaStub } from './helpers/match-media.js'
 
 describe('RecordPlugin teardown', () => {
   it('emits record-end BEFORE listeners are cleared on destroy', () => {
@@ -270,6 +272,102 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
     plugin.destroy()
   })
 
+  describe('option restore on stopMic (only the keys the plugin overrides)', () => {
+    const createHost = (options: Record<string, unknown>) => ({
+      options,
+      getWidth: () => 500,
+      getDuration: () => 5,
+      load: jest.fn().mockResolvedValue(undefined),
+      setTime: jest.fn(),
+      setOptions: jest.fn((opts: Record<string, unknown>): void => {
+        Object.assign(options, opts)
+      }),
+    })
+
+    it('keeps an option the app changed during the mic session', async () => {
+      const plugin = RecordPlugin.create({ scrollingWaveform: true })
+      const wavesurfer = createHost({ interact: true, cursorWidth: 2, waveColor: 'blue', height: 100 })
+      plugin._init(wavesurfer as never)
+
+      await plugin.startMic()
+      wavesurfer.setOptions({ waveColor: 'red', height: 200 })
+      plugin.stopMic()
+
+      expect(wavesurfer.options.waveColor).toBe('red')
+      expect(wavesurfer.options.height).toBe(200)
+      plugin.destroy()
+    })
+
+    it('restores every overridden key to its pre-session value, including previously unset keys', async () => {
+      const plugin = RecordPlugin.create({ scrollingWaveform: true })
+      // normalize and maxPeak are not set at all before the session
+      const wavesurfer = createHost({ interact: true, cursorWidth: 2 })
+      plugin._init(wavesurfer as never)
+
+      await plugin.startMic()
+      expect(wavesurfer.options).toMatchObject({ interact: false, cursorWidth: 0, normalize: true, maxPeak: 1 })
+      plugin.stopMic()
+
+      expect(wavesurfer.options.interact).toBe(true)
+      expect(wavesurfer.options.cursorWidth).toBe(2)
+      expect(wavesurfer.options.normalize).toBeUndefined()
+      expect(wavesurfer.options.maxPeak).toBeUndefined()
+      plugin.destroy()
+    })
+
+    it('restores the minPxPerSec the continuous waveform set, and only that', async () => {
+      let drawWaveform!: () => void
+      const intervalSpy = jest.spyOn(global, 'setInterval').mockImplementation(((callback: () => void) => {
+        drawWaveform = callback
+        return 1
+      }) as typeof setInterval)
+      const plugin = RecordPlugin.create({ continuousWaveform: true, continuousWaveformDuration: 5 })
+      const wavesurfer = createHost({ interact: true, minPxPerSec: 0, cursorWidth: 2 })
+      plugin._init(wavesurfer as never)
+
+      try {
+        await plugin.startMic()
+        drawWaveform()
+        await flushMicrotasks()
+        expect(wavesurfer.options.minPxPerSec).toBe(100)
+        // Not overridden in continuous mode, so an app change survives
+        wavesurfer.setOptions({ cursorWidth: 3 })
+
+        plugin.stopMic()
+        expect(wavesurfer.options.minPxPerSec).toBe(0)
+        expect(wavesurfer.options.interact).toBe(true)
+        expect(wavesurfer.options.cursorWidth).toBe(3)
+      } finally {
+        plugin.destroy()
+        intervalSpy.mockRestore()
+      }
+    })
+
+    it('does not pass load-time options (peaks, duration, audioRate, mediaControls) to the restore', async () => {
+      const plugin = RecordPlugin.create({ scrollingWaveform: true })
+      const wavesurfer = createHost({
+        interact: true,
+        cursorWidth: 2,
+        peaks: [[0.1, 0.2]],
+        duration: 10,
+        audioRate: 1.5,
+        mediaControls: true,
+      })
+      plugin._init(wavesurfer as never)
+
+      await plugin.startMic()
+      wavesurfer.setOptions.mockClear()
+      plugin.stopMic()
+
+      expect(wavesurfer.setOptions).toHaveBeenCalledTimes(1)
+      const restored = wavesurfer.setOptions.mock.calls[0][0]
+      expect(Object.keys(restored).sort()).toEqual(['cursorWidth', 'interact', 'maxPeak', 'normalize'])
+      expect(restored).not.toHaveProperty('peaks')
+      expect(restored).not.toHaveProperty('duration')
+      plugin.destroy()
+    })
+  })
+
   it('does not deliver the old session record-end into a re-initialized lifecycle, but still redelivers to snapshotted listeners', async () => {
     const plugin = RecordPlugin.create()
     const oldLifecycleEnd = jest.fn()
@@ -369,6 +467,7 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
       getWidth: () => 500,
       getDuration: () => 5,
       load: jest.fn().mockResolvedValue(undefined),
+      replacePeaks: jest.fn().mockReturnValue(true),
       setTime: jest.fn(),
       setOptions: jest.fn(),
     }
@@ -386,8 +485,11 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
       now = 3_500
       drawWaveform() // one delayed callback after 500 ms of recording
 
-      const lastLoad = wavesurfer.load.mock.calls[wavesurfer.load.mock.calls.length - 1]
-      const peaks = lastLoad[1][0] as Float32Array
+      // Only the session's first frame is a real load(); the rest swap peaks
+      expect(wavesurfer.load).toHaveBeenCalledTimes(1)
+      expect(wavesurfer.replacePeaks).toHaveBeenCalledTimes(3)
+      const lastRender = wavesurfer.replacePeaks.mock.calls[wavesurfer.replacePeaks.mock.calls.length - 1]
+      const peaks = lastRender[0][0] as Float32Array
       expect(peaks[0]).toBe(0.5)
       expect(peaks[50]).toBe(0.5)
       expect(peaks[51]).toBe(0)
@@ -404,7 +506,9 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
       now = 13_600
       drawWaveform()
 
-      const resumedPeaks = wavesurfer.load.mock.calls[wavesurfer.load.mock.calls.length - 1][1][0] as Float32Array
+      const resumedPeaks = wavesurfer.replacePeaks.mock.calls[
+        wavesurfer.replacePeaks.mock.calls.length - 1
+      ][0][0] as Float32Array
       expect(resumedPeaks[51]).toBe(0.5)
       expect(resumedPeaks[60]).toBe(0.5)
       expect(resumedPeaks[61]).toBe(0)
@@ -417,6 +521,154 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
       analyserSpy.mockRestore()
       nowSpy.mockRestore()
     }
+  })
+
+  describe('live preview against a real WaveSurfer', () => {
+    const originalGetContext = window.HTMLCanvasElement.prototype.getContext
+
+    beforeAll(() => {
+      installMatchMediaStub()
+      // jsdom has no canvas backend: stub the 2D context the real renderer draws on
+      window.HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
+        beginPath: jest.fn(),
+        rect: jest.fn(),
+        roundRect: jest.fn(),
+        moveTo: jest.fn(),
+        lineTo: jest.fn(),
+        closePath: jest.fn(),
+        fill: jest.fn(),
+        drawImage: jest.fn(),
+        fillRect: jest.fn(),
+        createLinearGradient: jest.fn(() => ({ addColorStop: jest.fn() })),
+        globalCompositeOperation: '',
+        canvas: { width: 100, height: 100 },
+      })) as never
+    })
+
+    afterAll(() => {
+      window.HTMLCanvasElement.prototype.getContext = originalGetContext
+    })
+
+    const setUp = (pluginOptions: Parameters<typeof RecordPlugin.create>[0]) => {
+      let now = 1_000
+      const nowSpy = jest.spyOn(performance, 'now').mockImplementation(() => now)
+      let level = 0
+      const analyserSpy = jest.spyOn(MockAudioContext.prototype, 'createAnalyser').mockReturnValue({
+        fftSize: 32,
+        frequencyBinCount: 16,
+        getFloatTimeDomainData: jest.fn((samples: Float32Array) => samples.fill(level)),
+      })
+      let drawWaveform!: () => void
+      const intervalSpy = jest.spyOn(global, 'setInterval').mockImplementation(((callback: () => void) => {
+        drawWaveform = callback
+        return 1
+      }) as typeof setInterval)
+
+      const wavesurfer = WaveSurfer.create({ container: document.createElement('div') })
+      const plugin = wavesurfer.registerPlugin(RecordPlugin.create(pluginOptions))
+      const events = { load: 0, decode: 0, ready: 0 }
+      wavesurfer.on('load', () => events.load++)
+      wavesurfer.on('decode', () => events.decode++)
+      wavesurfer.on('ready', () => events.ready++)
+
+      // One preview frame: the analyser reports `nextLevel`, a bit over 10 ms
+      // pass (exactly 10 ms can floor two frames onto one continuous sample)
+      const tick = (nextLevel: number) => {
+        level = nextLevel
+        now += 11
+        drawWaveform()
+      }
+      const restore = () => {
+        wavesurfer.destroy()
+        intervalSpy.mockRestore()
+        analyserSpy.mockRestore()
+        nowSpy.mockRestore()
+      }
+      return { wavesurfer, plugin, events, tick, restore }
+    }
+
+    it('scrolling: emits load/decode/ready once per mic session while every tick updates the waveform', async () => {
+      const { wavesurfer, plugin, events, tick, restore } = setUp({
+        scrollingWaveform: true,
+        scrollingWaveformWindow: 1,
+      })
+      try {
+        await plugin.startMic()
+        tick(0.01)
+        await flushMicrotasks()
+        expect(events).toEqual({ load: 1, decode: 1, ready: 1 })
+
+        const levels = [0.01]
+        let previous = wavesurfer.getDecodedData()
+        for (let i = 2; i <= 30; i++) {
+          tick(i / 100)
+          levels.push(i / 100)
+          const decoded = wavesurfer.getDecodedData()!
+          expect(decoded).not.toBe(previous)
+          previous = decoded
+          expect(wavesurfer.getDuration()).toBe(1)
+          // The window shifted left by one sample: the newest peaks are at the end
+          const channel = decoded.getChannelData(0)
+          expect(channel).toHaveLength(100)
+          expect(Array.from(channel.slice(-levels.length))).toEqual(levels.map((l) => Math.fround(l)))
+          expect(channel.slice(0, -levels.length).every((v) => v === 0)).toBe(true)
+        }
+        await flushMicrotasks()
+        expect(events).toEqual({ load: 1, decode: 1, ready: 1 })
+        expect(wavesurfer.getState().loadPhase.value).toBe('ready')
+
+        // A new mic session starts with one real load again
+        plugin.stopMic()
+        await plugin.startMic()
+        tick(0.5)
+        await flushMicrotasks()
+        tick(0.6)
+        expect(events).toEqual({ load: 2, decode: 2, ready: 2 })
+      } finally {
+        restore()
+      }
+    })
+
+    it('continuous: emits load/decode/ready once per mic session while every tick updates the waveform', async () => {
+      const { wavesurfer, plugin, events, tick, restore } = setUp({
+        continuousWaveform: true,
+        continuousWaveformDuration: 1,
+      })
+      // jsdom has no layout: give the waveform a width for the minPxPerSec adjustment
+      jest.spyOn(wavesurfer, 'getWidth').mockReturnValue(500)
+      try {
+        await plugin.startMic()
+        tick(0.01)
+        await flushMicrotasks()
+        expect(events).toEqual({ load: 1, decode: 1, ready: 1 })
+        // The minPxPerSec adjustment ran after the first render
+        expect(wavesurfer.options.minPxPerSec).toBe(500)
+
+        for (let i = 2; i <= 30; i++) {
+          tick(i / 100)
+          const channel = wavesurfer.getDecodedData()!.getChannelData(0)
+          expect(wavesurfer.getDuration()).toBe(1)
+          expect(Math.max(...channel)).toBeCloseTo(i / 100)
+        }
+
+        // Recording moves the cursor every tick (setTime after each render)
+        const setTimeSpy = jest.spyOn(wavesurfer, 'setTime')
+        await plugin.startRecording()
+        tick(0.4)
+        tick(0.4)
+        expect(setTimeSpy).toHaveBeenCalledTimes(2)
+        expect(setTimeSpy).toHaveBeenLastCalledWith(0.02)
+
+        // The window grows past its initial duration and the duration follows
+        for (let i = 0; i < 120; i++) tick(0.3)
+        expect(wavesurfer.getDuration()).toBe(2)
+
+        await flushMicrotasks()
+        expect(events).toEqual({ load: 1, decode: 1, ready: 1 })
+      } finally {
+        restore()
+      }
+    })
   })
 })
 
