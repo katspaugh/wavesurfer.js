@@ -721,6 +721,83 @@ export function getCanvasPixelRatio(cssWidth: number, cssHeight: number): number
 }
 
 /**
+ * Resample one channel's [frame][bin] columns to `targetWidth` columns: averaging when
+ * downsampling, linear interpolation when upsampling. Returns the input matrix itself when the
+ * width already matches or `targetWidth` is 0; otherwise every column is a new array.
+ */
+export function resampleChannel(oldMatrix: Uint8Array[], targetWidth: number): Uint8Array[] {
+  const oldColumns = oldMatrix.length
+  const freqBins = oldMatrix[0]?.length || 0
+
+  // Fast path for no resampling needed
+  if (oldColumns === targetWidth || targetWidth === 0) {
+    return oldMatrix
+  }
+
+  const ratio = oldColumns / targetWidth
+
+  // Always use quality resampling for accurate spectrograms
+  const newMatrix: Uint8Array[] = new Array(targetWidth)
+
+  if (ratio >= 1) {
+    // Downsampling with proper averaging
+    for (let i = 0; i < targetWidth; i++) {
+      const start = Math.floor(i * ratio)
+      const end = Math.min(Math.ceil((i + 1) * ratio), oldColumns)
+      const count = end - start
+
+      // Always create new column to avoid reference issues
+      const column = new Uint8Array(freqBins)
+      if (count === 1) {
+        // Single source column - copy data
+        column.set(oldMatrix[start])
+      } else {
+        // Average multiple source columns
+        for (let k = 0; k < freqBins; k++) {
+          let sum = 0
+          for (let j = start; j < end; j++) {
+            sum += oldMatrix[j][k]
+          }
+          column[k] = Math.round(sum / count)
+        }
+      }
+      newMatrix[i] = column
+    }
+  } else {
+    // Upsampling with linear interpolation for quality
+    for (let i = 0; i < targetWidth; i++) {
+      const srcIndex = i * ratio
+      const leftIndex = Math.floor(srcIndex)
+      const rightIndex = Math.min(leftIndex + 1, oldColumns - 1)
+      const weight = srcIndex - leftIndex
+
+      const column = new Uint8Array(freqBins)
+
+      if (weight === 0 || leftIndex === rightIndex) {
+        // Exact match or at boundary - use nearest neighbor
+        column.set(oldMatrix[leftIndex])
+      } else {
+        // Linear interpolation for better quality
+        const leftColumn = oldMatrix[leftIndex]
+        const rightColumn = oldMatrix[rightIndex]
+        const invWeight = 1 - weight
+        for (let k = 0; k < freqBins; k++) {
+          column[k] = Math.round(leftColumn[k] * invWeight + rightColumn[k] * weight)
+        }
+      }
+      newMatrix[i] = column
+    }
+  }
+
+  return newMatrix
+}
+
+/** Resample every channel of [channel][frame][bin] data to `targetWidth` columns (see resampleChannel). */
+export function efficientResample(frequenciesData: Uint8Array[][], targetWidth: number): Uint8Array[][] {
+  return frequenciesData.map((channelFreq) => resampleChannel(channelFreq, targetWidth))
+}
+
+/**
  * Format frequency value for display
  */
 export function freqType(freq: number): string {
@@ -747,6 +824,92 @@ export function getLabelFrequency(
   const scaleMin = hzToScale(frequencyMin, scale)
   const scaleMax = hzToScale(frequencyMax, scale)
   return scaleToHz(scaleMin + (index / labelIndex) * (scaleMax - scaleMin), scale)
+}
+
+export type FrequencyLabelsOptions = {
+  /** Background fill per channel row (default: 'rgba(68,68,68,0)') */
+  bgFill: string | undefined
+  /** Font size of the frequency values (default: '12px') */
+  fontSizeFreq: string
+  /** Font size of the units (default: '12px') */
+  fontSizeUnit: string
+  /** Font family (default: 'Helvetica') */
+  fontType: string
+  /** Color of the frequency values (default: '#fff') */
+  textColorFreq: string | undefined
+  /** Color of the units (default: '#fff') */
+  textColorUnit: string | undefined
+  /** (default: 'center') */
+  textAlign: CanvasTextAlign
+  /** Number of channel rows to label */
+  channels: number
+  /** Height of one channel row in CSS pixels */
+  height: number
+  /** Frequency range shown, bottom to top, in Hz */
+  frequencyMin: number
+  frequencyMax: number
+  scale: 'linear' | 'logarithmic' | 'mel' | 'bark' | 'erb'
+}
+
+/**
+ * Draw the frequency axis labels onto the labels canvas: resizes its backing store to
+ * height * channels rows at window.devicePixelRatio, then paints each channel row's background
+ * and its frequency/unit labels.
+ */
+export function drawFrequencyLabels(labelsEl: HTMLCanvasElement, opts: FrequencyLabelsOptions): void {
+  const { channels, frequencyMin, frequencyMax, scale } = opts
+  const frequenciesHeight = opts.height
+  const bgFill = opts.bgFill || 'rgba(68,68,68,0)'
+  const fontSizeFreq = opts.fontSizeFreq || '12px'
+  const fontSizeUnit = opts.fontSizeUnit || '12px'
+  const fontType = opts.fontType || 'Helvetica'
+  const textColorFreq = opts.textColorFreq || '#fff'
+  const textColorUnit = opts.textColorUnit || '#fff'
+  const textAlign = opts.textAlign || 'center'
+  const bgWidth = 55
+  const getMaxY = frequenciesHeight || 512
+  const labelIndex = 5 * (getMaxY / 256)
+
+  // prepare canvas element for labels
+  const canvasCtx = labelsEl.getContext('2d')
+  if (!canvasCtx) return
+  const dispScale = window.devicePixelRatio
+  labelsEl.height = opts.height * channels * dispScale
+  labelsEl.width = bgWidth * dispScale
+  canvasCtx.scale(dispScale, dispScale)
+
+  for (let c = 0; c < channels; c++) {
+    // for each channel
+    // fill background: one row-height rect per channel. (fillRect's 4th argument is a
+    // HEIGHT, not an end coordinate - the historical `(1 + c) * getMaxY` overdrew every
+    // row below channel c, double-painting a translucent background per extra channel.)
+    canvasCtx.fillStyle = bgFill
+    canvasCtx.fillRect(0, c * getMaxY, bgWidth, getMaxY)
+
+    // render labels
+    for (let i = 0; i <= labelIndex; i++) {
+      canvasCtx.textAlign = textAlign
+      canvasCtx.textBaseline = 'middle'
+
+      const freq = getLabelFrequency(i, labelIndex, frequencyMin, frequencyMax, scale)
+      const label = freqType(freq)
+      const units = unitType(freq)
+      const x = 16
+      let y = (1 + c) * getMaxY - (i / labelIndex) * getMaxY
+
+      // Make sure label remains in view
+      y = Math.min(Math.max(y, c * getMaxY + 10), (1 + c) * getMaxY - 10)
+
+      // unit label
+      canvasCtx.fillStyle = textColorUnit
+      canvasCtx.font = fontSizeUnit + ' ' + fontType
+      canvasCtx.fillText(units, x + 24, y)
+      // freq label
+      canvasCtx.fillStyle = textColorFreq
+      canvasCtx.font = fontSizeFreq + ' ' + fontType
+      canvasCtx.fillText(label, x, y)
+    }
+  }
 }
 
 /**
