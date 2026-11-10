@@ -48,6 +48,10 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   private playStartTime = 0
   private playbackPosition = 0
   private _muted = false
+  // The volume to restore on unmute. Only meaningful while muted: the gain is 0
+  // then, but `volume` keeps reporting this, like HTMLMediaElement.volume. While
+  // unmuted the gain node's own value is the single source of truth.
+  private volumeBeforeMute = 1
   private _playbackRate = 1
   private _duration: number | undefined = undefined
   private buffer: AudioBuffer | null = null
@@ -381,10 +385,17 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
   }
 
   get volume() {
-    return this.gainNode.gain.value
+    // Unmuted, read the gain node itself -- an app may also write `gain.value`
+    // directly via getGainNode(), and that must stay in sync with what is reported
+    return this._muted ? this.volumeBeforeMute : this.gainNode.gain.value
   }
   set volume(value) {
-    this.gainNode.gain.value = value
+    if (this._muted) {
+      // Stay silent; the new volume takes effect on unmute
+      this.volumeBeforeMute = value
+    } else {
+      this.gainNode.gain.value = value
+    }
     this.emit('volumechange')
   }
 
@@ -395,10 +406,13 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     if (this._muted === value) return
     this._muted = value
 
-    if (this._muted) {
-      this.gainNode.disconnect()
+    // Mute through the gain value rather than by disconnecting the gain node,
+    // so routing an app attached via getGainNode() (e.g. filters) survives
+    if (value) {
+      this.volumeBeforeMute = this.gainNode.gain.value
+      this.gainNode.gain.value = 0
     } else {
-      this.gainNode.connect(this.audioContext.destination)
+      this.gainNode.gain.value = this.volumeBeforeMute
     }
 
     // An HTMLMediaElement reports a mute change as 'volumechange', the event
@@ -410,7 +424,12 @@ class WebAudioPlayer extends EventEmitter<WebAudioPlayerEvents> {
     return /^(audio|video)\//.test(mimeType)
   }
 
-  /** Get the GainNode used to play the audio. Can be used to attach filters. */
+  /**
+   * Get the GainNode used to play the audio. Can be used to attach filters.
+   *
+   * Volume and mute are applied through this node's `gain.value` (0 while muted),
+   * never by changing its connections, so custom routing set up on it is preserved.
+   */
   public getGainNode(): GainNode {
     return this.gainNode
   }
