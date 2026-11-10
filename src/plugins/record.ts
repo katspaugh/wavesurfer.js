@@ -329,15 +329,17 @@ function setupRecord(
         const cursorTime = isRecording() && options.continuousWaveform ? sampleIdx / FPS : 0
         const afterRender = () => {
           // Re-read: a load() settles asynchronously, possibly after destroy()
-          const current = liveWavesurfer()
-          if (current && options.continuousWaveform) {
-            current.setTime(cursorTime)
+          if (!options.continuousWaveform) return
+          liveWavesurfer()?.setTime(cursorTime)
 
-            if (!current.options.minPxPerSec) {
-              current.setOptions({
-                minPxPerSec: current.getWidth() / current.getDuration(),
-              })
-            }
+          // Re-read again: setTime() emits 'timeupdate' synchronously, and a
+          // listener there may destroy the plugin. Its teardown restores
+          // minPxPerSec, which must not be overridden again afterwards.
+          const current = liveWavesurfer()
+          if (current && !current.options.minPxPerSec) {
+            current.setOptions({
+              minPxPerSec: current.getWidth() / current.getDuration(),
+            })
           }
         }
         const onRenderError = (err: unknown) => console.error('Error rendering real-time recording data:', err)
@@ -541,6 +543,11 @@ function setupRecord(
       }
 
       ctx.emit(ev, blob)
+
+      // A listener may have destroyed the plugin during the emit. destroy()
+      // has then done its blob URL revocation pass, so a URL created now
+      // would never be revoked.
+      if (ctx.scope.disposed) return
 
       if (options.renderRecordedAudio) {
         applyOriginalOptionsIfNeeded()

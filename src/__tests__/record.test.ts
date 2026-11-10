@@ -237,6 +237,21 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
     expect(URL.createObjectURL).not.toHaveBeenCalled()
   })
 
+  it('creates no recorded-audio blob URL when a record-end listener destroys the plugin', async () => {
+    const plugin = RecordPlugin.create()
+    const onEnd = jest.fn(() => plugin.destroy())
+    plugin.on('record-end', onEnd)
+
+    await plugin.startRecording()
+    plugin.stopRecording()
+    await flushMicrotasks()
+
+    expect(onEnd).toHaveBeenCalledTimes(1)
+    // destroy() ran its revocation pass inside the listener: a URL created
+    // after the emit returns would never be revoked
+    expect(URL.createObjectURL).not.toHaveBeenCalled()
+  })
+
   it('does not double-deliver record-end on a normal (non-destroy) stop', async () => {
     const plugin = RecordPlugin.create()
     const onEnd = jest.fn()
@@ -372,6 +387,33 @@ describe('RecordPlugin destroy-time record-end delivery (realistic async onstop)
         expect(wavesurfer.options.minPxPerSec).toBe(0)
         expect(wavesurfer.options.interact).toBe(true)
         expect(wavesurfer.options.cursorWidth).toBe(3)
+      } finally {
+        plugin.destroy()
+        intervalSpy.mockRestore()
+      }
+    })
+
+    it('leaves minPxPerSec restored when a timeupdate listener destroys the plugin mid-frame', async () => {
+      let drawWaveform!: () => void
+      const intervalSpy = jest.spyOn(global, 'setInterval').mockImplementation(((callback: () => void) => {
+        drawWaveform = callback
+        return 1
+      }) as typeof setInterval)
+      const plugin = RecordPlugin.create({ continuousWaveform: true, continuousWaveformDuration: 5 })
+      const wavesurfer = createHost({ interact: true, minPxPerSec: 0 })
+      // WaveSurfer.setTime() emits 'timeupdate' synchronously; an app listener may destroy the plugin there
+      wavesurfer.setTime.mockImplementation(() => plugin.destroy())
+      plugin._init(wavesurfer as never)
+
+      try {
+        await plugin.startMic()
+        drawWaveform()
+        await flushMicrotasks()
+
+        expect(wavesurfer.setTime).toHaveBeenCalledTimes(1)
+        // destroy() restored the host options; the frame must not set the zoom again
+        expect(wavesurfer.options.minPxPerSec).toBe(0)
+        expect(wavesurfer.options.interact).toBe(true)
       } finally {
         plugin.destroy()
         intervalSpy.mockRestore()
