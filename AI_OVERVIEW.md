@@ -8,7 +8,7 @@ This document gives a condensed view of the project structure and build process 
   - **`src/scope.ts`** – `Scope`, the disposal-tree primitive (listeners, timers, observers, signal subscriptions, child lifetimes) that every `destroy()` in the codebase is expressed with.
   - **`src/reactive/`** – the signal store (`store.ts`: `signal`/`computed`/`effect`/`batch`, always-disposable) plus stream primitives (`event-streams.ts`, `drag-stream.ts`, `scroll-stream.ts`) that wrap DOM events as composable, scope-owned subscriptions.
   - **`src/state/`** – `WaveSurferState`/`WaveSurferActions` (`wavesurfer-state.ts`), the centralized reactive state returned by `wavesurfer.getState()`.
-  - **`src/define-plugin.ts`** – `definePlugin(name, (ctx, options) => api)`, the functional plugin API; six first-party plugins (`hover`, `zoom`, `timeline`, `minimap`, `envelope`, `regions`) are built on it. `BasePlugin`-based (class) plugins keep working unchanged.
+  - **`src/define-plugin.ts`** – `definePlugin(name, (ctx, options) => api)`, the functional plugin API; every first-party plugin (`hover`, `zoom`, `timeline`, `minimap`, `envelope`, `regions`, `spectrogram`, `record`) is built on it. `BasePlugin`-based (class) plugins keep working unchanged.
   - **`src/__tests__/`** – unit tests colocated with `src/` (excluded from `tsc`'s build output via `tsconfig.json`'s `exclude`, but still type-checked/run by `ts-jest`).
 - **`examples/`** – Stand‑alone demos used for manual testing and documentation. Each example is an HTML page importing the library and demonstrating a specific feature.
 - **`cypress/`** – End‑to‑end and visual regression tests powered by Cypress. Tests live in `cypress/e2e` and snapshots reside in `cypress/snapshots`.

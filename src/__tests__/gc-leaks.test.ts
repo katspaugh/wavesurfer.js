@@ -61,6 +61,7 @@ import { type BasePluginEvents } from '../base-plugin.js'
 import { definePlugin } from '../define-plugin.js'
 import WaveSurfer from '../wavesurfer.js'
 import RegionsPlugin from '../plugins/regions.js'
+import RecordPlugin from '../plugins/record.js'
 import SpectrogramPlugin from '../plugins/spectrogram.js'
 import { installMatchMediaStub } from './helpers/match-media.js'
 import { ensureGlobalAudioBufferStub } from './helpers/audio-buffer.js'
@@ -461,6 +462,94 @@ describe('GC leak regression harness (WeakRef + --expose-gc)', () => {
         'the GcPayloadTestPlugin instance / its closure-only payload (check definePlugin teardown and ' +
           'Scope#dispose())',
       )
+    })
+  })
+
+  // ==========================================================================================
+  // Case 4: RecordPlugin destroyed mid-recording - the final record-end is delivered after
+  // destroy() (MediaRecorder's async onstop) to a snapshot of the record-end listeners
+  // ==========================================================================================
+  describe('Case 4: RecordPlugin destroyed during a recording', () => {
+    // Plain functions, not jest.fn(): a mock's recorded calls would retain the listeners (and,
+    // through them, the plugin) that this case checks are released.
+    const installMocks = () => {
+      const saved = {
+        AudioContext: global.AudioContext,
+        MediaRecorder: global.MediaRecorder,
+        mediaDevices: Object.getOwnPropertyDescriptor(navigator, 'mediaDevices'),
+      }
+      class FakeMediaRecorder {
+        static isTypeSupported = () => true
+        state = 'inactive'
+        mimeType = 'audio/webm'
+        ondataavailable: ((event: { data: Blob }) => void) | null = null
+        onstop: (() => void) | null = null
+        start() {
+          this.state = 'recording'
+        }
+        stop() {
+          this.state = 'inactive'
+          queueMicrotask(() => {
+            this.ondataavailable?.({ data: new Blob([new Uint8Array(1024)]) })
+            this.onstop?.()
+          })
+        }
+      }
+      class FakeAudioContext {
+        createMediaStreamSource() {
+          return { connect: () => undefined, disconnect: () => undefined }
+        }
+        createAnalyser() {
+          return { fftSize: 2048, frequencyBinCount: 1024, getFloatTimeDomainData: () => undefined }
+        }
+        close() {
+          return Promise.resolve()
+        }
+      }
+      const track = { stop: () => undefined, addEventListener: () => undefined, removeEventListener: () => undefined }
+      global.AudioContext = FakeAudioContext as unknown as typeof AudioContext
+      global.MediaRecorder = FakeMediaRecorder as unknown as typeof MediaRecorder
+      Object.defineProperty(navigator, 'mediaDevices', {
+        configurable: true,
+        value: { getUserMedia: () => Promise.resolve({ getTracks: () => [track] }) },
+      })
+      return () => {
+        global.AudioContext = saved.AudioContext
+        global.MediaRecorder = saved.MediaRecorder
+        if (saved.mediaDevices) Object.defineProperty(navigator, 'mediaDevices', saved.mediaDevices)
+        else delete (navigator as unknown as Record<string, unknown>).mediaDevices
+      }
+    }
+
+    // Whole-graph coverage (see top doc comment): the plugin, its wavesurfer and the listener
+    // are all dropped, after the post-destroy record-end has been delivered.
+    it('collects the RecordPlugin instance after the post-destroy record-end delivery', async () => {
+      const restoreMocks = installMocks()
+      try {
+        let delivered = 0
+        let plugin: RecordPlugin | null = null
+        let ws: WaveSurfer | null = WaveSurfer.create({ container: document.createElement('div') })
+        plugin = ws.registerPlugin(RecordPlugin.create({ renderRecordedAudio: false }))
+        plugin.on('record-end', () => delivered++)
+        await plugin.startRecording()
+
+        const ok = await collected(() => {
+          const target = plugin as object
+          ws!.destroy()
+          plugin = null
+          ws = null
+          return target
+        })
+
+        if (delivered !== 1) throw new Error('the final record-end was not delivered - this test would be vacuous')
+        expectCollected(
+          ok,
+          'the RecordPlugin instance (check its record-end listener snapshot, the hosts WeakMap and ' +
+            'definePlugin teardown)',
+        )
+      } finally {
+        restoreMocks()
+      }
     })
   })
 })
