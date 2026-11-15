@@ -47,8 +47,10 @@ const defaultOptions = {
   formatTimeCallback: (seconds: number) => {
     if (seconds / 60 > 1) {
       // calculate minutes and seconds from seconds count
-      const minutes = Math.floor(seconds / 60)
-      seconds = Math.round(seconds % 60)
+      // round first, so 119.6 (or a drifted 119.99999) carries into "2:00" instead of "1:60"
+      const totalSeconds = Math.round(seconds)
+      const minutes = Math.floor(totalSeconds / 60)
+      seconds = totalSeconds % 60
       const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
       return `${minutes}:${paddedSeconds}`
     }
