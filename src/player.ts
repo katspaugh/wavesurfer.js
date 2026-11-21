@@ -311,11 +311,15 @@ class Player {
   public async play(): Promise<void> {
     try {
       if (this.media.readyState >= HAVE_FUTURE_DATA) this.applyPendingTime()
-      const result = await this.media.play()
+      const media = this.media
+      const src = this.getSrc()
+      const result = await media.play()
       // A resolved play promise means playback is possible. `canplay` normally
       // applies the seek first; this also supports custom media implementations.
-      this.applyPendingTime()
-      this.hasBeenPlayable = true
+      if (this.media === media && this.getSrc() === src) {
+        this.applyPendingTime()
+        this.hasBeenPlayable = true
+      }
       return result
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -344,7 +348,9 @@ class Player {
     // resolved to WaveSurfer's override with its decoded-duration fallback.
     const duration = this.getDuration()
     const currentTime = Number.isFinite(duration) ? Math.max(0, Math.min(time, duration)) : Math.max(0, time)
-    if (!this.hasBeenPlayable && this.media.readyState < HAVE_FUTURE_DATA) {
+    if (this.media.readyState >= HAVE_FUTURE_DATA) {
+      this.hasBeenPlayable = true
+    } else if (!this.hasBeenPlayable) {
       this.pendingTime = currentTime
       return
     }
