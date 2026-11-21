@@ -26,6 +26,7 @@ class Player {
   private _seeking: WritableSignal<boolean>
   // WebKit can discard or corrupt a seek made before the media can play.
   private pendingTime: number | null = null
+  private hasBeenPlayable = false
   // Player has no separate "root" scope of its own -- mediaScope IS its whole
   // ownership tree: everything Player owns is a media-event bridge that is
   // torn down (and, on setMediaElement, rebuilt) together.
@@ -150,7 +151,18 @@ class Player {
       }),
     )
 
-    this.mediaScope.add(this.onMediaEvent('canplay', () => this.applyPendingTime()))
+    this.mediaScope.add(
+      this.onMediaEvent('canplay', () => {
+        this.applyPendingTime()
+        this.hasBeenPlayable = true
+      }),
+    )
+
+    this.mediaScope.add(
+      this.onMediaEvent('emptied', () => {
+        this.hasBeenPlayable = false
+      }),
+    )
 
     // Seeking state
     this.mediaScope.add(
@@ -239,6 +251,7 @@ class Player {
     this.revokeSrc()
     const newSrc = blob instanceof Blob && (this.canPlayType(blob.type) || !url) ? URL.createObjectURL(blob) : url
     this.pendingTime = null
+    this.hasBeenPlayable = false
 
     // Track blob URLs we created so we can revoke them on destroy
     if (newSrc !== url) {
@@ -282,6 +295,7 @@ class Player {
    */
   public setMediaElement(element: HTMLMediaElement) {
     this.pendingTime = null
+    this.hasBeenPlayable = false
     // Cleanup reactive event listeners from old media element
     this.mediaScope.dispose()
     this.mediaScope = new Scope()
@@ -301,6 +315,7 @@ class Player {
       // A resolved play promise means playback is possible. `canplay` normally
       // applies the seek first; this also supports custom media implementations.
       this.applyPendingTime()
+      this.hasBeenPlayable = true
       return result
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -329,7 +344,7 @@ class Player {
     // resolved to WaveSurfer's override with its decoded-duration fallback.
     const duration = this.getDuration()
     const currentTime = Number.isFinite(duration) ? Math.max(0, Math.min(time, duration)) : Math.max(0, time)
-    if (this.media.readyState < HAVE_FUTURE_DATA) {
+    if (!this.hasBeenPlayable && this.media.readyState < HAVE_FUTURE_DATA) {
       this.pendingTime = currentTime
       return
     }
