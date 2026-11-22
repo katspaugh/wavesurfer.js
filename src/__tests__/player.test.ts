@@ -384,6 +384,17 @@ describe('Player', () => {
     expect(player.getCurrentTime()).toBe(30)
   })
 
+  test('seeks immediately on media without a readyState', () => {
+    const { media, state } = createSeekableMedia()
+    Object.defineProperty(media, 'readyState', { configurable: true, value: undefined })
+    const player = new Player({ media })
+
+    player.setTime(10)
+
+    expect(state.currentTime).toBe(10)
+    expect(player.getCurrentTime()).toBe(10)
+  })
+
   test('applies the latest seek on an already-loaded replacement element', () => {
     const { media } = createSeekableMedia()
     const replacement = createSeekableMedia()

@@ -307,10 +307,14 @@ class Player {
     this.setupReactiveMediaEvents()
   }
 
+  private isReady(): boolean {
+    return !(this.media.readyState < HAVE_FUTURE_DATA)
+  }
+
   /** Start playing the audio */
   public async play(): Promise<void> {
     try {
-      if (this.media.readyState >= HAVE_FUTURE_DATA) this.applyPendingTime()
+      if (this.isReady()) this.applyPendingTime()
       const media = this.media
       const src = this.getSrc()
       const result = await media.play()
@@ -348,7 +352,7 @@ class Player {
     // resolved to WaveSurfer's override with its decoded-duration fallback.
     const duration = this.getDuration()
     const currentTime = Number.isFinite(duration) ? Math.max(0, Math.min(time, duration)) : Math.max(0, time)
-    if (this.media.readyState >= HAVE_FUTURE_DATA) {
+    if (this.isReady()) {
       this.hasBeenPlayable = true
     } else if (!this.hasBeenPlayable) {
       this.pendingTime = currentTime
