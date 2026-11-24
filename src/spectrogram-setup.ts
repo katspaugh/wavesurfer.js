@@ -27,6 +27,7 @@ import {
 } from './spectrogram-render-utils.js'
 import { computeFrequencies, type FrequencyParams } from './spectrogram-frequencies.js'
 import { createSpectrogramWorkerClient, type WorkerRequest } from './spectrogram-worker-client.js'
+import { abortError, createSpectrogramDrawTracker, rejected, toError } from './spectrogram-draw-tracker.js'
 // Windowed rendering strategy: segment map, eviction, uncovered-range
 // detection and progressive loading live in this shared, host-agnostic module so the
 // `rendering: 'windowed'` path here and the deprecated spectrogram-windowed.ts shim (which
@@ -283,16 +284,6 @@ export type SpectrogramPluginEvents = BasePluginEvents & {
 const isPowerOfTwo = (value: number) => Number.isInteger(value) && value >= 2 && Number.isInteger(Math.log2(value))
 
 const MAX_NODES = 10
-
-/** A pending setOptions() call, settled by the first draw that read its state */
-type SettingsRequest = {
-  version: number
-  // The analysis generation it waits for (rejected when a newer one starts), or null when any
-  // later draw settles it
-  generation: number | null
-  resolve: () => void
-  reject: (error: unknown) => void
-}
 
 type OptionKey = keyof SpectrogramPluginOptions
 
@@ -589,17 +580,13 @@ export function spectrogramSetup(
   let scrollUnsubscribe: (() => void) | null = null
 
   // ---- setOptions() state ----
-  // Bumped by every analysis change: an older generation's result is never cached or drawn
-  let analysisGeneration = 0
-  // Bumped by every display or analysis change. A draw records the value it read, and settles the
-  // requests registered up to it
-  let stateVersion = 0
-  let drawVersion = -1
-  // The state and generation of the last completed draw
-  let appliedVersion = -1
-  let appliedGeneration = -1
-  let analysisFailure: { generation: number; error: Error } | null = null
-  let requests: SettingsRequest[] = []
+  const drawTracker = createSpectrogramDrawTracker({
+    isDisposed: () => ctx.scope.disposed,
+    isRenderPending,
+    hasRetainedData: () => Boolean(frequenciesDataUrl || cachedFrequencies),
+    onError: (error) => ctx.emit('error', error),
+    onRedraw: () => redrawSettings(),
+  })
   let cancelSettingsRedraw: (() => void) | null = null
 
   // ---- DOM ----
@@ -731,10 +718,6 @@ export function spectrogramSetup(
     ctx.emit('error', toError(error))
   }
 
-  function toError(error: unknown): Error {
-    return error instanceof Error ? error : new Error(String(error))
-  }
-
   async function calculateFrequenciesWithWorker(audioBuffer: AudioBuffer): Promise<Uint8Array[][]> {
     if (!workerClient.worker) {
       throw new Error('Worker not available')
@@ -768,7 +751,7 @@ export function spectrogramSetup(
   }
 
   async function getFrequencies(audioBuffer: AudioBuffer): Promise<Uint8Array[][]> {
-    const generation = analysisGeneration
+    const generation = drawTracker.generation
     frequencyMax = frequencyMax || audioBuffer.sampleRate / 2
     buffer = audioBuffer
 
@@ -793,13 +776,12 @@ export function spectrogramSetup(
         return await calculateFrequenciesWithWorker(audioBuffer)
       } catch (error) {
         // A newer analysis terminated the worker: a supersession, not a failure
-        if (ctx.scope.disposed || generation !== analysisGeneration) return []
+        if (ctx.scope.disposed || generation !== drawTracker.generation) return []
 
         if (!settings.fallbackToMainThread) {
           // Surface the failure instead of silently recomputing on the main thread, which
           // can freeze the page for long files
-          analysisFailure = { generation, error: toError(error) }
-          ctx.emit('error', analysisFailure.error)
+          drawTracker.recordFailure(generation, error)
           return []
         }
         console.warn('Worker calculation failed, falling back to main thread:', error)
@@ -1142,11 +1124,11 @@ export function spectrogramSetup(
       // after - without this guard, the cache write below would land after destroy() had
       // already nulled cachedBuffer/cachedFrequencies, silently repopulating them with a
       // stale AudioBuffer reference post-teardown.
-      const generation = analysisGeneration
+      const generation = drawTracker.generation
       const frequencies = await getFrequencies(decodedData)
       if (ctx.scope.disposed) return null
       // Computed for options a newer analysis has replaced: never cache it
-      if (generation !== analysisGeneration) return frequencies
+      if (generation !== drawTracker.generation) return frequencies
       if (frequencies.length > 0) {
         // Freshly computed frequency data invalidates the resampled-columns cache too:
         // drawSpectrogram keys that cache on width alone, so after a buffer change at an
@@ -1188,81 +1170,8 @@ export function spectrogramSetup(
     lastZoomLevel = 0
   }
 
-  function abortError(message: string): DOMException {
-    return new DOMException(message, 'AbortError')
-  }
-
-  function rejected(error: unknown): Promise<void> {
-    const promise = Promise.reject(error)
-    promise.catch(() => undefined)
-    return promise
-  }
-
-  function waitForDraw(generation: number | null): Promise<void> {
-    const promise = new Promise<void>((resolve, reject) => {
-      requests.push({ version: stateVersion, generation, resolve, reject })
-    })
-    // As in load(): fire-and-forget callers get no unhandled rejection, awaiting callers still do
-    promise.catch(() => undefined)
-    return promise
-  }
-
-  /** Resolves (or rejects with `error`) the waiting requests registered up to `version`. */
-  function settleRequests(
-    version: number,
-    error: Error | null,
-    filter: (request: SettingsRequest) => boolean = () => true,
-  ): void {
-    if (requests.length === 0) return
-    const settled = requests.filter((request) => request.version <= version && filter(request))
-    requests = requests.filter((request) => !settled.includes(request))
-    for (const request of settled) {
-      if (error) request.reject(error)
-      else request.resolve()
-    }
-  }
-
-  function analysisFailed(): boolean {
-    return analysisFailure !== null && analysisFailure.generation === analysisGeneration
-  }
-
   function isRenderPending(): boolean {
     return isRendering || cancelPendingRender !== null || cancelSettingsRedraw !== null
-  }
-
-  // A draw of `generation` that read state `version` finished: settle what it showed, or reject it
-  // with the failure its computation has already reported
-  function completeDraw(version: number, generation: number): void {
-    if (analysisFailure?.generation === generation) {
-      settleRequests(version, analysisFailure.error)
-      return
-    }
-    appliedVersion = version
-    appliedGeneration = generation
-    settleRequests(version, null)
-  }
-
-  // A thrown render: emit it once, then reject what was waiting for it. Returns the state version
-  // the failure covers, or -1 when a newer analysis (whose requests were aborted) replaced it.
-  function failDraw(generation: number, error: unknown): number {
-    if (ctx.scope.disposed || generation !== analysisGeneration) return -1
-    const version = stateVersion
-    analysisFailure = { generation, error: toError(error) }
-    ctx.emit('error', analysisFailure.error)
-    // A listener may have started a newer analysis, which carries the display requests forward
-    if (generation === analysisGeneration) settleRequests(version, analysisFailure.error)
-    return version
-  }
-
-  // A change made while a draw ran (from a 'ready' or 'error' listener) gets a draw of its own
-  function redrawIfChanged(version: number): void {
-    if (version < 0 || version === stateVersion || isRenderPending() || ctx.scope.disposed) return
-    // After a failed analysis nothing is retained to redraw; a failed draw keeps its data
-    if (analysisFailed() && !frequenciesDataUrl && !cachedFrequencies) {
-      settleRequests(stateVersion, null, (request) => request.generation === null)
-    } else {
-      redrawSettings()
-    }
   }
 
   // Redraws a display change from the retained data on the next frame. Pre-computed data is not
@@ -1279,16 +1188,10 @@ export function spectrogramSetup(
   }
 
   function startAnalysis(): void {
-    analysisGeneration++
     clearCache()
     cancelSettingsRedraw?.()
     cancelSettingsRedraw = null
-    const superseded = abortError('The analysis was superseded by a newer setOptions call')
-    settleRequests(
-      stateVersion,
-      superseded,
-      (request) => request.generation !== null && request.generation < analysisGeneration,
-    )
+    const superseded = drawTracker.startAnalysis()
     // The worker computes synchronously, so a busy one can only be stopped by replacing it
     if (workerClient.pending.size > 0) workerClient.dispose(superseded)
     if (ctx.wavesurfer?.getDecodedData()) throttledRender()
@@ -1358,37 +1261,20 @@ export function spectrogramSetup(
     const displayChanged = DISPLAY_KEYS.some(changed)
     const analysisChanged = ANALYSIS_KEYS.some(changed)
     // Only a call with analysis options retries a failed analysis
-    const retry = hasAnalysisKeys && !analysisChanged && analysisFailed() && !isRenderPending()
+    const retry = hasAnalysisKeys && !analysisChanged && drawTracker.isAnalysisFailed() && !isRenderPending()
 
     if (nextOptions.colorMap !== currentOptions.colorMap) colorMap = setupColorMap(nextOptions.colorMap)
     if (next.frequencyMax !== settings.frequencyMax) frequencyMax = next.frequencyMax
     currentOptions = nextOptions
     settings = next
-    if (displayChanged || analysisChanged || retry) stateVersion++
+    if (displayChanged || analysisChanged || retry) drawTracker.bumpState()
 
     if (analysisChanged || retry) {
       startAnalysis()
-      return waitForDraw(analysisGeneration)
+      return drawTracker.waitForDraw(drawTracker.generation)
     }
 
-    const failed = analysisFailed()
-    const analysisPending = appliedGeneration !== analysisGeneration && !failed
-    const idle = !isRenderPending() && !analysisPending
-    // Failed and idle: a call that changes nothing has no draw to wait for. A display change
-    // still redraws below when a failed draw left its data in place
-    if (failed && idle && !displayChanged) return Promise.resolve()
-    // Nothing changed and the current options are drawn, even if another redraw is scheduled
-    if (!displayChanged && !failed && !analysisPending && appliedVersion === stateVersion) return Promise.resolve()
-    if (idle && displayChanged && !frequenciesDataUrl && !cachedFrequencies) {
-      appliedVersion = stateVersion
-      return Promise.resolve()
-    }
-    // An unchanged call joins the pending analysis and shares its outcome, including supersession;
-    // a display change is carried forward to the analysis that is drawn next
-    const joinsAnalysis = analysisPending && (hasAnalysisKeys || !displayChanged)
-    const promise = waitForDraw(joinsAnalysis ? analysisGeneration : null)
-    if (idle && displayChanged) redrawSettings()
-    return promise
+    return drawTracker.trackOptionsCall({ hasAnalysisKeys, displayChanged })
   }
 
   function throttledRender(): void {
@@ -1435,58 +1321,53 @@ export function spectrogramSetup(
   async function render(): Promise<void> {
     if (isRendering) return
     isRendering = true
-    const generation = analysisGeneration
-    analysisFailure = null
+    const generation = drawTracker.beginDraw()
     let version = -1
     let failed = false
     let completed = false
     const completeBeforeReady = () => {
       completed = true
-      completeDraw(drawVersion, generation)
+      drawTracker.completeDraw(drawTracker.drawVersion, generation)
     }
 
     try {
       if (frequenciesDataUrl) {
         await fetchAndDrawFrequencies(frequenciesDataUrl, completeBeforeReady)
         if (ctx.scope.disposed) return
-        version = drawVersion
+        version = drawTracker.drawVersion
       } else {
         const decodedData = ctx.wavesurfer?.getDecodedData()
         if (decodedData) {
           const frequencies = await getFrequenciesData()
           // After a newer analysis started, the current picture stays until its own render
-          if (ctx.scope.disposed || !frequencies || generation !== analysisGeneration) return
+          if (ctx.scope.disposed || !frequencies || generation !== drawTracker.generation) return
           // Draw what this render computed (cache hit, fresh data, or empty on failure)
           // rather than whatever the cache field holds
           drawSpectrogram(frequencies, completeBeforeReady)
-          version = drawVersion
+          version = drawTracker.drawVersion
         }
       }
       lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
     } catch (error) {
-      version = failDraw(generation, error)
+      version = drawTracker.failDraw(generation, error)
       failed = true
     } finally {
       isRendering = false
       // A draw without 'ready' (empty data, zero width) is settled here
-      if (version >= 0 && !failed && !completed) completeDraw(version, generation)
+      if (version >= 0 && !failed && !completed) drawTracker.completeDraw(version, generation)
       runQueuedRerender()
-      redrawIfChanged(version)
+      drawTracker.redrawIfChanged(version)
     }
   }
 
   function fastRender(): void {
     if (isRendering) return
     if (!cachedFrequencies) {
-      // Nothing is retained to redraw (clearCache()): display requests resolve, and their values
-      // apply to the next draw
-      appliedVersion = stateVersion
-      settleRequests(stateVersion, null, (request) => request.generation === null)
+      drawTracker.resolveDisplayRequests()
       return
     }
     isRendering = true
-    const generation = analysisGeneration
-    analysisFailure = null
+    const generation = drawTracker.beginDraw()
     let version = -1
     let failed = false
     let completed = false
@@ -1495,18 +1376,18 @@ export function spectrogramSetup(
       // Use cached frequencies for fast re-render
       drawSpectrogram(cachedFrequencies, () => {
         completed = true
-        completeDraw(drawVersion, generation)
+        drawTracker.completeDraw(drawTracker.drawVersion, generation)
       })
-      version = drawVersion
+      version = drawTracker.drawVersion
       lastZoomLevel = ctx.wavesurfer?.options.minPxPerSec || 0
     } catch (error) {
-      version = failDraw(generation, error)
+      version = drawTracker.failDraw(generation, error)
       failed = true
     } finally {
       isRendering = false
-      if (!failed && !completed) completeDraw(version, generation)
+      if (!failed && !completed) drawTracker.completeDraw(version, generation)
       runQueuedRerender()
-      redrawIfChanged(version)
+      drawTracker.redrawIfChanged(version)
     }
   }
 
@@ -1599,7 +1480,7 @@ export function spectrogramSetup(
   // SpectrogramPluginOptions.frequenciesDataUrl. Both shapes are duck-type compatible for the
   // emptiness check below (Uint8Array and Uint8Array[] both have a numeric .length).
   function drawSpectrogram(input: Uint8Array[][] | Uint8Array[], beforeReady?: () => void): void {
-    drawVersion = stateVersion
+    drawTracker.markDrawVersion()
     if (!input || input.length === 0 || input.every((channel) => !channel || channel.length === 0)) {
       // Nothing to draw (failed computation, or a buffer too short for a single FFT frame):
       // remove any previously drawn canvases so no stale spectrogram stays on screen
@@ -1910,7 +1791,7 @@ export function spectrogramSetup(
     // Reject pending setOptions() calls and stop their redraw
     cancelSettingsRedraw?.()
     cancelSettingsRedraw = null
-    settleRequests(Infinity, abortError('The spectrogram plugin was destroyed'))
+    drawTracker.dispose()
 
     // Release the decoded buffer and caches
     cachedFrequencies = null
