@@ -347,6 +347,10 @@ class Renderer {
         :host .canvases > div {
           position: relative;
         }
+        /* Keep clipping local to each canvas: a waveform-wide clip can disappear at high zoom. */
+        :host .canvases canvas {
+          clip-path: inset(0 0 0 clamp(0px, calc(var(--waveform-width) * var(--waveform-progress, 0) - var(--canvas-offset)), 100%));
+        }
         :host canvas {
           display: block;
           position: absolute;
@@ -685,6 +689,7 @@ class Renderer {
     canvas.style.width = `${width}px`
     canvas.style.height = `${height}px`
     canvas.style.left = `${Math.round(offset)}px`
+    canvas.style.setProperty('--canvas-offset', `${Math.round(offset)}px`)
     canvasContainer.appendChild(canvas)
 
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
@@ -869,6 +874,7 @@ class Renderer {
 
     // Set the width of the wrapper
     this.wrapper.style.width = useParentWidth ? '100%' : `${scrollWidth}px`
+    this.canvasWrapper.style.setProperty('--waveform-width', `${width / pixelRatio}px`)
 
     // Set additional styles
     this.scrollContainer.style.overflowX = this.isScrollable.value ? 'auto' : 'hidden'
@@ -984,7 +990,7 @@ class Renderer {
     const previousProgress = this.lastProgress
     this.lastProgress = progress
     const percents = progress * 100
-    this.canvasWrapper.style.clipPath = `polygon(${percents}% 0%, 100% 0%, 100% 100%, ${percents}% 100%)`
+    this.canvasWrapper.style.setProperty('--waveform-progress', `${progress}`)
     this.progressWrapper.style.width = `${percents}%`
     this.cursor.style.left = `${percents}%`
     this.cursor.style.transform = this.options.cursorWidth
