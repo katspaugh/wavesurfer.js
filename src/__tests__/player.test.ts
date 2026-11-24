@@ -279,6 +279,186 @@ describe('Player', () => {
     expect(player.getCurrentTime()).toBe(0)
   })
 
+  const createSeekableMedia = () => {
+    const media = createMedia()
+    const state = { currentTime: 0, readyState: 0 }
+    Object.defineProperty(media, 'duration', { configurable: true, value: 100 })
+    Object.defineProperty(media, 'readyState', { configurable: true, get: () => state.readyState })
+    Object.defineProperty(media, 'currentTime', {
+      configurable: true,
+      get: () => state.currentTime,
+      set: (value: number) => {
+        state.currentTime = value
+      },
+    })
+    return { media, state }
+  }
+
+  test('applies the latest of back-to-back seeks made while a seek is in flight', () => {
+    const { media, state } = createSeekableMedia()
+    const player = new Player({ media })
+    state.readyState = 3
+    media.dispatchEvent(new Event('canplay'))
+
+    player.setTime(10)
+    state.readyState = 1
+    player.setTime(20)
+    player.setTime(30)
+    media.dispatchEvent(new Event('seeking'))
+
+    expect(state.currentTime).toBe(30)
+    expect(player.getCurrentTime()).toBe(30)
+  })
+
+  test('defers seeks again after the source changes', () => {
+    const { media, state } = createSeekableMedia()
+    const player = new TestPlayer({ media })
+    state.readyState = 3
+    media.dispatchEvent(new Event('canplay'))
+
+    player.setSource('https://example.com/replacement.mp3')
+    state.readyState = 0
+    player.setTime(10)
+    expect(state.currentTime).toBe(0)
+    expect(player.getCurrentTime()).toBe(10)
+
+    state.readyState = 3
+    media.dispatchEvent(new Event('canplay'))
+    expect(state.currentTime).toBe(10)
+  })
+
+  test('defers seeks again after the media is emptied', () => {
+    const { media, state } = createSeekableMedia()
+    const player = new Player({ media })
+    state.readyState = 3
+    media.dispatchEvent(new Event('canplay'))
+
+    state.readyState = 0
+    media.dispatchEvent(new Event('emptied'))
+    player.setTime(10)
+    expect(state.currentTime).toBe(0)
+
+    state.readyState = 3
+    media.dispatchEvent(new Event('canplay'))
+    expect(state.currentTime).toBe(10)
+  })
+
+  test('defers seeks on a replacement media element that is not yet playable', () => {
+    const { media, state } = createSeekableMedia()
+    const replacement = createSeekableMedia()
+    const player = new TestPlayer({ media })
+    state.readyState = 3
+    media.dispatchEvent(new Event('canplay'))
+
+    player.replaceMedia(replacement.media)
+    player.setTime(10)
+    expect(replacement.state.currentTime).toBe(0)
+
+    replacement.state.readyState = 3
+    replacement.media.dispatchEvent(new Event('canplay'))
+    expect(replacement.state.currentTime).toBe(10)
+  })
+
+  test('seeks directly after play resolves even if readyState drops', async () => {
+    const { media, state } = createSeekableMedia()
+    const player = new Player({ media })
+
+    await player.play()
+    player.setTime(10)
+
+    expect(state.currentTime).toBe(10)
+  })
+
+  test('applies the latest seek on already-loaded media without a new canplay', () => {
+    const { media, state } = createSeekableMedia()
+    state.readyState = 3
+    const player = new Player({ media })
+
+    player.setTime(10)
+    state.readyState = 1
+    player.setTime(20)
+    player.setTime(30)
+    media.dispatchEvent(new Event('seeking'))
+
+    expect(state.currentTime).toBe(30)
+    expect(player.getCurrentTime()).toBe(30)
+  })
+
+  test('seeks immediately on media without a readyState', () => {
+    const { media, state } = createSeekableMedia()
+    Object.defineProperty(media, 'readyState', { configurable: true, value: undefined })
+    const player = new Player({ media })
+
+    player.setTime(10)
+
+    expect(state.currentTime).toBe(10)
+    expect(player.getCurrentTime()).toBe(10)
+  })
+
+  test('applies the latest seek on an already-loaded replacement element', () => {
+    const { media } = createSeekableMedia()
+    const replacement = createSeekableMedia()
+    replacement.state.readyState = 3
+    const player = new TestPlayer({ media })
+
+    player.replaceMedia(replacement.media)
+    player.setTime(10)
+    replacement.state.readyState = 1
+    player.setTime(20)
+    replacement.media.dispatchEvent(new Event('seeking'))
+
+    expect(replacement.state.currentTime).toBe(20)
+  })
+
+  test('a play resolving on a replaced element does not unlock seeks on the new one', async () => {
+    const { media } = createSeekableMedia()
+    const replacement = createSeekableMedia()
+    let resolvePlay: () => void = () => {}
+    media.play = jest.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolvePlay = resolve
+        }),
+    )
+    const player = new TestPlayer({ media })
+
+    const playing = player.play()
+    player.replaceMedia(replacement.media)
+    player.setTime(10)
+    resolvePlay()
+    await playing
+
+    expect(replacement.state.currentTime).toBe(0)
+    player.setTime(20)
+    expect(replacement.state.currentTime).toBe(0)
+    expect(player.getCurrentTime()).toBe(20)
+
+    replacement.state.readyState = 3
+    replacement.media.dispatchEvent(new Event('canplay'))
+    expect(replacement.state.currentTime).toBe(20)
+  })
+
+  test('a play resolving after the source changes does not unlock seeks', async () => {
+    const { media, state } = createSeekableMedia()
+    let resolvePlay: () => void = () => {}
+    media.play = jest.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolvePlay = resolve
+        }),
+    )
+    const player = new TestPlayer({ media })
+
+    const playing = player.play()
+    player.setSource('https://example.com/replacement.mp3')
+    player.setTime(10)
+    resolvePlay()
+    await playing
+
+    expect(state.currentTime).toBe(0)
+    expect(player.getCurrentTime()).toBe(10)
+  })
+
   test("the playbackRate 'canplay' listener does not survive destroy with external media", () => {
     const media = createMedia()
     let playbackRate = 1
