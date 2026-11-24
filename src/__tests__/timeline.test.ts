@@ -42,6 +42,28 @@ describe('TimelinePlugin', () => {
     jest.clearAllMocks()
   })
 
+  test('default labels carry rounded seconds into the next minute', () => {
+    // With a 0.1s interval the notch times drift (e.g. 119.99999999999801), which used to
+    // round to "1:60" instead of "2:00"
+    const wavesurfer = createWaveSurfer(181, 1810)
+    const plugin = TimelinePlugin.create({
+      duration: 181,
+      timeInterval: 0.1,
+      primaryLabelInterval: 10,
+      secondaryLabelInterval: 5,
+    })
+
+    plugin._init(wavesurfer as any)
+
+    const labels = Array.from(
+      wavesurfer.getWrapper().querySelectorAll<HTMLElement>('[part^="timeline-notch"]'),
+      (notch) => notch.textContent,
+    ).filter(Boolean)
+    expect(labels).toContain('2:00')
+    expect(labels).toContain('3:00')
+    expect(labels.filter((label) => label?.endsWith(':60'))).toEqual([])
+  })
+
   test('preserves high precision offsets for notch positions', () => {
     const wavesurfer = createWaveSurfer(1, 100)
     const plugin = TimelinePlugin.create({
