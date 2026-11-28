@@ -275,10 +275,10 @@ class SingleRegion extends EventEmitter<RegionEvents> implements Region {
       element,
     )
 
-    // Resize
-    const resizeThreshold = 1
-    const leftDragStream = createDragStream(leftHandle, { threshold: resizeThreshold })
-    const rightDragStream = createDragStream(rightHandle, { threshold: resizeThreshold })
+    // A touch that starts on a resize handle can resize immediately.
+    const resizeOptions = { threshold: 1, touchDelay: 0 }
+    const leftDragStream = createDragStream(leftHandle, resizeOptions)
+    const rightDragStream = createDragStream(rightHandle, resizeOptions)
 
     // While a handle is being dragged, container scroll (from adjustScroll's
     // auto-scrolling, or any other source) keeps resizing the region: each

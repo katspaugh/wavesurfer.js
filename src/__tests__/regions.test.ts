@@ -44,6 +44,30 @@ describe('RegionsPlugin', () => {
     jest.clearAllMocks()
   })
 
+  test.each([
+    { handle: 'left', start: 2.1, end: 6 },
+    { handle: 'right', start: 2, end: 6.1 },
+  ])('resizes from the $handle handle before the touch delay', ({ handle, start, end }) => {
+    jest.mocked(window.matchMedia).mockReturnValue({ matches: true } as MediaQueryList)
+    const wavesurfer = createWaveSurfer(10, 1000)
+    const plugin = RegionsPlugin.create()
+    plugin._init(wavesurfer as any)
+    const container = wavesurfer.getWrapper().querySelector<HTMLElement>('[part="regions-container"]')!
+    Object.defineProperty(container, 'clientWidth', { configurable: true, value: 1000 })
+    mockRect(container, { left: 0, top: 0, width: 1000, height: 100 })
+    const region = plugin.addRegion({ start: 2, end: 6, drag: true, resize: true })
+    jest.runOnlyPendingTimers()
+    const target = region.element!.querySelector<HTMLElement>(`[part~="region-handle-${handle}"]`)!
+
+    target.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 20 }))
+    window.dispatchEvent(new MouseEvent('pointermove', { cancelable: true, clientX: 30 }))
+    window.dispatchEvent(new MouseEvent('pointerup', { clientX: 30 }))
+
+    expect(region.start).toBeCloseTo(start)
+    expect(region.end).toBeCloseTo(end)
+    plugin.destroy()
+  })
+
   test('re-renders a lazily detached region when setOptions moves it into view', () => {
     const wavesurfer = createWaveSurfer()
     const plugin = RegionsPlugin.create()
