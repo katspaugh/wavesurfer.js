@@ -45,7 +45,8 @@ const defaultOptions = {
   height: 20,
   timeOffset: 0,
   formatTimeCallback: (seconds: number) => {
-    if (seconds / 60 > 1) {
+    const rounded = Math.round(seconds * 1000) / 1000
+    if (rounded >= 60) {
       // calculate minutes and seconds from seconds count
       // round first, so 119.6 (or a drifted 119.99999) carries into "2:00" instead of "1:60"
       const totalSeconds = Math.round(seconds)
@@ -54,7 +55,6 @@ const defaultOptions = {
       const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
       return `${minutes}:${paddedSeconds}`
     }
-    const rounded = Math.round(seconds * 1000) / 1000
     return `${rounded}`
   },
 }

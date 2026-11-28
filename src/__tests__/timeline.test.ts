@@ -64,6 +64,19 @@ describe('TimelinePlugin', () => {
     expect(labels.filter((label) => label?.endsWith(':60'))).toEqual([])
   })
 
+  test('default labels switch to minutes at exactly one minute', () => {
+    const wavesurfer = createWaveSurfer(130, 1300)
+    const plugin = TimelinePlugin.create({ duration: 130 })
+
+    plugin._init(wavesurfer as any)
+
+    const labels = Array.from(
+      wavesurfer.getWrapper().querySelectorAll<HTMLElement>('[part^="timeline-notch"]'),
+      (notch) => notch.textContent,
+    ).filter(Boolean)
+    expect(labels).toEqual(['0', '10', '20', '30', '40', '50', '1:00', '1:10', '1:20', '1:30', '1:40', '1:50', '2:00'])
+  })
+
   test('preserves high precision offsets for notch positions', () => {
     const wavesurfer = createWaveSurfer(1, 100)
     const plugin = TimelinePlugin.create({
